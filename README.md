@@ -46,11 +46,11 @@ This template includes all the scaffolding you need to get started on an OSS rep
 <!--  DELETE THE LINES ABOVE THIS AND WRITE YOUR PROJECT README BELOW -- PLACEHOLDER SECTIONS HAVE BEEN INCLUDED FOR YOUR CONVENIENCE -->
 
 [![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/{{REPOSITORY_OWNER}}/{{REPOSITORY_URL}}/badge)](https://securityscorecards.dev/viewer/?uri=github.com/{{REPOSITORY_OWNER}}/{{REPOSITORY_URL}})
-[![Community Support](https://badgen.net/badge/support/community/cyan?icon=awesome)](https://github.com/{{REPOSITORY_OWNER}}/{{REPOSITORY_URL}}/blob/main/SUPPORT.md) <!-- [![Commercial Support](https://badgen.net/badge/support/commercial/cyan?icon=awesome)](<Insert URL>) -->
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](https://github.com/{{REPOSITORY_OWNER}}/{{REPOSITORY_URL}}/main/CODE_OF_CONDUCT.md)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/nginxinc/nginx-azure-workshops/badge)](https://securityscorecards.dev/viewer/?uri=github.com/nginxinc/nginx-azure-workshops)
+[![Community Support](https://badgen.net/badge/support/community/cyan?icon=awesome)](https://github.com/nginxinc/nginx-azure-workshops/blob/main/SUPPORT.md) <!-- [![Commercial Support](https://badgen.net/badge/support/commercial/cyan?icon=awesome)](<Insert URL>) -->
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](https://github.com/nginxinc/nginx-azure-workshops/main/CODE_OF_CONDUCT.md)
 
-# {{REPOSITORY_NAME}}
+# nginx_azure_workshops
 
 ## Requirements
 
@@ -66,10 +66,10 @@ Maecenas at vehicula justo. Suspendisse posuere elementum elit vel posuere. Etia
 
 ## Contributing
 
-Please see the [contributing guide](https://github.com/{{REPOSITORY_OWNER}}/{{REPOSITORY_URL}}/blob/main/CONTRIBUTING.md) for guidelines on how to best contribute to this project.
+Please see the [contributing guide](https://github.com/nginxinc/nginx-azure-workshops/blob/main/CONTRIBUTING.md) for guidelines on how to best contribute to this project.
 
 ## License
 
-[Apache License, Version 2.0](https://github.com/{{REPOSITORY_OWNER}}/{{REPOSITORY_URL}}/blob/main/LICENSE)
+[Apache License, Version 2.0](https://github.com/nginxinc/nginx-azure-workshops/blob/main/LICENSE)
 
 &copy; [F5, Inc.](https://www.f5.com/) 2024
