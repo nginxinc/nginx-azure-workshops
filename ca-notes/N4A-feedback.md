@@ -1,6 +1,10 @@
 # N4A Feedback / Issues, feedback, suggestions
 
-Nginx Default config `nginx.conf` should have two status_zone directives included.  One for server{} block, one for / location block.  **This will allow metrics to show up immediately, without the user having to find, understand, and configure status_zones in their nginx.conf file.**
+
+
+## Azure Metrics are blank, text box is malformed, see screenshot
+
+Nginx Default config `nginx.conf` should have two status_zone directives included.  One for server{} block, one for / location block.  **This will allow metrics to show up immediately, without the user having to find, understand, and configure status_zones in their nginx.conf file, or included files in /etc/nginx/conf.d.**
 
 ```nginx
 
@@ -36,19 +40,19 @@ http {
 
 There should be a step by step config guide for getting the Metrics to show up, and create a basic Dashboard for Nginx, including the Prerequisites.
 
-
-
 ## Nginx Standards and Best Practice Violations/Issues
 
 The Nginx default HTML folder/files are missing.  This should be included, `/usr/share/nginx/html`, with all the Nginx Error Pages, and other Nginx primitives.  Consult a new installation of NginxPlus-R3x to match files.
 
-The usage of the `/var/www` folder is an Apache/Microsoft standard, not an Nginx standard.  It should be replaced with `/usr/share/nginx/` for Nginx users.
+The usage of the `/var/www` folder is an Apache/Microsoft standard, not an Nginx standard.  It should be replaced with `/usr/share/nginx/html` for Nginx users.
 
 The usage of the `/var/cache` folder for caching content is inconsistent with Nginx standards and docs.  Most Nginx documentation for caching refers to the `/data/nginx/cache` folder location, and should be changed for Nginx users.
 
+Missing standard nginx.conf `include` directive, for including files in /etc/nginx/conf.d folder.
+
 ## NGINX configuration issues
 
-Upload Config Package overwrites the existing nginx.conf, this is terrible.  Config package upload should be modified to only allow uploads to the /etc/nginx/conf.d folder, the Nginx standard location for http config files.  Perhaps also allow uploads to `/etc/nginx/stream`, the Nginx standard for L4 config files.
+Upload Config Package overwrites the existing nginx.conf, this is a terrible idea.  Config package upload should be modified to only allow uploads to the /etc/nginx/conf.d folder, the Nginx standard location for http config files.  Perhaps also allow uploads to `/etc/nginx/stream`, the Nginx standard for L4 config files.  Even better, allow uploads to a dedicated folder that won't overwrite standard Nginx folders/files, but the user would have to manually copy/paste to move them into the correct folder.  Lots of room for discussion and improvement here.
 
 ## Caching
 
@@ -65,7 +69,7 @@ http {
 
 It is `missing` all the other parameters needed for caching to work.  A link to Nginx Content Caching is provided, but that is not very helpful.
 
-A complete Caching config example should be provided, perhaps with an include file.
+A complete Caching config example should be provided, perhaps with an include file, pre-configured ?
 
 ```nginx
 
@@ -101,8 +105,6 @@ http {
 
 ## Default 'includes' Directive is missing
 
-Missing standard NGINX config for including files in /etc/nginx/conf.d folder.
-
 ## Can't see the Nginx Upstreams
 
 Without the Plus realtime dash board, there is no way to know if the Upstreams defined are correct or working, because
@@ -111,10 +113,10 @@ Without the Plus realtime dash board, there is no way to know if the Upstreams d
 
 There is no realtime access to either the Error or Access Logs from Nginx.  It makes it virtually impossible to "see what's going on" with Nginx without these logs.
 
-Using the Azure Logging services does not work, you can't see the original Access or Error logs.  The lack of this feature will eliminate a large number of Nginx users.
+Using the Azure Logging services is complicated, you can't see the original Access or Error logs.  An Azure Logging Workspace that shows the error and Access log should be included when the user Deploys N4A.  It should be there by default. The lack of this feature will frustrate a large number of Nginx users, especially if they are new to Azure Monitoring / Logging Workspaces.
 
 
-## Nginx Keepalive for HTTP1.1 settings should be included.
+## Nginx Keepalive for HTTP1.1 settings should be included, missing Best Practice.
 
 ```nginx
 # Default is HTTP/1, keepalive is only enabled in HTTP/1.1
@@ -131,7 +133,7 @@ proxy_set_header Host $host;
 
 ## Nginx Azure Monitor - can't used Saved Dashboards.
 
-If you create and save a dashboard, it does not work.
+If you create and save a dashboard, it does not work.  Looks like you have Share a Dashboard.
 
 I can see the name in the list, but Azure Monitor does not let me "load it and use it".  It starts with a new, blank dashboard instead.  If you refresh the browser page, all customizations are lost and you start at the beginning.
 
@@ -139,7 +141,7 @@ nginx requests and responses, plus.http.status.4xx are reporting incorrectly.  l
 
 Unique Server, Location, and Upstream block metrics are not available, everything is aggregated in to a Total, no metrics with fine grain resolution.
 
-
+Very difficult to even see the Upstream IP addresses, this is critical for a Proxy configuration.
 
 
 ***********
