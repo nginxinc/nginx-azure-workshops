@@ -1,6 +1,6 @@
 # Notes for building the Ubuntu VM for N4A workshop
 
-Create a new VM, Ubuntu 22.02, 8GB ram, 50GB disk.
+Create a new VM, Ubuntu 22.02, 8GB ram, 128GB disk.
 Use the same Vnet Subnet as your AKS cluster for the Networking.
 
 Modify the NSG for SSH access, to allow your IP address to SSH to the VM.
