@@ -4,8 +4,8 @@ We need to update the ingress-demo container to get the latest version of NGINX+
 
 ## Let's pull the official demo container we have been using:
 
-    > sudo docker pull nginxinc/ingress-demo
-    > sudo docker run nginxinc/ingress-demo
+    > docker pull nginxinc/ingress-demo
+    > docker run nginxinc/ingress-demo
 
     > sudo docker ps
     CONTAINER ID   IMAGE                   COMMAND                  CREATED      STATUS      PORTS                                                          
@@ -13,19 +13,19 @@ We need to update the ingress-demo container to get the latest version of NGINX+
     73de74c84484   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 days ago   Up 2 days   0.0.0.0:81->80/tcp, :::81->80/tcp, 0.0.0.0:4431->443/tcp, :::4431->443/tcp   web1
 
 ## Pull a tool to make deconstructing the container a bit easier.  
-    > sudo docker pull mrhavens/dedockify
-    > sudo docker images
+    > docker pull mrhavens/dedockify
+    > docker images
 
     REPOSITORY              TAG       IMAGE ID       CREATED       SIZE
     nginxinc/ingress-demo   latest    73ba987f213a   3 years ago   23MB
     mrhavens/dedockify      latest    35e3fba3dd5a   4 years ago   57.6MB
 
 ## Create an alias to create your dockerfile using that tool.
-    > alias dedockify="sudo docker run -v /var/run/docker.sock:/var/run/docker.sock --rm mrhavens/dedockify"
+    > alias dedockify="docker run -v /var/run/docker.sock:/var/run/docker.sock --rm mrhavens/dedockify"
 
 ## I saved the Dockerfile into a directory (.apc) by passing the ingress-demo Image ID to my dedockify command
-    > mkdir .apc
-    > dedockify 73ba987f213a > .apc/ingress-demo.dockerfile
+    > mkdir how-to
+    > dedockify 73ba987f213a > how-to/ingress-demo.dockerfile
 
 There are a few changes you need to make to the dockerfile to make it it work.  The first is the FROM command:
 
@@ -33,7 +33,7 @@ There are a few changes you need to make to the dockerfile to make it it work.  
 
 This command put the source as ingress-demo:latest which is the container it pulled from, but to re-create the container we would use the original base image of alpine 3.12.3.  This will be updated with a supported / newer alpine release.
 
-Continue reviewing the Dockerfile, and you will see the **Add** and **Copy** lines. These are the directories/files that you need to copy out of the container to re-create it. Add commands are typically from URLs (or tarred files)  Copy files are typically from a local directory.
+Continue reviewing the dockerfile, and you will see the **Add** and **Copy** lines. These are the directories/files that you need to copy out of the container to re-create it. Add commands are typically from URLs (or tarred files)  Copy files are typically from a local directory.
 
 ## These are the ADD/COPY lines from our dockerfile:
     ADD file:ec475c2abb2d46435286b5ae5efacf5b50b1a9e3b6293b69db3c0172b5b9658b in /
@@ -48,16 +48,26 @@ Continue reviewing the Dockerfile, and you will see the **Add** and **Copy** lin
 The Add (probably a URL) will be harder to figure out.  It is being placed in the root directory though, so if we compare a base alpine 3.1.2 container to this one we should see the file that was added.
     
 ## Then I made a few dirs and copied in the contents from the container using docker cp
-    > mkdir -p usr/share/nginx
-    > mkdir -p etc/nginxconf.d
+    > mkdir -p docker-entrypoint.d
+    > mkdir -p etc/nginx/conf.d
+    > mkdir -p usr/share
 
-    > sudo docker cp 73de74c84484:/etc/nginx/certs etc/nginx/
-    > sudo docker cp 73de74c84484:/etc/nginx/conf.d/default.conf .
-    > sudo docker cp 73de74c84484:/etc/nginx/nginx.conf .
+    > docker cp 407f33059787:/docker-entrypoint.sh .
+    > docker cp 407f33059787:/docker-entrypoint.d/10-listen-on-ipv6-by-default.sh docker-entrypoint.d/
+    > docker cp 407f33059787:/docker-entrypoint.d/20-envsubst-on-templates.sh docker-entrypoint.d/
+
+    > docker cp 407f33059787:/etc/nginx/conf.d/default.conf etc/nginx/conf.d/
+    > docker cp 407f33059787:/etc/nginx/nginx.conf etc/nginx/
+    
+    > docker cp 407f33059787:/usr/share/nginx usr/share/
+    > docker cp 407f33059787:/etc/nginx/certs etc/nginx
 
 ## Copy the whole nginx folder in /usr/share which has the web pages, images and js, etc.
     > cd ../../usr/share/
-    > sudo docker cp 73de74c84484:/usr/share/nginx/ .
+    > docker cp 73de74c84484:/usr/share/nginx/ .
 
 ## Go into the ingress-demo container manually and make sure we didn't miss anything:
-    > sudo docker exec -it 73de74c84484 /bin/sh
+    > docker exec -it 73de74c84484 /bin/sh
+
+## Update the build parameters
+Now that we have extracted the files, we can modernize the dockerfile and add new best practices/features.  A good resource to start with is: https://gist.github.com/nginx-gists/36e97fc87efb5cf0039978c8e41a34b5#file-dockerfile-alpine
