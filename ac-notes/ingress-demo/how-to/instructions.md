@@ -7,7 +7,7 @@ We need to update the ingress-demo container to get the latest version of NGINX+
     > docker pull nginxinc/ingress-demo
     > docker run nginxinc/ingress-demo
 
-    > sudo docker ps
+    > docker ps
     CONTAINER ID   IMAGE                   COMMAND                  CREATED      STATUS      PORTS                                                          
                   NAMES
     73de74c84484   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 days ago   Up 2 days   0.0.0.0:81->80/tcp, :::81->80/tcp, 0.0.0.0:4431->443/tcp, :::4431->443/tcp   web1
@@ -58,7 +58,7 @@ The Add (probably a URL) will be harder to figure out.  It is being placed in th
 
     > docker cp 407f33059787:/etc/nginx/conf.d/default.conf etc/nginx/conf.d/
     > docker cp 407f33059787:/etc/nginx/nginx.conf etc/nginx/
-    
+
     > docker cp 407f33059787:/usr/share/nginx usr/share/
     > docker cp 407f33059787:/etc/nginx/certs etc/nginx
 
