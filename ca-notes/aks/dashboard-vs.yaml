@@ -22,7 +22,7 @@ spec:
   upstreams:
   - name: dashboard
     service: dashboard-svc
-    port: 80
+    port: 9000
   routes:
   - path: /dashboard.html
     action:

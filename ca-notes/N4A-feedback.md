@@ -148,7 +148,7 @@ Very difficult to even see the Upstream IP addresses, this is critical for a Pro
 
 ## Engineering Areas to investigate
 
-Adam - AzureAD/DNS/Grafana
+Adam - AzureAD/DNS/Grafana - ingress-demo container update
 Chris - Plus LB, AZcompute, Cafe Demo, aks/nic/cafe
 Shouvik - AZ monitor, KeyVault, new repo
-
+Steve - Demo app, Redis

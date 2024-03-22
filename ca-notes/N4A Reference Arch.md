@@ -6,10 +6,10 @@ Least time algo
 Active HC
 Dashboard
 metrics
-Prometheus
-KV store
+Prometheus - no NJS module
+KV store - no API access
 Zone synch
-Active Active nodes
+Active Active nodes - 
 OIDC-jwt
 Split clients
 NTLM
