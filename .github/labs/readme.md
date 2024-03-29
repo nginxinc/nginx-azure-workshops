@@ -1,4 +1,4 @@
-# Nginx for Azure Workshop Outline / Summary
+#  Nginx for Azure Workshop Outline / Summary
 
 ## Lab 0 - Prequesites - Subscription / Resources
 ## Lab 1 - Azure VNet and Subnet and Network Security Group

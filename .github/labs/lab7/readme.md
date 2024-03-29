@@ -1,4 +1,4 @@
-# Azure Montoring / Logging Analytics 
+#  Azure Montoring / Logging Analytics 
 
 ## Introduction
 

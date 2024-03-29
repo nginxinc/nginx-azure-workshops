@@ -1,4 +1,4 @@
-# NGINX Load Balancing / Reverse Proxy 
+#  NGINX Load Balancing / Reverse Proxy 
 
 ## Introduction
 

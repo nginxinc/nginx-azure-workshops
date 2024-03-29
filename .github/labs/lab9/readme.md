@@ -1,4 +1,4 @@
-# NGINX and AzureAD / Entra Integration
+#  NGINX and AzureAD / Entra Integration
 
 ## Introduction
 

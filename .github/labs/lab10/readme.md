@@ -1,4 +1,4 @@
-# NGINX Caching / Juiceshop or Garage
+#  NGINX Caching / Juiceshop or Garage
 
 ## Introduction
 
