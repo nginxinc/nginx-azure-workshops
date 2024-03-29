@@ -3,18 +3,18 @@ N4A Reference Arch
 Plus features:
 
 Least time algo
-Active HC
-Dashboard
+Active HC - not working
+Dashboard - not available
 metrics
-Prometheus - no NJS module
+Prometheus
 KV store - no API access
 Zone synch
 Active Active nodes - 
 OIDC-jwt
 Split clients
-NTLM
+NTLM - no app
 Caching
-FIPS
+FIPS - AKS/NIC only
 
 NIC - Deep Insight
 NLK
