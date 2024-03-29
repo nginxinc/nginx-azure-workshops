@@ -8,10 +8,10 @@
 ## Lab 5 - Nginx Load Balancing / Reverse Proxy
 ## Lab 6 - Azure Key Vault / TLS Essentials
 ## Lab 7 - Azure Montoring / Logging Analytics
-## Lab 8 - Nginx and AzureAD / Entra Integration
-## Lab 9 - Nginx Garage or Azure Petshop
+## Lab 8 - Nginx Garage or Azure Petshop
+## Lab 9 - Nginx and AzureAD / Entra Integration
 ## Lab 10 - Nginx Caching / Juiceshop or Garage
-## Lab 11 - Grafana 
+## Lab 11 - Optional Exercises / Grafana
 ## Summary and Wrap-up
 
 <br/>
@@ -57,6 +57,7 @@ In this lab, you will deploy and config a new Nginx for Azure instance.
 
 - Learning Objectives
 Deploy Nginx for Azure
+Enable Log Analytics
 Test basic HTTP traffic
 Create inital Nginx configurations to test with
 
@@ -109,7 +110,8 @@ Load test the Legacy and Modern web applications.
 In this lab, you use Azure Key Vault for TLS certificates and keys.  You will configure Nginx for Azure to use these Azure resources to terminate TLS.
 
 - Learning Objectives
-Create a sample Azure Key Vault TLS cert/key
+Create a sample Azure Key Vault
+Create a TLS cert/key
 Configure and test Nginx for Azure to use the Azure Keys
 Update the previous Nginx configurations to use TLS for apps
 Update NSGs for TLS inbound traffic
@@ -128,20 +130,7 @@ Explore the Azure logging and Analytics tools available.
 
 <br/>
 
-### Lab 8 - Nginx and AzureAD / Entra Integration
-
-- Overview
-In this lab, you will create and configure an Azure Active Directory integration that will provide User based authentication to your web application.  You will then create and test the Nginx for Azure AD configuration that will enforce this user authentication requirement.
-
-- Learning Objectives
-Create and configure Azure AD Security settings.
-Create and configure Nginx for Azure to provide user authentication to your web application.
-Test and validate AzureAD is working as expected.
-Explore AzureAD related logging.
-
-<br/>
-
-### Lab 9 - Nginx Garage or Azure Petshop
+### Lab 8 - Nginx Garage or Azure Petshop
 
 - Overview
 In this lab, you will deploy a modern application in your AKS cluster.  You will expose it with Nginx Ingress Controller and Nginx for Azure.
@@ -154,7 +143,20 @@ Configure Nginx for Azure for this new application
 
 <br/>
 
-### Lab 10 - Nginx Caching / Juiceshop
+### Lab 9 - Nginx and AzureAD / Entra Integration
+
+- Overview
+In this lab, you will create and configure an Azure Active Directory integration that will provide User based authentication to your web application.  You will then create and test the Nginx for Azure AD configuration that will enforce this user authentication requirement.
+
+- Learning Objectives
+Create and configure Azure AD Security settings.
+Create and configure Nginx for Azure to provide user authentication to your web application.
+Test and validate AzureAD is working as expected.
+Explore AzureAD related logging.
+
+<br/>
+
+### Lab 10 - Nginx Caching / Garage / Juiceshop
 
 - Overview
 In this lab, you will deploy an image rich application, and use Nginx Caching to cache images to improve performance.
@@ -167,8 +169,9 @@ Add Nginx Caching to improve delivery of images.
 
 <br/>
 
-### Lab 11 - Grafana 
+### Lab 11 - Optional Exercises
 
+Optional - Grafana with Azure
 - Overview
 In this lab, you will explore the Nginx and Grafana for Azure integration.
 
@@ -176,6 +179,7 @@ In this lab, you will explore the Nginx and Grafana for Azure integration.
 Deploy Grafana for Azure.
 Configure the Datasource
 Explore a sample Grafana Dashboard for Nginx for Azure
+
 
 <br/>
 
