@@ -37,7 +37,7 @@ By the end of the lab you will be able to:
 
 ### Lab exercise 2
 
-<numbered steps are here>
+Nginx Rate Limiting here
 
 ### Lab exercise 3
 
@@ -63,6 +63,8 @@ By the end of the lab you will be able to:
 - [NGINX Variables Index](https://nginx.org/en/docs/varindex.html)
 - [NGINX Technical Specs](https://docs.nginx.com/nginx/technical-specs/)
 - [NGINX - Join Community Slack](https://community.nginx.org/joinslack)
+- [NGINX - HTTP Request Limits](https://nginx.org/en/docs/http/ngx_http_limit_req_module.html#limit_req_zone)
+
 
 <br/>
 

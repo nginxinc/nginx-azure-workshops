@@ -11,7 +11,7 @@
 ## Lab 8 - Nginx Garage or Azure Petshop
 ## Lab 9 - Nginx and AzureAD / Entra Integration
 ## Lab 10 - Nginx Caching / Juiceshop or Garage
-## Lab 11 - Optional Exercises / Grafana
+## Lab 11 - Optional Exercises / Grafana / Rate Limits
 ## Summary and Wrap-up
 
 <br/>
