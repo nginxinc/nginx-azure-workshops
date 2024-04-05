@@ -10,7 +10,7 @@ Prometheus
 KV store - no API access
 Zone synch
 Active Active nodes - 
-OIDC-jwt
+OIDC-jwt - no
 Split clients
 NTLM - no app
 Caching
@@ -18,11 +18,11 @@ FIPS - AKS/NIC only
 
 NIC - Deep Insight
 NLK
-NAP WAF
+NAP WAF - not available
 
 Azure Integrations
 Azure Console
-AzureAD
+AzureAD - not available
 Azure Mon
 Azure DNS
 Azure Log Analisys

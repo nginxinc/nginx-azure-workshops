@@ -19,13 +19,13 @@ spec:
     protocol: TCP
     name: redis-leader
   - port: 6380
-    nodePort: 32378
+    nodePort: 32380
     protocol: TCP
     name: redis-follower
   - port: 9000
     nodePort: 32090
     protocol: TCP
-    name: dashboard
+    name: dashboard    
   selector:
     app: nginx-ingress
     

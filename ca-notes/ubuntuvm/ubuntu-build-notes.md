@@ -42,4 +42,3 @@ Create docker-compose.yml file
 Start three Cafe demo containers
 
 docker-compose up -d
-

@@ -7,8 +7,8 @@ metadata:
   namespace: juice
 spec:
   host: juiceshop.nginxazure.build
-  # tls:
-    # secret: juice-secret
+  tls:
+    secret: juice-secret
   upstreams:
   - name: juiceshop
     service: juiceshop-svc

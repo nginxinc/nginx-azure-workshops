@@ -10,4 +10,3 @@ akker# az aks create      --resource-group $MY_RESOURCEGROUP      --name $MY_AKS
 Second cluster, using azure CNI and new "aks2" subnet, as $MY_SUBNET :
 
 az aks create --resource-group $MY_RESOURCEGROUP --name $MY_AKS --location $MY_LOCATION --node-count 3 --node-vm-size $AKS_NODE_VM --kubernetes-version $K8S_VERSION --tags owner=$MY_NAME --vnet-subnet-id=$MY_SUBNET --network-plugin option: azure --enable-addons monitoring --generate-ssh-keys --enable-fips-image
-
