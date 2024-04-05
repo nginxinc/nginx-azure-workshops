@@ -75,7 +75,7 @@
    }
    ```
 
-# Things to improve:
+## Things to improve
 
 1. Once the tls cert and key are tied to n4a resource, if you navigate to the nginx configuration pane, the cert and key don't show up in the file explorer pane. Adding them to the file explorer would provide a visual confirmation that the cert and keys have been added to the relevant directory. If it is a security concern then those files can be present as greyed out and non-clickable.
 
