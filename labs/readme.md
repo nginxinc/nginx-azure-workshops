@@ -66,13 +66,13 @@ Create inital Nginx configurations to test with
 ### Lab 3 - UbuntuVM, Docker, and Cafe or Garage Demo Deployment
 
 - Overview
-In this lab, you will deploy and Ubuntu VM, and configure it for a Legacy web application.
+In this lab, you will deploy an Ubuntu VM, install Docker and Docker Compose, and configure it for a Legacy web application.
 
 - Learning Objectives
 Deploy Ubuntu VM
 Install Docker and Docker-compose
 Run Legacy docker container apps
-Configure Nginx Load Balancing for these apps
+Test and verify the containers are working
 
 <br/>
 
@@ -98,8 +98,8 @@ Configure Nginx Ingress Controller to route traffic to the application.
 In this lab, you will configure Nginx for Azure to Load Balance various workloads running in Azure.  After successful configuration and adding Best Practice Nginx parameters, you will Load Test these applications, and test multiple load balancing and request routing parameters to suit different use cases.
 
 -- Learning Objectives
-- Configure Nginx for Azure to load balance Docker Containers on the UbuntuVM
-- Configure Nginx for Azure, to boad balance traffic to both AKS Nginx Ingress Controllers.
+- Configure Nginx for Azure to load balance the Docker Containers on the UbuntuVM
+- Configure Nginx for Azure, to load balance traffic to both AKS Nginx Ingress Controllers.
 - Expose the NIC Plus Dashboards externally for Live Monitoring
 - Configure Nginx for Azure, to Proxy to Windows Server VM
 - Run Load tests on the Legacy and Modern web applications.
