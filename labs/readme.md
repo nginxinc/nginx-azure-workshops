@@ -98,7 +98,7 @@ Configure Nginx Ingress Controller to route traffic to the application.
 In this lab, you will configure Nginx for Azure to Load Balance various workloads running in Azure.  After successful configuration and adding Best Practice Nginx parameters, you will Load Test these applications, and test multiple load balancing and request routing parameters to suit different use cases.
 
 -- Learning Objectives
-- Configure Nginx for Azure to load balance the Docker Containers on the UbuntuVM
+
 - Configure Nginx for Azure, to load balance traffic to both AKS Nginx Ingress Controllers.
 - Expose the NIC Plus Dashboards externally for Live Monitoring
 - Configure Nginx for Azure, to Proxy to Windows Server VM
