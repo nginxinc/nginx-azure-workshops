@@ -2,29 +2,29 @@
 
 ## Introduction
 
-In this section, you will create 2 AKS Clusters, install NGINX Plus Ingress Controllers, and a sample application in each cluster.  This will be your learning Kubernetes Platform for deploying and managing applications, networking, and using both NGINX for Azure and NGINX Ingress features to control traffic to your Modern Apps running in the clusters.  You will also create a new private Azure Container Registry and attach this registry to both AKS clusters.  Then you will pull an NGINX Plus Ingress Controller Image from the NGINX registry and push it to your private registry.  Lastly, you will push a test application container image to your registry.  Then you will deploy the NGINX Ingress Controllers, and the sample application to both clusters.
+In this lab, you will explore how Nginx for Azure can route and load balance traffic to backend Kubernetes applications, pods, and services.  You will create 2 AKS Kubernetes clusters, install NGINX Plus Ingress Controllers, and several demo applications.  This will be your testing platform for Kubernetes - deploying and managing applications, networking, and using both NGINX for Azure and NGINX Ingress features to control traffic to your Modern Apps running in the clusters.  You will also create a new private Azure Container Registry and attach this registry to both AKS clusters.  Then you will pull an NGINX Plus Ingress Controller Image from the NGINX registry and push it to your private registry. Then you will deploy the NGINX Ingress Controllers, and configure it to route traffic to the demo app.
 
 <br/>
 
 ## Learning Objectives
-- Setting up Azure CLI in your local workstation.
-- Deploy 2 Kubernetes Clusters within Azure using Azure CLI.
-- Creating an Azure Container Registry (ACR) using Azure CLI.
-- Pushing a test container image to the newly created Private ACR registry.
+
+- Deploy 2 Kubernetes clusters using Azure CLI.
+- Create an Azure Container Registry (ACR) using Azure CLI.
 - Attaching ACR to AKS clusters using Azure CLI.
-- Pulling NGINX Plus Ingress Controller Image using Docker and pushing to private ACR Registry
+- Pushing a test container image to your private ACR.
+- Pulling NGINX Plus Ingress Controller Image and pushing it to your ACR.
 - Deploying the NGINX Ingress Controllers
 - Deploying the sample application
-- Test and verify proper operation on both AKS Clusters.
+- Test and verify proper operation on both AKS clusters.
 
 ## What is Azure AKS?
 
 Azure Kubernetes Service is a service provided for Kubernetes on Azure
-infrastructure. The Kubernetes resources will be fully managed by Microsoft Azure, which offloads the burden on maintaining the infrastructure, and makes sure these resources are highly available and reliable at all times.
+infrastructure. The Kubernetes resources will be fully managed by Microsoft Azure, which offloads the burden of maintaining the infrastructure, and makes sure these resources are highly available and reliable at all times.
 
 ## What is Azure ACR?
 
-Azure Container Registry(ACR) is a managed container registry. Like the popular docker registry Dockerhub, ACR also supports private and public repositories. We can either push or pull images to ACR using Azure CLI.
+Azure Container Registry (ACR) is a managed container registry. Like the popular docker registry Dockerhub, ACR also supports private and public repositories. We can either push or pull images to ACR using Azure CLI or Kubernetes commands.
 
 ## Azure Regions and naming convention suggestions
 
@@ -36,26 +36,28 @@ Check out the [Azure latency test](https://www.azurespeed.com/Azure/Latency)! We
 
 **Example:** 
 
-I am located in Chicago, Illinois; I will opt to use the Datacenter region
-`Central US`. I could also use the following naming
-convention:
+You are located in Chicago, Illinois.  You choose the Datacenter region
+`Central US`.  These labs will use the following naming convention:
 
 ```bash
-<Asset_type>-<your_id_yourname>-<location>
+<asset_type>-<your_name>-<location>
+
 ```
 
-So for my AKS Cluster I will deploy in `Central US`, and
-will name my Cluster `aks-shouvik-centralus` or just `aks-shouvik` since I don't intend to have more than one AKS deployment
+So for the 2 AKS Clusters you will deploy in `Central US`, and
+will name your Clusters `aks-shouvik-centralus` and `aks2-shouvik-centralus`.
 
-I will also use the tag `owner=shouvik` to further identify my asset on our shared account.
+You will also use the Owner tag `owner=shouvik` to further identify your assets in a shared account.
 
 ## Azure CLI Basic Configuration Setting
 
-We will need Azure Command Line Interface (CLI) installed on your client machine to manage your Azure services. See [How to install the Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+You will need the Azure Command Line Interface (CLI) tool installed on your client machine to manage your Azure services. See [How to install the Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 
 If you do not have Azure CLI installed, you will need to install it to continue the lab exercises.  To check Azure CLI version run below command: 
+
 ```bash
 az --version
+
 ```
 
 1. Sign in with Azure CLI using your preferred method listed [here](https://learn.microsoft.com/en-us/cli/azure/authenticate-azure-cli).
@@ -63,11 +65,13 @@ az --version
    >**Note:** We made use of Sign in interactively method for this workshop
     ```bash
     az login
+
     ``` 
 
-1. Once you have logged in you can run below command to validate your tenent and subscription ID and name.
+1. Once you have logged in you can run below command to validate your tenant and subscription ID and name.
    ```bash
    az account show 
+
    ```
 
 2. Optional: If you have multiple subscriptions and would like to change the current subscription to another then run below command.
@@ -78,15 +82,17 @@ az --version
    # OR
 
    # change the active subscription using the subscription ID
-   az account set --subscription "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  
+   az account set --subscription "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
    ```
 
-3. Create a new Azure Resource Group called `<name>-workshop` , where `<name>` is your last name.  This would hold all the Azure resources that you would create for this workshop.  
+3. Create a new Azure Resource Group called `<name>-workshop` , where `<name>` is your last name.  This will hold all the Azure resources that you will create for this workshop.  
    ```bash
    az group create --name <name>-workshop --location centralus
+
    ```
 
-## Deploy a Kubernetes Cluster with Azure CLI
+## Deploy 1st Kubernetes Cluster with Azure CLI
 
 1. With the use of Azure CLI, you can deploy a production-ready AKS cluster with some options using a single command (**This will take a while**).
    ```bash
@@ -107,13 +113,11 @@ az --version
         --kubernetes-version $K8S_VERSION \
         --tags owner=$MY_NAME \
         --enable-addons monitoring \
-        --generate-ssh-keys \
-        --enable-fips-image
+        --generate-ssh-keys
    ```
    >**Note**: 
-   >1. At the time of this writing, 1.27 is the latest kubernetes version that Azure AKS supports. 
-   >2. `--enable-fips-image` flag has been added to the `az aks create` command to make all the nodes have FIPS-enabled OS. This is needed for another lab.
-   >3. To list all possible vm sizes that an AKS node can use, run below command      
+   >1. At the time of this writing, 1.27 is the latest kubernetes version available in Azure AKS. 
+   >2. To list all possible VM sizes that an AKS node can use, run below command:      
    >     ```bash
    >     az vm list-sizes --location centralus --output table
    >     ```
@@ -132,7 +136,9 @@ az --version
    az aks get-credentials --resource-group $MY_RESOURCEGROUP --name $MY_AKS
    ```
 
-4. Open a second Terminal, log into to Azure, and repeat the Steps above for the Second AKS Cluster, this one has 4 nodes and a different name.
+## Deploy 2nd Kubernetes Cluster with Azure CLI
+
+1. Open a second Terminal, log into to Azure, and repeat the Steps above for the Second AKS Cluster, this one has 4 nodes and a different name.
 
    ```bash
     MY_RESOURCEGROUP=s.dutta
@@ -152,14 +158,13 @@ az --version
         --kubernetes-version $K8S_VERSION \
         --tags owner=$MY_NAME \
         --enable-addons monitoring \
-        --generate-ssh-keys \
-        --enable-fips-image
+        --generate-ssh-keys
    ```
 
-4. **Optional Step:** If you are managing multiple Kubernetes clusters, you can easily change between context using the `kubectl config set-context` command:
-   >**Note:** If you are working with a single cluster then you can ignore this step.
+1. **Managing Both Clusters:** As you are managing multiple Kubernetes clusters, you can easily change between Contexts using the `kubectl config set-context` command:
+   
    ```bash
-   # Get a list of kubernetes clusters in you local kube config
+   # Get a list of kubernetes clusters in your local .kube config file:
    kubectl config get-clusters
    ```
    ```bash
@@ -187,7 +192,7 @@ az --version
    # Allows you to switch between contexts using their name
    kubectl config use-context <CONTEXT_NAME>
    ```
-5. Test if you are able to access your newly created AKS cluster.
+1. Test if you are able to access your newly created AKS cluster.
    ```bash
    # Get Nodes in the target kubernetes cluster
    kubectl get nodes
@@ -200,7 +205,7 @@ az --version
    aks-nodepool1-76910942-vmss000002   Ready    agent   9m30s   v1.27.3    
    ```
 
-6. Finally to stop a running AKS cluster use below command.
+1. Finally to stop a running AKS cluster use this command.
    ```bash
    MY_RESOURCEGROUP=s.dutta
    MY_AKS=aks-shouvik
@@ -208,7 +213,7 @@ az --version
    az aks stop --resource-group $MY_RESOURCEGROUP --name $MY_AKS
    ```
 
-7. To start an already deployed AKS cluster use below command.
+1. To start an already deployed AKS cluster use this command.
    ```bash
    MY_RESOURCEGROUP=s.dutta
    MY_AKS=aks-shouvik
@@ -218,7 +223,7 @@ az --version
 
 ## Create an Azure Container Registry (ACR)
 
-1.  Create a container registry using the az acr create command. The registry name must be unique within Azure, and contain 5-50 alphanumeric characters
+1.  Create a container registry using the `az acr create` command. The registry name must be unique within Azure, and contain 5-50 alphanumeric characters
     ```bash
     MY_RESOURCEGROUP=s.dutta
     MY_ACR=acrshouvik
@@ -231,7 +236,7 @@ az --version
 
 2. From the output of the `az acr create` command, make a note of the `loginServer`. The value of `loginServer` key is the fully qualified registry name. In our example the registry name is `acrshouvik` and the login server name is `acrshouvik.azurecr.io`.
 
-3. Login to the registry using below command. Make sure docker daemon is up and running.
+3. Login to the registry using below command. Make sure your local Docker daemon is up and running.
    ```bash
    MY_ACR=acrshouvik
 
@@ -243,14 +248,14 @@ az --version
 
 We can quickly test the ability to push images to our Private ACR from our client machine.
 
-1. If you do not have a test container image to push to ACR, you can use a simple container for testing, e.g.[nginxinc/ingress-demo](https://hub.docker.com/r/nginxinc/ingress-demo)
+1. If you do not have a test container image to push to ACR, you can use a simple container for testing, e.g.[nginxinc/ingress-demo](https://hub.docker.com/r/nginxinc/ingress-demo).  You will use this same container for the lab exercises.
 
    ```bash
    az acr import --name $MY_ACR --source docker.io/nginxinc/ingress-demo:latest --image nginxinc/ingress-demo:v1
    ```
    The above command pulls the `nginxinc/ingress-demo` image from docker hub and pushes it to Azure ACR.
 
-2. Check if the image was successfully pushed to ACR using the azure cli command below
+2. Check if the image was successfully pushed to ACR using the azure cli command below:
 
    ```bash
    MY_ACR=acrshouvik
@@ -263,20 +268,32 @@ We can quickly test the ability to push images to our Private ACR from our clien
    nginxinc/ingress-demo
    ```
 
-## Attach an Azure Container Registry (ACR) to Azure Kubernetes cluster (AKS)
+### Attach an Azure Container Registry (ACR) to Azure Kubernetes cluster (AKS)
 
-1. You will attach the newly created ACR to your AKS cluster. This will enable you to pull private images within AKS cluster directly from the your ACR. Run below command to attach ACR to AKS
+1. You will attach the newly created ACR to both AKS clusters. This will enable you to pull private images within AKS clusters directly from your ACR. Run below command to attach ACR to 1st AKS cluster:
    ```bash
    MY_RESOURCEGROUP=s.dutta
-   MY_AKS=aks-shouvik
+   MY_AKS=aks-shouvik         # first cluster
    MY_ACR=acrshouvik
 
    az aks update -n $MY_AKS -g $MY_RESOURCEGROUP --attach-acr $MY_ACR
    ```
+
+1. Change the $MY_AKS environment variable, so you can attach your ACR to your second Cluster:
+      ```bash
+   MY_RESOURCEGROUP=s.dutta
+   MY_AKS=aks2-shouvik        # change to second cluster
+   MY_ACR=acrshouvik
+
+   az aks update -n $MY_AKS -g $MY_RESOURCEGROUP --attach-acr $MY_ACR
+   ```
+
    **NOTE:** You need the Owner, Azure account administrator, or Azure co-administrator role on your Azure subscription. To avoid needing one of these roles, you can instead use an existing managed identity to authenticate ACR from AKS. See [references](#references) for more details.
 
 
-## Pulling NGINX Plus Ingress Controller Image using Docker and pushing to private ACR Registry
+## Pulling NGINX Plus Ingress Controller Image using Docker and pushing to your private ACR Registry
+
+<< can we change the following NIC Pull process to use the JWT token instead ?? >>
 
 1. For NGINX Ingress Controller, you must have the NGINX Ingress Controller subscription – download the NGINX Plus Ingress Controller (per instance) certificate (nginx-repo.crt) and the key (nginx-repo.key) from [MyF5](https://my.f5.com/). You can also request for a 30-day trial key from [here](https://www.nginx.com/free-trial-connectivity-stack-kubernetes/).
    
@@ -299,15 +316,15 @@ To do so create a `private-registry.nginx.com` directory under below paths based
 
 5. Once Docker Desktop has restarted, run below command to pull the NGINX Plus Ingress Controller image from F5 private container registry.
     ```bash
-    docker pull private-registry.nginx.com/nginx-ic/nginx-plus-ingress:3.2.1-alpine-fips
+    docker pull private-registry.nginx.com/nginx-ic/nginx-plus-ingress:3.2.1-alpine
     ```
-    >**Note**: At the time of this writing `3.2.1-alpine-fips` is the latest NGINX Plus Ingress FIPS-enabled version that is available. Please feel free to use the latest version of NGINX Plus Ingress Controller. Look into [references](#references) for latest Ingress images.
+    >**Note**: At the time of this writing `3.2.1-alpine` is the latest NGINX Plus Ingress version that is available. Please feel free to use the latest version of NGINX Plus Ingress Controller. Look into [references](#references) for the latest Ingress images.
 
 6. Set below variables to tag and push image to Azure ACR
     ```bash
     MY_ACR=acrshouvik
     MY_REPO=nginxinc/nginx-plus-ingress
-    MY_TAG=3.2.1-alpine-fips
+    MY_TAG=3.2.1-alpine
     MY_IMAGE_ID=$(docker images private-registry.nginx.com/nginx-ic/nginx-plus-ingress:$MY_TAG --format "{{.ID}}") 
     ```
     Check all variables have been set properly by running below command:
@@ -334,7 +351,338 @@ To do so create a `private-registry.nginx.com` directory under below paths based
     az acr repository list --name $MY_ACR --output table
     ```
 
+<< we need the output here, to show the ingress-demo and Nic images exist >>
+
+<br/>
+
+## Deploy Nginx Plus Ingress Controller to both clusters
+
+< NIC deployment steps here - use nodeport-static Manifest at the end >
+
+## Introduction
+
+In this section, you will be installing NGINX Ingress Controller in both AKS clusters using manifest files. You will be then checking and verifying the Ingress Controller is running. 
+
+Finally, you are going to use the NGINX Plus Dashboard to monitor both NGINX Ingress Controller as well as our backend applications. This is a great feature to allow you to watch and triage any potential issues with NGINX Plus Ingress controller as well as any issues with your backend applications.
+
+<br/>
+
+## Learning Objectives
+
+- Install NGINX Ingress Controller using manifest files
+- Check your NGINX Ingress Controller
+- Deploy the NGINX Ingress Controller Dashboard
+- (Optional Section): Look "under the hood" of NGINX Ingress Controller
+
+## Install NGINX Ingress Controller using Manifest files
+
+1. Make sure your AKS cluster is running. If it is in stopped state then you can start it using below command. 
+   ```bash
+   MY_RESOURCEGROUP=s.dutta
+   MY_AKS=aks-shouvik
+
+   az aks start --resource-group $MY_RESOURCEGROUP --name $MY_AKS
+   ```
+   >**Note**: The FQDN for API server for AKS might change on restart of the cluster which would result in errors running `kubectl` commands from your workstation. To update the FQDN re-import the credentials again using below command. This command would prompt about overwriting old objects. Enter "y" to overwrite the existing objects.
+   >```bash
+   >az aks get-credentials --resource-group $MY_RESOURCEGROUP --name $MY_AKS
+   >```
+   >```bash
+   >###Sample Output###
+   >A different object named aks-shouvik already exists in your kubeconfig file.
+   >Overwrite? (y/n): y
+   >A different object named clusterUser_s.dutta_aks-shouvik already exists in your kubeconfig file.
+   >Overwrite? (y/n): y
+   >Merged "aks-shouvik" as current context in /Users/shodutta/.kube/config
+   >```
+
+2. Clone the Nginx Ingress Controller repo and navigate into the /deployments folder to make it your working directory:
+   ```bash
+   git clone https://github.com/nginxinc/kubernetes-ingress.git --branch v3.2.1
+   cd kubernetes-ingress/deployments
+   ```
+
+3. Create a namespace and a service account for the Ingress Controller
+    ```bash
+    kubectl apply -f common/ns-and-sa.yaml
+    ```
+4. Create a cluster role and cluster role binding for the service account
+    ```bash
+    kubectl apply -f rbac/rbac.yaml
+    ```
+
+5. Create Common Resources:
+     1. Create a secret with TLS certificate and a key for the default server in NGINX.
+        ```bash
+        cd ..
+        kubectl apply -f examples/shared-examples/default-server-secret/default-server-secret.yaml
+        cd deployments
+        ```
+     2. Create a config map for customizing NGINX configuration.
+        ```bash
+        kubectl apply -f common/nginx-config.yaml
+        ```
+     3. Create an IngressClass resource. 
+   
+         >**Note:** If you would like to set the NGINX Ingress Controller as the default one, uncomment the annotation `ingressclass.kubernetes.io/is-default-class` within the below file.
+        ```bash
+        kubectl apply -f common/ingress-class.yaml
+        ```
+
+6. Create Custom Resources
+    1. Create custom resource definitions for VirtualServer and VirtualServerRoute, TransportServer and Policy resources:
+        ```bash
+        kubectl apply -f common/crds/k8s.nginx.org_virtualservers.yaml
+        kubectl apply -f common/crds/k8s.nginx.org_virtualserverroutes.yaml
+        kubectl apply -f common/crds/k8s.nginx.org_transportservers.yaml
+        kubectl apply -f common/crds/k8s.nginx.org_policies.yaml
+        ```
+   
+    2. Create a custom resource for GlobalConfiguration resource:
+        ```bash
+        kubectl apply -f common/crds/k8s.nginx.org_globalconfigurations.yaml
+        ```
+7. Deploy the Ingress Controller as a Deployment:
+
+   The sample deployment file(`nginx-plus-ingress.yaml`) can be found within `deployment` sub-directory within your present working directory.
+
+   Highlighted below are some of the parameters that would be changed in the sample `nginx-plus-ingress.yaml` file.
+   - Change Image Pull to Private Repo
+   - Enable Prometheus
+   - Add port and name for dashboard
+   - Change Dashboard Port to 9000
+   - Allow all IPs to access dashboard
+   - Make use of default TLS certificate
+   - Enable Global Configuration for Transport Server
+   
+   <br/>
+
+   Navigate back to the Workshop's `labs` directory 
+    ```bash
+    cd ../../labs
+    ```
+  
+    Observe the `lab4/nginx-plus-ingress.yaml` looking at below details:
+     - On line #36, the `nginx-plus-ingress:3.2.1` placeholder is changed to the workshop image that you pushed to your private ACR registry as instructed in a previous step.
+  
+         >**Note:** Make sure you replace the image with the appropriate image that you pushed in your ACR registry.
+     - On lines #50-51, we have added TCP port 9000 for the Plus Dashboard.
+     - On lines #96-97, we have enabled the Dashboard and set the IP access controls to the Dashboard.
+     - On lines #16-19, we have enabled Prometheus related annotations.
+     - On line #106, we have enabled Prometheus to collect metrics from the NGINX Plus stats API.
+     - On line #95, uncomment to make use of default TLS secret.
+     - On line #109, uncomment to enable the use of Global Configurations.
+
+    Now deploy NGINX Ingress Controller as a Deployment using your updated manifest file.
+    ```bash
+    kubectl apply -f lab1/nginx-plus-ingress.yaml
+    ```
+
+## Check your NGINX Ingress Controller
+
+1. Verify the NGINX Plus Ingress controller is up and running correctly in the Kubernetes cluster:
+
+   ```bash
+   kubectl get pods -n nginx-ingress
+   ```
+
+   ```bash
+   ###Sample Output###
+   NAME                            READY   STATUS    RESTARTS   AGE
+   nginx-ingress-5764ddfd78-ldqcs   1/1     Running   0          17s
+   ```
+
+   >**Note**: You must use the `kubectl` "`-n`", namespace switch, followed by namespace name, to see pods that are not in the default namespace.
+
+2. Instead of remembering the unique pod name, `nginx-ingress-xxxxxx-yyyyy`, we can store the Ingress Controller pod name into the `$NIC` variable to be used throughout the lab.
+
+   >**Note:** This variable is stored for the duration of the terminal session, and so if you close the terminal it will be lost. At any time you can refer back to this step to save the `$NIC` variable again.
+
+   ```bash
+   export NIC=$(kubectl get pods -n nginx-ingress -o jsonpath='{.items[0].metadata.name}')
+   ```
+
+   Verify the variable is set correctly.
+   ```bash
+   echo $NIC
+   ```
+   >**Note:** If this command doesn't show the name of the pod then run the previous command again.
+
+## Deploy the NGINX Ingress Controller Dashboard
+
+We will deploy a `Service` and a `VirtualServer` resource to provide access to the NGINX Plus Dashboard for live monitoring.  NGINX Ingress [`VirtualServer`](https://docs.nginx.com/nginx-ingress-controller/configuration/virtualserver-and-virtualserverroute-resources/) is a [Custom Resource Definition (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) used by NGINX to configure NGINX Server and Location blocks for NGINX configurations.
+
+
+1. In the `lab1` folder, apply the `dashboard-vs.yaml` file to deploy a `Service` and a `VirtualServer` resource to provide access to the NGINX Plus Dashboard for live monitoring:
+
+    ```bash
+    kubectl apply -f lab1/dashboard-vs.yaml
+    ```
+    ```bash
+    ###Sample output###
+    service/dashboard-svc created
+    virtualserver.k8s.nginx.org/dashboard-vs created
+    ```
+
+
+## (Optional Section): Take a look "under the hood" of NGINX Ingress Controller
+
+The NGINX Ingress Controller is a pod running NGINX Plus under the hood, let's go check it out.
+
+1. Use the VScode Terminal to enter a shell in the NGINX Ingress Controller pod by running the [`kubectl exec`](https://kubernetes.io/docs/tasks/debug-application-cluster/get-shell-running-container/) command 
+
+   ```bash
+   kubectl exec -it $NIC -n nginx-ingress -- /bin/ash
+   ```
+
+2. Once inside a shell in the NGINX Ingress Controller pod, run the following commands to inspect the root NGINX configuration:
+
+   ```bash
+   cd /etc/nginx
+   more nginx.conf
+   ```
+
+   If you have worked with NGINX config files, it should look very similar!
+
+3. Type `q ` to quit viewing the `nginx.conf `
+
+   ![q to quit more](media/more-command-q-quit.png)
+
+4. Type `exit` to close the connection to the Ingress pod.
+
+   ![exit-to-exit-pod](media/exit-to-exit-pod.png)
+
+
+## Deploy the Nginx CAFE Demo app
+
+In this section, you will build the "Cafe" Ingress Demo, which represents a Coffee Shop website with Coffee and Tea applications. You will be adding the following components to your Kubernetes Cluster: Coffee and Tea pods, services, and cafe   virtualserver.
+
+The Cafe application that you will deploy looks like the following diagram below. Coffee and Tea pods and services, with NGINX Ingress routing the traffic for /coffee and /tea routes, using the `cafe.example.com` Hostname.  There is also a hidden third service - more on that later!
+
+< cafe diagram here >
+
+1. Inspect the `lab4/cafe.yaml` manifest.  You will see we are deploying 3 replicas of each the coffee and tea Pods, and create a matching Service for each.
+
+1. Deploy the Cafe application by applying these two manifests:
+
+```bash
+kubectl apply -f lab4/cafe.yaml
+kubectl apply -f lab4/cafe-virtualserver.yaml
+
+```
+
+```bash
+###Sample output###
+deployment.apps/coffee created
+service/coffee-svc created
+deployment.apps/tea created
+service/tea-svc created
+virtualserver.k8s.nginx.org/cafe-vs created
+
+```
+
+1. Check that all pods are running, you should see three Coffee and three Tea pods:
+
+```bash
+kubectl get pods
+###Sample output###
+NAME                      READY   STATUS    RESTARTS   AGE
+coffee-56b7b9b46f-9ks7w   1/1     Running   0             28s
+coffee-56b7b9b46f-mp9gs   1/1     Running   0             28s
+coffee-56b7b9b46f-v7xxp   1/1     Running   0             28s
+tea-568647dfc7-54r7k      1/1     Running   0             27s
+tea-568647dfc7-9h75w      1/1     Running   0             27s
+tea-568647dfc7-zqtzq      1/1     Running   0          27s
+
+```
+
+1. Check that the Cafe `VirtualServer`, **cafe-vs**, is running:
+
+```bash
+kubectl get virtualserver cafe-vs
+
+```
+```bash
+###Sample output###
+NAME      STATE   HOST               IP    PORTS   AGE
+cafe-vs   Valid   cafe.example.com                 4m6s
+
+```
+
+**Note:** The `STATE` should be `Valid`. If it is not, then there is an issue with your yaml manifest file (cafe-vs.yaml). You could also use `kubectl describe vs cafe-vs` to get more information about the VirtualServer you just created.
+
+### Deploy the Nginx Ingress Dashboard
+
+1. Inspect the `lab4/dashboard-vs` manifest.  This will create an nginx-ingress Service and a VirtualServer that will expose the Nginx Ingress Controller's Plus Dashboard outside the cluster, so you can see what Nginx Ingress Controller is doing.
+
+```bash
+kubectl apply -f lab4/dashboard-vs.yaml
+
+```
+
+1. Test access to the NIC's Plus Dashboard.  Using Kubernetes Port-Forward utility, connect to the NIC pod in cluster #1.
+
+```bash
+# Set Kube Context to cluster 1:
+kubectl config use-context ask-<name>
+
+```
+
+Get the Ingress Controller pod name:
+```bash
+kubectl get pods -n nginx-ingress
+```
+
+Port-forward to the NIC Pod on port 9000:
+```bash
+kubectl port-forward <pod name> -n nginx-ingress 9000:9000
+```
+
+Open your local browser to http://localhost:9000.  You should see the Plus dashboard.  It should have the `HTTP Zones` cafe.example.com and dashboard.example.com.  If you check the `HTTP Upstreams`, it should have 3 coffee and 3 tea pods.
+
+When you are done checking out the Dashboard, type `Ctrl+C` to quit the Kubectl Port-Forward.
+
+1. Change your `Kube Context` to your second AKS cluster, and check access to the Dashboard using the steps as above.  You should find the exact same output, the Nginx Ingress Plus Dashboard running, with Zones and Upstreams of similar.  However, the IP addresses of the Upstreams `WILL` be different between the clusters, because each cluster assigns IPs to it's Pods.  
+
+1.  Optional Exercise:  If you want to see both NIC Dashboards at the same time, you can use 2 Terminals, each with different Kube Context, and different Port-Forward commands.  In Terminal#1, try port-forward 9001:9000 for cluster1, and in Terminal#2, try port-forward 9002:9000 for cluster2.  Then two browser windows side by side for comparison.
+
+Try scaling the number of coffee pods in one cluster, and see what happens.
+
+```bash
+kubectl scale deployment coffee --replicas=8
+```
+
+> Pretty cool - Nginx Ingress picks up the new Pods, health-checks them first, and brings them online for loadbalancing just a few seconds after Kubernetes spins them up.  Scale them up and down as you choose, Nginx will track them accordingly.
+
+### Expose your Nginx Ingress Controller
+
+1. Inspect the `lab4/nodeport-static.yaml` manifest.  This is NodePort Service defintion that will open high-numbered ports on the Kubernets nodes, to expose several Services that are running in the cluster.  The NodePorts are defined as static, because you will be using these port numbers with N4A, and you don't them to change.
+
+1. Deploy a NodePort Service to expose the Nginx Ingress Controller outside the cluster.
+
+## Deploy the Nginx CAFE Demo app in the 2nd cluster
+
+1. Repeat the previous section to deploy the CAFE Demo app in your second cluster.
+1. Report the same NodePort deployment, to expose the Nginx Ingress Controller outside the cluster.
+
+## Update local DNS
+
+We will be using FQDN hostnames for the labs, and you will need to update your local computer's `hosts` file, to use these names with your NGINX Ingress Controller.
+
+Edit your local hosts file, adding the FQDNs as shown below.  Use the `External-IP` Address, from the previous step:
+
+```bash
+vi /etc/hosts
+
+13.86.100.10 cafe.example.com bar.example.com dashboard.example.com grafana.example.com prometheus.example.com juiceshop.example.com
+```
+
+>**Note:** All 6 hostnames are mapped to the same Loadbalancer External-IP.  You will use the NGINX Ingress Controller to route the traffic correctly in the upcoming labs.  
+Your External-IP address will likely be different than the example.
+
+
 **This completes the Lab.** 
+
 <br/>
 
 ## References: 

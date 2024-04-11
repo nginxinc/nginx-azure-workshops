@@ -4,7 +4,7 @@
 ## Lab 1 - Azure VNet and Subnet and Network Security Group
 ## Lab 2 - Nginx for Azure Overview and Deployment
 ## Lab 3 - UbuntuVM, Docker, and Cafe or Garage Demo Deployment
-## Lab 4 - AKS / Nginx Ingress Controller / Cafe or Garage Demo Deployment
+## Lab 4 - AKS / Nginx Ingress Controller / Cafe / Garage Demo / Dashboard Deployment
 ## Lab 5 - Nginx Load Balancing / Reverse Proxy
 ## Lab 6 - Azure Key Vault / TLS Essentials
 ## Lab 7 - Azure Montoring / Logging Analytics
