@@ -1,8 +1,8 @@
-#  Azure Key Vault / TLS Essentials 
+# Azure Key Vault / TLS Essentials
 
 ## Introduction
 
-In this lab, you will build ( x,y,x ).
+In this lab, you will create a new key-vault resource that would be storing self-signed certificates. You will then configure Nginx for Azure to listen for https traffic and then terminate TLS before proxying and load balancing back to the backend system.
 
 < Lab specific Images here, in the /media sub-folder >
 
@@ -14,38 +14,77 @@ NGINX aaS | Docker
 
 By the end of the lab you will be able to:
 
-- Introduction to `xx`
-- Build an `yyy` Nginx configuration
-- Test access to your lab enviroment with Curl and Chrome
-- Investigate `zzz`
-
+- Build your own Azure Key Vault resource.
+- Create your self-signed certificate.
+- Configure NGINX for Azure to listen for HTTPS traffic.
+- And finally, terminate TLS before proxying traffic back to backend application
 
 ## Pre-Requisites
 
-- You must have `aaaa` installed and running
-- You must have `bbbbb` installed
+- You must have  your Nginx for Azure resource up and running
+- You must have `Owner` role on the resource group that includes NGINX for Azure resource
+- You must also have backend system resources up and running.
 - See `Lab0` for instructions on setting up your system for this Workshop
-- Familiarity with basic Linux commands and commandline tools
-- Familiarity with basic Docker concepts and commands
-- Familiarity with basic HTTP protocol
 
-<br/>
+### Create Azure Key Vault resource
 
-### Lab exercise 1
+1. Create an Azure key vault within the same resource group which holds your NGINX for azure resource.
 
-<numbered steps are here>
+    ```bash
+    ## Set environment variables
+    MY_RESOURCEGROUP=s.dutta-workshop
+    ```
 
-### Lab exercise 2
+    Once the environment variables are all set, run below command to create the key vault resource
 
-<numbered steps are here>
+    ```bash
+    az keyvault create \
+    --resource-group $MY_RESOURCEGROUP \
+    --name n4a-keyvault 
+    ```
 
-### Lab exercise 3
+2. The above command should provide a json output. If you look at its content then it should have a `provisioningState` key with `Succeeded` as it value. This field is an easy way to validate the command successfully provisioned the resource.
 
-<numbered steps are here>
+### Create your self-signed certificate
 
-### << more exercises/steps>>
+1. Now you will create a self-signed certificate using the Azure CLI.
 
-<numbered steps are here>
+1. Create a self-signed certificate by running the below command.
+
+    ```bash
+    az keyvault certificate create \
+    --vault-name n4a-keyvault \
+    --name n4a-cert \
+    --policy @labs/lab6/self-certificate-policy.json
+    ```
+
+1. The above command should provide a json output. If you look at its content then it should have a `status` key with `completed` as it value. This field is an easy way to validate the command successfully created the certificate.
+
+1. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault` key vault resource.
+
+1. Within the keyvault resources window, click on `Certificates` from the left pane. You should see a self-signed certificate named `n4a-cert` within the certificates pane.
+    ![KeyVault Screen](media/keyvault_screen.png)
+
+1. Click on the newly created certificate and then open up `Issuance Policy` tab for more details on the certificate. You will use this certificate with NGINX for Azure resource to listen for HTTPS traffic.
+
+### Configure NGINX for Azure to listen for HTTPS traffic
+
+1. Within your resource-group, click on the NGINX for Azure resource (`nginx4a`).
+2. From the left pane, click on `NGINX certificates` under `Settings` and then click on the `+ Add certificate` button to add your self signed certificate that you created in previous section.
+
+    ![NGINX Certificates](media/n4a_cert_screen.png)
+
+3. Within the `Add Certificate` pane, fill in below details:
+    - **Preferred name:** Any unique name for the certificate (eg. n4a-cert)
+    - **Certificate path:** Logical path where the certificate would recide. (eg. /etc/nginx/cert/n4a-cert.cert)
+    - **Key path:** Logical path where the key would recide. (eg. /etc/nginx/cert/n4a-cert.key)
+    - **Key vault:** Select your key vault (eg. n4a-keyvault)
+    - **Certificate name:** Select a certificate (eg. n4a-cert)
+  
+    Once all the fields have been filled, click on `Save` to save the certificate within NGINX for Azure.
+    ![add certificate](media/add_certificate.png)
+
+4. sdf
 
 <br/>
 
