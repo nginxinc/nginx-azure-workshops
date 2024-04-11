@@ -28,7 +28,7 @@
         "digitalSignature",
         "keyEncipherment"
       ],
-      "subject": "CN=*.shouvik.dev",
+      "subject": "CN=n4a-Workshop",
       "validityInMonths": 12
     }
   }
