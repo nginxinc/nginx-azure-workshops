@@ -2,13 +2,12 @@
 
 ## Introduction
 
-In this lab, you will configure Nginx4Azure to Proxy and Load Balance different backend system, including AKS Ingress Controllers, and a Windows VM.  You will create and configure the needed Nginx config files, and then test access to these systems.  The Docker containers are running a simple website that represent simple static web applications that can run in Docker.  The AKS Clusters and Nginx Ingress Controllers provide access to various K8s workloads.
+In this lab, you will configure Nginx4Azure to Proxy and Load Balance several different backend systems, including Nginx Ingress Controllers in AKS, and a Windows VM.  You will create and configure the needed Nginx config files, and then verify access to these systems.  The Docker containers, VMs, or AKS Pods are running simple websites that represent web applications.  You will also configure and load balance traffic to a Redis in-memory cache running in the AKS cluster. The AKS Clusters and Nginx Ingress Controllers provide access to these various K8s workloads.
 
-< Lab specific Images here, in the /media sub-folder >
 
-NGINX aaS | Ubuntu | Docker
-:-------------------------:|:-------------------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![AKS](media/aks-icon.png) |![NIC](media/nginx-ingress-icon.png)
+NGINX aaS | AKS | Nginx Ingress | Redis
+:-----------------:|:-----------------:|:-----------------:|:-----------------:
+![NGINX aaS](media/nginx-azure-icon.png)  |![AKS](media/aks-icon.png) |![NIC](media/nginx-ingress-icon.png) |![NIC](media/redis-icon.png)
   
 ## Learning Objectives
 
@@ -22,12 +21,17 @@ By the end of the lab you will be able to:
 
 ## Pre-Requisites
 
-- You have have your Nginx4Azure instance up and running
+- You must have your Nginx4Azure instance up and running
 - You must access to the N4A Configuration Panel in Azure Portal
-- You must have both AKS Cluster with Nginx Ingress Controllers running
+- You must have both AKS Clusters with Nginx Ingress Controllers running
 - You must have the sample application running in both clusters
 - You must have curl and a modern Browser installed on your system
+- You should have Redis Client Tools installed on your local system
 - See `Lab0` for instructions on setting up your system for this Workshop
+
+<br/>
+
+< Lab specific Image here >
 
 <br/>
 
@@ -63,7 +67,7 @@ upstream aks1_ingress {
 
 Submit your Changes.  If you have the Server names:port correct, Nginx4Azure will validate and return a Success message.
 
-**Warning:**  If you stop and start your AKS cluster, or add/remove Nodes in the Pools, this Upstream list `WILL` have to be updated to match.  It is a static configuration that must match the Worker Nodes:NodePort definition in your AKS cluster.  If you change the static nginx-ingress NodePort Service, you will have to match it here as well.
+**Important!**  If you stop then re-start your AKS cluster, or scale up/down, or add/remove VMSS worker nodes in the AKS NodePools, this Upstream list `WILL` have to be updated to match!  Any changes to the Worker nodes in the Cluster will need to be matched exactly, as it is a static configuration that must match the Worker Nodes:NodePort definition in your AKS cluster.  If you change the static nginx-ingress NodePort Service, you will have to match it here as well.
 
 Repeat the step above, but create a new file called `/etc/nginx/conf.d/aks2-upstreams.conf`, for your second, AKS2 Cluster:
 
@@ -91,17 +95,17 @@ upstream aks2_ingress {
 
 ```
 
-Note, there are 3 upstreams, matching the 3 workers in AKS2 cluster.
+Note, there are 3 upstreams, matching the 3 Worker Nodes in AKS2 cluster.
 
-Submit your Changes.  If you have the Server names:port correct, Nginx4Azure will validate and return a Success message.
+Submit your Changes.  If you have the Server name:port correct, Nginx4Azure will validate and return a Success message.
 
-**Warning:**  If you stop and start your AKS cluster, or add/remove Nodes in the Pools, this Upstream list `WILL` have to be updated to match.  It is a static configuration that must match the Worker Nodes:NodePort definition in your AKS cluster. If you change the static nginx-ingress NodePort Service, you will have to match it here as well.
+**Warning:**  If you stop and start your AKS cluster, or add/remove Nodes in the Pools, this Upstream list `WILL` have to be updated to match.  It is a static configuration that must match the Worker Nodes:NodePort definition in your AKS cluster. If you change the static nginx-ingress NodePort Service, you will have to match it here as well.  Unfortunately, there are no auto-magic way to synchronize AKS/NodePorts with N4A Upstreams... yet :-)
 
 ### Test Nginx 4 Azure to AKS1 Cluster Ingress Controller
 
 Now that you have these new Nginx Upstream blocks created, you can test them.
 
-Change the `# comments for proxy_pass` in the `location /` block in the `/etc/nginx/conf.d/cafe.example.com.conf` file, to disable the proxy_pass to docker, and enable the proxy_pass to `aks1_ingress`, as shown:
+Inspect, then modify the `# comments for proxy_pass` in the `location /` block in the `/etc/nginx/conf.d/cafe.example.com.conf` file, to disable the proxy_pass to `cafe-nginx`, and enable the proxy_pass to `aks1_ingress`, as shown:
 
 ```nginx
 ...

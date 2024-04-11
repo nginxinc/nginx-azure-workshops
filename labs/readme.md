@@ -65,14 +65,17 @@ Create inital Nginx configurations to test with
 
 ### Lab 3 - UbuntuVM, Docker, and Cafe or Garage Demo Deployment
 
-- Overview
-In this lab, you will deploy an Ubuntu VM, install Docker and Docker Compose, and configure it for a Legacy web application.
+## Overview
+In this lab, you will deploy an Ubuntu VM, install Docker and Docker Compose, and configure it for a Legacy web application. You will configure Nginx for Azure to Load balance this application.
 
-- Learning Objectives
-Deploy Ubuntu VM
-Install Docker and Docker-compose
-Run Legacy docker container apps
-Test and verify the containers are working
+## Learning Objectives
+
+- Deploy Ubuntu VM with Azure CLI
+- Install Docker and Docker Compose
+- Run Nginx demo application containers
+- Test and validate your lab environment
+- Configure Nginx for Azure to load balance the Docker Containers on the UbuntuVM
+- Test your Nginx for Azure configs
 
 <br/>
 
