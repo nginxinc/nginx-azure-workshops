@@ -45,11 +45,13 @@ By the end of the lab you will be able to:
 
 2. The above command should provide a json output. If you look at its content then it should have a `provisioningState` key with `Succeeded` as it value. This field is an easy way to validate the command successfully provisioned the resource.
 
-### Create your self-signed certificate
+### Create a self-signed certificate
 
-1. Now you will create a self-signed certificate using the Azure CLI.
+1. In this section, you will create a self-signed certificate using the Azure CLI.
 
-1. Create a self-signed certificate by running the below command.
+   **NOTE:** It should be clearly understood, that Self-signed certificates are exactly what the name suggest - they are created and signed by you or someone else. **They are not signed by any official Certificate Authority**, so they are not recommended for any use other than testing in lab exercises within this workshop. Most Modern Internet Browsers will display Security Warnings when they receive a Self-Signed certificate from a webserver. In some environments, the Browser may actually block access completely. So use Self-signed certificates with **CAUTION**.
+
+2. Create a self-signed certificate by running the below command.
 
     ```bash
     az keyvault certificate create \
@@ -58,18 +60,21 @@ By the end of the lab you will be able to:
     --policy @labs/lab6/self-certificate-policy.json
     ```
 
-1. The above command should provide a json output. If you look at its content then it should have a `status` key with `completed` as it value. This field is an easy way to validate the command successfully created the certificate.
+3. The above command should provide a json output. If you look at its content then it should have a `status` key with `completed` as it value. This field is an easy way to validate the command successfully created the certificate.
 
-1. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault` key vault resource.
+4. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault` key vault resource.
 
-1. Within the keyvault resources window, click on `Certificates` from the left pane. You should see a self-signed certificate named `n4a-cert` within the certificates pane.
+5. Within the keyvault resources window, click on `Certificates` from the left pane. You should see a self-signed certificate named `n4a-cert` within the certificates pane.
     ![KeyVault Screen](media/keyvault_screen.png)
 
-1. Click on the newly created certificate and then open up `Issuance Policy` tab for more details on the certificate. You will use this certificate with NGINX for Azure resource to listen for HTTPS traffic.
+6. Click on the newly created certificate and then open up `Issuance Policy` tab for more details on the certificate. You will use this certificate with NGINX for Azure resource to listen for HTTPS traffic.
 
 ### Configure NGINX for Azure to listen for HTTPS traffic
 
+Now that you have a self signed TLS certificate for testing, you will configure NGINX for Azure resource to use them.
+
 1. Within your resource-group, click on the NGINX for Azure resource (`nginx4a`).
+
 2. From the left pane, click on `NGINX certificates` under `Settings` and then click on the `+ Add certificate` button to add your self signed certificate that you created in previous section.
 
     ![NGINX Certificates](media/n4a_cert_screen.png)
