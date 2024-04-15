@@ -4,14 +4,14 @@
 ## Lab 1 - Azure VNet and Subnet and Network Security Group
 ## Lab 2 - Nginx for Azure Overview and Deployment
 ## Lab 3 - UbuntuVM, Docker, and Cafe or Garage Demo Deployment
-## Lab 4 - AKS / Nginx Ingress Controller / Cafe or Garage Demo Deployment
+## Lab 4 - AKS / ACR / Nginx Ingress Controller / Cafe / Garage Demo
 ## Lab 5 - Nginx Load Balancing / Reverse Proxy
 ## Lab 6 - Azure Key Vault / TLS Essentials
 ## Lab 7 - Azure Montoring / Logging Analytics
 ## Lab 8 - Nginx Garage or Azure Petshop
-## Lab 9 - Nginx and AzureAD / Entra Integration
-## Lab 10 - Nginx Caching / Juiceshop or Garage
-## Lab 11 - Optional Exercises / Grafana / Rate Limits
+## Lab 9 - Nginx Split Clients
+## Lab 10 - Nginx Caching & Rate Limits / Juiceshop
+## Lab 11 - Optional Exercises / Grafana 4 Azure
 ## Summary and Wrap-up
 
 <br/>
@@ -19,7 +19,7 @@
 ### Lab 0 - Prequesites - Subscription / Resources
 
 - Overview
-In this Lab, the requirements for both the student and the Azure environment will be detailed.  It is imperative that you have the appropriate computer, tools, and Azure access to successfully complete the workshop.  The Lab exercises must be done sequentially to build the environment as described.
+In this Lab, the requirements for both the student and the Azure environment will be detailed.  It is imperative that you have the appropriate computer, tools, and Azure access to successfully complete the workshop.  The lab exercises must be done sequentially to build the environment as described.
 
 - Learning Objectives
 Verify you have the proper computer requirements - hardware and software.
@@ -65,14 +65,17 @@ Create inital Nginx configurations to test with
 
 ### Lab 3 - UbuntuVM, Docker, and Cafe or Garage Demo Deployment
 
-- Overview
-In this lab, you will deploy and Ubuntu VM, and configure it for a Legacy web application.
+## Overview
+In this lab, you will deploy an Ubuntu VM, install Docker and Docker Compose, and configure it for a Legacy web application. You will configure Nginx for Azure to Load balance this application.
 
-- Learning Objectives
-Deploy Ubuntu VM
-Install Docker and Docker-compose
-Run Legacy docker container apps
-Configure Nginx Load Balancing for these apps
+## Learning Objectives
+
+- Deploy Ubuntu VM with Azure CLI
+- Install Docker and Docker Compose
+- Run Nginx demo application containers
+- Test and validate your lab environment
+- Configure Nginx for Azure to load balance the Docker Containers on the UbuntuVM
+- Test your Nginx for Azure configs
 
 <br/>
 
@@ -83,9 +86,10 @@ In this lab, you will deploy 2 AKS clusters, with Nginx Ingress Controllers, a R
 
 - Learning Objectives
 Deploy 2 AKS clusters using the Azure AZ CLI.
-Deploy Nginx Plus Ingress Controller to Azure Container Registry, and to the Clusters.
-Deploy and test a Redis In Memory Cache to the AKS cluster.
+Pull and Push the Nginx Plus Ingress Controller image to Azure Container Registry, and deploy to the Clusters.
+Deploy and test a Redis In-Memory Cache to the AKS cluster.
 Configure Nginx Ingress for Redis Leader traffic.
+Test access to Redis Leader and Follower services.
 Deploy a modern web application in the cluster.
 Configure Nginx Ingress Controller to route traffic to the application.
 
@@ -96,11 +100,15 @@ Configure Nginx Ingress Controller to route traffic to the application.
 - Overview
 In this lab, you will configure Nginx for Azure to Load Balance various workloads running in Azure.  After successful configuration and adding Best Practice Nginx parameters, you will Load Test these applications, and test multiple load balancing and request routing parameters to suit different use cases.
 
-- Learning Objectives
-Configure Nginx for Azure, to Load Balance traffic to both AKS Nginx Ingress Controllers.
-Expose the NIC Plus Dashboards externally for Live Monitoring
-Configure HTTP Split Clients, and route traffic to all 3 backend systems.
-Load test the Legacy and Modern web applications.
+-- Learning Objectives
+
+- Configure Nginx for Azure, to load balance traffic to both AKS Nginx Ingress Controllers.
+- Expose the NIC Plus Dashboards externally for Live Monitoring
+- Configure Nginx for Azure, to Proxy to Windows Server VM
+- Run Load tests on the Legacy and Modern web applications.
+- Configure HTTP Split Clients, and route traffic to 2 or 3 backend upstreams.
+- Configure Nginx for Azure to load balance directly to Nginx Ingress Controllers without NodePort.
+- Configure Nginx for Azure and Nginx Ingress for Redis Caching
 
 <br/>
 

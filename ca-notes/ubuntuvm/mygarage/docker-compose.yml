@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  the-garage:
+    image: ghcr.io/ciroque/the-garage:${IMAGE_SHA:-latest}
+    ports:
+      - "8080:8080"
+  
+  my-garage:
+    image: ghcr.io/ciroque/my-garage:${IMAGE_SHA:-latest}
+    ports:
+      - "80:80"
+    depends_on:
+      - the-garage

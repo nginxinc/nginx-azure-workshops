@@ -1,4 +1,4 @@
-#  AKS / NGINX Ingress Controller / Cafe or Garage Demo Deployment 
+#  NGINX for Azure Overview and Deployment 
 
 ## Introduction
 
@@ -49,7 +49,7 @@ By the end of the lab you will be able to:
 
 <br/>
 
-**This completes Lab4.**
+**This completes Lab2.**
 
 <br/>
 
@@ -74,4 +74,4 @@ By the end of the lab you will be able to:
 
 -------------
 
-Navigate to ([Lab5](../lab5/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab3](../lab3/readme.md) | [LabX](../labX/readme.md))

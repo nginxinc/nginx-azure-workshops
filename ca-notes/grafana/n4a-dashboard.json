@@ -1,0 +1,1061 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 32,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "azure-monitor-oob"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 3,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unitScale": true
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "id": 3,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "azureMonitor": {
+              "aggregation": "Total",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX Requests and Response Statistics",
+              "dimensionFilters": [
+                {
+                  "dimension": "server_zone",
+                  "filters": [],
+                  "operator": "eq"
+                },
+                {
+                  "dimension": "",
+                  "filters": [],
+                  "operator": "eq"
+                }
+              ],
+              "metricName": "plus.http.request.count",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "queryType": "Azure Monitor",
+            "refId": "A",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          }
+        ],
+        "title": "HTTP Requests",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "azure-monitor-oob"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": true,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 3,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unitScale": true
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "id": 2,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "azureMonitor": {
+              "aggregation": "Average",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX Requests and Response Statistics",
+              "dimensionFilters": [],
+              "metricName": "plus.http.status.2xx",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "queryType": "Azure Monitor",
+            "refId": "A",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          },
+          {
+            "azureMonitor": {
+              "aggregation": "Average",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX Requests and Response Statistics",
+              "dimensionFilters": [],
+              "metricName": "plus.http.status.3xx",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "hide": false,
+            "queryType": "Azure Monitor",
+            "refId": "C",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          },
+          {
+            "azureMonitor": {
+              "aggregation": "Average",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX Requests and Response Statistics",
+              "dimensionFilters": [],
+              "metricName": "plus.http.status.4xx",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "hide": false,
+            "queryType": "Azure Monitor",
+            "refId": "B",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          },
+          {
+            "azureMonitor": {
+              "aggregation": "Average",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX Requests and Response Statistics",
+              "dimensionFilters": [],
+              "metricName": "plus.http.status.5xx",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "hide": false,
+            "queryType": "Azure Monitor",
+            "refId": "D",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          }
+        ],
+        "title": "HTTP Metrics",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "azure-monitor-oob"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 3,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unitScale": true
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 0,
+          "y": 9
+        },
+        "id": 1,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "azureMonitor": {
+              "aggregation": "Average",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX Cache Statistics",
+              "dimensionFilters": [
+                {
+                  "dimension": "cache_zone",
+                  "filters": [
+                    "image_cache"
+                  ],
+                  "operator": "eq"
+                }
+              ],
+              "metricName": "plus.cache.hit.ratio",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "queryType": "Azure Monitor",
+            "refId": "A",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          }
+        ],
+        "title": "Cache Hit Ratio",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "azure-monitor-oob"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unitScale": true
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 12,
+          "x": 12,
+          "y": 9
+        },
+        "id": 4,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "azureMonitor": {
+              "aggregation": "Count",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX SSL Statistics",
+              "dimensionFilters": [
+                {
+                  "dimension": "server_zone",
+                  "filters": [],
+                  "operator": "eq"
+                }
+              ],
+              "metricName": "plus.http.ssl.handshakes",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "queryType": "Azure Monitor",
+            "refId": "A",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          },
+          {
+            "azureMonitor": {
+              "aggregation": "Count",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX SSL Statistics",
+              "dimensionFilters": [
+                {
+                  "dimension": "server_zone",
+                  "filters": [],
+                  "operator": "eq"
+                }
+              ],
+              "metricName": "plus.http.ssl.session.reuses",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "hide": false,
+            "queryType": "Azure Monitor",
+            "refId": "B",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          },
+          {
+            "azureMonitor": {
+              "aggregation": "Count",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX SSL Statistics",
+              "dimensionFilters": [
+                {
+                  "dimension": "server_zone",
+                  "filters": [],
+                  "operator": "eq"
+                }
+              ],
+              "metricName": "plus.http.ssl.handshakes.failed",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "hide": false,
+            "queryType": "Azure Monitor",
+            "refId": "C",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          }
+        ],
+        "title": "SSL Metrics",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "azure-monitor-oob"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 3,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unitScale": true
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 0,
+          "y": 18
+        },
+        "id": 5,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "azureMonitor": {
+              "aggregation": "Average",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX Upstream Statistics",
+              "dimensionFilters": [
+                {
+                  "dimension": "upstream",
+                  "filters": [],
+                  "operator": "eq"
+                }
+              ],
+              "metricName": "plus.http.upstream.peers.response.time",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "queryType": "Azure Monitor",
+            "refId": "A",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          }
+        ],
+        "title": "Upstream Response Time",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-azure-monitor-datasource",
+          "uid": "azure-monitor-oob"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 3,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unitScale": true
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 12,
+          "y": 18
+        },
+        "id": 6,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "azureMonitor": {
+              "aggregation": "Count",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX Upstream Statistics",
+              "dimensionFilters": [
+                {
+                  "dimension": "upstream",
+                  "filters": [],
+                  "operator": "eq"
+                }
+              ],
+              "metricName": "plus.http.upstream.peers.health_checks.checks",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "queryType": "Azure Monitor",
+            "refId": "A",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          },
+          {
+            "azureMonitor": {
+              "aggregation": "Count",
+              "allowedTimeGrainsMs": [
+                60000,
+                300000,
+                900000,
+                1800000,
+                3600000,
+                21600000,
+                43200000,
+                86400000
+              ],
+              "customNamespace": "NGINX Upstream Statistics",
+              "dimensionFilters": [
+                {
+                  "dimension": "upstream",
+                  "filters": [],
+                  "operator": "eq"
+                }
+              ],
+              "metricName": "plus.http.upstream.peers.health_checks.unhealthy",
+              "metricNamespace": "nginx.nginxplus/nginxdeployments",
+              "region": "westus2",
+              "resources": [
+                {
+                  "metricNamespace": "NGINX.NGINXPLUS/nginxDeployments",
+                  "region": "westus2",
+                  "resourceGroup": "cakker",
+                  "resourceName": "nginx1",
+                  "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+                }
+              ],
+              "timeGrain": "auto"
+            },
+            "datasource": {
+              "type": "grafana-azure-monitor-datasource",
+              "uid": "azure-monitor-oob"
+            },
+            "hide": false,
+            "queryType": "Azure Monitor",
+            "refId": "B",
+            "subscription": "7a0bb4ab-c5a7-46b3-b4ad-c10376166020"
+          }
+        ],
+        "title": "Health Checks",
+        "type": "timeseries"
+      }
+    ],
+    "refresh": "5s",
+    "schemaVersion": 39,
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-5m",
+      "to": "now"
+    },
+    "timeRangeUpdatedDuringEditOrView": false,
+    "timepicker": {
+      "hidden": false
+    },
+    "timezone": "",
+    "title": "Nginx4AzureDashboard",
+    "uid": "b70b2c11-a815-4506-a10a-3f15b6970797",
+    "version": 14,
+    "weekStart": ""
+  }
+  
