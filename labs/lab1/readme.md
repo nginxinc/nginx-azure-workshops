@@ -1,33 +1,34 @@
-#  Azure VNet and Subnets and Network Security Group 
+#  Azure VNet/Subnet / Network Security Group / Nginx for Azure Overview 
 
 ## Introduction
 
-In this lab, you will build ( x,y,x ).
+In this lab, you will be adding and configuring the Azure Networking components needed for this workshop.  This will require a few network resources, and a Network Security Group to allow incoming traffic to your Nginx for Azure workshop resources.  Then you will explore the Nginx for Azure product, as a quick Overview of what it is and how to deploy it.
 
 < Lab specific Images here, in the /media sub-folder >
 
 NGINX aaS | Docker
 :-------------------------:|:-------------------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)
+![NGINX aaS](media/nginx-azure-icon.png)  |![Azure](media/azure-icon.png)
   
 ## Learning Objectives
 
 By the end of the lab you will be able to:
 
-- Introduction to `xx`
-- Build an `yyy` Nginx configuration
-- Test access to your lab enviroment with Curl and Chrome
-- Investigate `zzz`
+- Setup your Azure Vnet and Subnets
+- Setup your Azure Network Security Group for inbound traffic
+- Explore Nginx for Azure
+- Deploy an Nginx for Azure instance
+- Create an initial Nginx configuration for testing
 
 
 ## Pre-Requisites
 
-- You must have `aaaa` installed and running
-- You must have `bbbbb` installed
+- You must have an Azure account
+- You must have the Azure CLI software installed on your local system
 - See `Lab0` for instructions on setting up your system for this Workshop
-- Familiarity with basic Linux commands and commandline tools
-- Familiarity with basic Docker concepts and commands
-- Familiarity with basic HTTP protocol
+- Familiarity with basic Linux concepts and commands
+- Familiarity with basic Azure concepts and commands
+- Familiarity with basic Nginx concepts and commands
 
 <br/>
 
@@ -58,7 +59,6 @@ By the end of the lab you will be able to:
 - [NGINX As A Service for Azure](https://docs.nginx.com/nginxaas/azure/)
 - [NGINX Plus Product Page](https://docs.nginx.com/nginx/)
 - [NGINX Ingress Controller](https://docs.nginx.com//nginx-ingress-controller/)
-- [NGINX on Docker](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-docker/)
 - [NGINX Directives Index](https://nginx.org/en/docs/dirindex.html)
 - [NGINX Variables Index](https://nginx.org/en/docs/varindex.html)
 - [NGINX Technical Specs](https://docs.nginx.com/nginx/technical-specs/)
