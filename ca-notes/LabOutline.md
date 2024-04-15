@@ -42,31 +42,21 @@ Students must be familiar with Nginx basic operations, configurations, and conce
 ### Lab 1 - Azure VNet/Subnet / Network Security Group / Nginx for Azure Overview
 
 - Overview
-In this lab, you will be adding and configuring the Azure Networking components needed for this workshop.  This will require only a few network resources, and a Network Security Group to allow incoming traffic to your Azure resources.
+In this lab, you will be adding and configuring the Azure Networking components needed for this workshop.  This will require a few network resources, and a Network Security Group to allow incoming traffic to your Nginx for Azure workshop resources.  Then you will explore the Nginx for Azure product, as a quick Overview of what it is and how to deploy it.
 
 - Learning Objectives
-Setup your Azure Vnet
-Setup your Azure Subnets
-Setuo your Azure Network Security group for inbound traffic
-
-<br/>
-
-- Overview
-In this lab, you will deploy and config a new Nginx for Azure instance.
-
-- Learning Objectives
-Deploy Nginx for Azure
-Enable Log Analytics
-Test basic HTTP traffic
-Create inital Nginx configurations to test with
-
+Setup your Azure Vnet and Subnets
+Setup your Azure Network Security Group for inbound traffic
+Explore Nginx for Azure
+Deploy an Nginx for Azure instance
+Create an initial Nginx configuration for testing
 
 <br/>
 
 ### Lab 2 - UbuntuVM/Docker / Windows VM / Cafe Demo Deployment
 
 - Overview
-In this lab, you will deploy an Ubuntu VM, and configure it for a Legacy web application.  You will deploy a Windows VM.  You will configure Nginx for Azure to load balance these backends.
+In this lab, you will deploy an Ubuntu VM, and configure it for a Legacy web application.  You will deploy a Windows VM.  You will configure Nginx for Azure to proxy and load balance these backends.
 
 - Learning Objectives
 Deploy Ubuntu VM
