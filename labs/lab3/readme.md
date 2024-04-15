@@ -2,29 +2,23 @@
 
 ## Introduction
 
-In this lab, you will explore how Nginx for Azure can route and load balance traffic to backend Kubernetes applications, pods, and services.  You will create 2 AKS Kubernetes clusters, install NGINX Plus Ingress Controllers, and several demo applications.  This will be your testing platform for Kubernetes - deploying and managing applications, networking, and using both NGINX for Azure and NGINX Ingress features to control traffic to your Modern Apps running in the clusters.  You will also create a new private Azure Container Registry and attach this registry to both AKS clusters.  Then you will pull an NGINX Plus Ingress Controller Image from the NGINX registry and push it to your private registry. Then you will deploy the NGINX Ingress Controllers, and configure it to route traffic to the demo app.
+In this lab, you will explore how Nginx for Azure can route and load balance traffic to backend Kubernetes applications, pods, and services.  You will create 2 AKS Kubernetes clusters, install NGINX Plus Ingress Controllers, and several demo applications.  This will be your testing platform for Nginx for Azure with AKS - deploying and managing applications, networking, and using both NGINX for Azure and NGINX Ingress features to control traffic to your Modern Apps running in the clusters.  Then you will pull an NGINX Plus Ingress Controller Image from the F5 NGINX Private Registry. Then you will deploy the NGINX Ingress Controllers, and configure it to route traffic to the demo app.
 
 <br/>
 
 ## Learning Objectives
 
 - Deploy 2 Kubernetes clusters using Azure CLI.
-- Create an Azure Container Registry (ACR) using Azure CLI.
-- Attaching ACR to AKS clusters using Azure CLI.
-- Pushing a test container image to your private ACR.
-- Pulling NGINX Plus Ingress Controller Image and pushing it to your ACR.
-- Deploying the NGINX Ingress Controllers
-- Deploying the sample application
+- Pulling and deploying the NGINX Plus Ingress Controller image.
+- Deploying the Nginx Ingress Dashboard
+- Deploying the Cafe Demo application
 - Test and verify proper operation on both AKS clusters.
+- Expose the Cafe Demo app and Nginx Ingress Dashboards
 
 ## What is Azure AKS?
 
 Azure Kubernetes Service is a service provided for Kubernetes on Azure
-infrastructure. The Kubernetes resources will be fully managed by Microsoft Azure, which offloads the burden of maintaining the infrastructure, and makes sure these resources are highly available and reliable at all times.
-
-## What is Azure ACR?
-
-Azure Container Registry (ACR) is a managed container registry. Like the popular docker registry Dockerhub, ACR also supports private and public repositories. We can either push or pull images to ACR using Azure CLI or Kubernetes commands.
+infrastructure. The Kubernetes resources will be fully managed by Microsoft Azure, which offloads the burden of maintaining the infrastructure, and makes sure these resources are highly available and reliable at all times.  This is often a good choice for Modern Applications running as containers, and using Kubernetes Services to control them.
 
 ## Azure Regions and naming convention suggestions
 
@@ -291,9 +285,11 @@ We can quickly test the ability to push images to our Private ACR from our clien
    **NOTE:** You need the Owner, Azure account administrator, or Azure co-administrator role on your Azure subscription. To avoid needing one of these roles, you can instead use an existing managed identity to authenticate ACR from AKS. See [references](#references) for more details.
 
 
-## Pulling NGINX Plus Ingress Controller Image using Docker and pushing to your private ACR Registry
+## Pulling NGINX Plus Ingress Controller Image using F5 Private Registry
 
 << can we change the following NIC Pull process to use the JWT token instead ?? >>
+
+Yes, plz change
 
 1. For NGINX Ingress Controller, you must have the NGINX Ingress Controller subscription – download the NGINX Plus Ingress Controller (per instance) certificate (nginx-repo.crt) and the key (nginx-repo.key) from [MyF5](https://my.f5.com/). You can also request for a 30-day trial key from [here](https://www.nginx.com/free-trial-connectivity-stack-kubernetes/).
    
@@ -462,7 +458,7 @@ Finally, you are going to use the NGINX Plus Dashboard to monitor both NGINX Ing
     cd ../../labs
     ```
   
-    Observe the `lab4/nginx-plus-ingress.yaml` looking at below details:
+    Observe the `lab3/nginx-plus-ingress.yaml` looking at below details:
      - On line #36, the `nginx-plus-ingress:3.2.1` placeholder is changed to the workshop image that you pushed to your private ACR registry as instructed in a previous step.
   
          >**Note:** Make sure you replace the image with the appropriate image that you pushed in your ACR registry.
@@ -475,7 +471,7 @@ Finally, you are going to use the NGINX Plus Dashboard to monitor both NGINX Ing
 
     Now deploy NGINX Ingress Controller as a Deployment using your updated manifest file.
     ```bash
-    kubectl apply -f lab1/nginx-plus-ingress.yaml
+    kubectl apply -f lab3/nginx-plus-ingress.yaml
     ```
 
 ## Check your NGINX Ingress Controller
@@ -513,10 +509,10 @@ Finally, you are going to use the NGINX Plus Dashboard to monitor both NGINX Ing
 We will deploy a `Service` and a `VirtualServer` resource to provide access to the NGINX Plus Dashboard for live monitoring.  NGINX Ingress [`VirtualServer`](https://docs.nginx.com/nginx-ingress-controller/configuration/virtualserver-and-virtualserverroute-resources/) is a [Custom Resource Definition (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) used by NGINX to configure NGINX Server and Location blocks for NGINX configurations.
 
 
-1. In the `lab1` folder, apply the `dashboard-vs.yaml` file to deploy a `Service` and a `VirtualServer` resource to provide access to the NGINX Plus Dashboard for live monitoring:
+1. In the `lab3` folder, apply the `dashboard-vs.yaml` file to deploy a `Service` and a `VirtualServer` resource to provide access to the NGINX Plus Dashboard for live monitoring:
 
     ```bash
-    kubectl apply -f lab1/dashboard-vs.yaml
+    kubectl apply -f lab3/dashboard-vs.yaml
     ```
     ```bash
     ###Sample output###
@@ -524,50 +520,21 @@ We will deploy a `Service` and a `VirtualServer` resource to provide access to t
     virtualserver.k8s.nginx.org/dashboard-vs created
     ```
 
-
-## (Optional Section): Take a look "under the hood" of NGINX Ingress Controller
-
-The NGINX Ingress Controller is a pod running NGINX Plus under the hood, let's go check it out.
-
-1. Use the VScode Terminal to enter a shell in the NGINX Ingress Controller pod by running the [`kubectl exec`](https://kubernetes.io/docs/tasks/debug-application-cluster/get-shell-running-container/) command 
-
-   ```bash
-   kubectl exec -it $NIC -n nginx-ingress -- /bin/ash
-   ```
-
-2. Once inside a shell in the NGINX Ingress Controller pod, run the following commands to inspect the root NGINX configuration:
-
-   ```bash
-   cd /etc/nginx
-   more nginx.conf
-   ```
-
-   If you have worked with NGINX config files, it should look very similar!
-
-3. Type `q ` to quit viewing the `nginx.conf `
-
-   ![q to quit more](media/more-command-q-quit.png)
-
-4. Type `exit` to close the connection to the Ingress pod.
-
-   ![exit-to-exit-pod](media/exit-to-exit-pod.png)
-
-
 ## Deploy the Nginx CAFE Demo app
 
-In this section, you will build the "Cafe" Ingress Demo, which represents a Coffee Shop website with Coffee and Tea applications. You will be adding the following components to your Kubernetes Cluster: Coffee and Tea pods, services, and cafe   virtualserver.
+In this section, you will deploy the "Cafe Nginx" Ingress Demo, which represents a Coffee Shop website with Coffee and Tea applications. You will be adding the following components to your Kubernetes Cluster: Coffee and Tea pods, matching coffee and tea services, and a Cafe VirtualServer.
 
 The Cafe application that you will deploy looks like the following diagram below. Coffee and Tea pods and services, with NGINX Ingress routing the traffic for /coffee and /tea routes, using the `cafe.example.com` Hostname.  There is also a hidden third service - more on that later!
 
 < cafe diagram here >
 
-1. Inspect the `lab4/cafe.yaml` manifest.  You will see we are deploying 3 replicas of each the coffee and tea Pods, and create a matching Service for each.
+1. Inspect the `lab3/cafe.yaml` manifest.  You will see we are deploying 3 replicas of each the coffee and tea Pods, and create a matching Service for each.
 
 1. Deploy the Cafe application by applying these two manifests:
 
 ```bash
-kubectl apply -f lab4/cafe.yaml
-kubectl apply -f lab4/cafe-virtualserver.yaml
+kubectl apply -f lab3/cafe.yaml
+kubectl apply -f lab3/cafe-virtualserver.yaml
 
 ```
 
@@ -596,6 +563,27 @@ tea-568647dfc7-zqtzq      1/1     Running   0          27s
 
 ```
 
+1. In AKS1 cluster, you will run only 2 Replicas of the coffee and tea pods, so Scale both deployments down:
+
+```bash
+kubectl scale deployment coffee --replicas=2
+kubectl scale deployment tea --replicas=2
+
+```
+
+Now there should be only 2 of each running:
+
+```bash
+kubectl get pods
+###Sample output###
+NAME                      READY   STATUS    RESTARTS   AGE
+coffee-56b7b9b46f-9ks7w   1/1     Running   0             28s
+coffee-56b7b9b46f-mp9gs   1/1     Running   0             28s
+tea-568647dfc7-54r7k      1/1     Running   0             27s
+tea-568647dfc7-9h75w      1/1     Running   0             27s
+
+```
+
 1. Check that the Cafe `VirtualServer`, **cafe-vs**, is running:
 
 ```bash
@@ -613,10 +601,10 @@ cafe-vs   Valid   cafe.example.com                 4m6s
 
 ### Deploy the Nginx Ingress Dashboard
 
-1. Inspect the `lab4/dashboard-vs` manifest.  This will create an nginx-ingress Service and a VirtualServer that will expose the Nginx Ingress Controller's Plus Dashboard outside the cluster, so you can see what Nginx Ingress Controller is doing.
+1. Inspect the `lab3/dashboard-vs` manifest.  This will create an `nginx-ingress` Service and a VirtualServer that will expose the Nginx Ingress Controller's Plus Dashboard outside the cluster, so you can see what Nginx Ingress Controller is doing.
 
 ```bash
-kubectl apply -f lab4/dashboard-vs.yaml
+kubectl apply -f lab3/dashboard-vs.yaml
 
 ```
 
@@ -624,27 +612,24 @@ kubectl apply -f lab4/dashboard-vs.yaml
 
 ```bash
 # Set Kube Context to cluster 1:
-kubectl config use-context ask-<name>
+kubectl config use-context aks1-<name>
 
 ```
 
-Get the Ingress Controller pod name:
-```bash
-kubectl get pods -n nginx-ingress
-```
+Use the $NIC Nginx Ingress Controller pod name variable:
 
 Port-forward to the NIC Pod on port 9000:
 ```bash
-kubectl port-forward <pod name> -n nginx-ingress 9000:9000
+kubectl port-forward $NIC -n nginx-ingress 9000:9000
 ```
 
-Open your local browser to http://localhost:9000.  You should see the Plus dashboard.  It should have the `HTTP Zones` cafe.example.com and dashboard.example.com.  If you check the `HTTP Upstreams`, it should have 3 coffee and 3 tea pods.
+Open your local browser to http://localhost:9000/dashboard.html.  You should see the Plus dashboard.  It should have the `HTTP Zones` cafe.example.com and dashboard.example.com - these are your VirtualServers / Hostnames.  If you check the `HTTP Upstreams` tab, it should have 2 coffee and 2 tea pods.
 
 When you are done checking out the Dashboard, type `Ctrl+C` to quit the Kubectl Port-Forward.
 
 1. Change your `Kube Context` to your second AKS cluster, and check access to the Dashboard using the steps as above.  You should find the exact same output, the Nginx Ingress Plus Dashboard running, with Zones and Upstreams of similar.  However, the IP addresses of the Upstreams `WILL` be different between the clusters, because each cluster assigns IPs to it's Pods.  
 
-1.  Optional Exercise:  If you want to see both NIC Dashboards at the same time, you can use 2 Terminals, each with different Kube Context, and different Port-Forward commands.  In Terminal#1, try port-forward 9001:9000 for cluster1, and in Terminal#2, try port-forward 9002:9000 for cluster2.  Then two browser windows side by side for comparison.
+1.  Optional Exercise:  If you want to see both NIC Dashboards at the same time, you can use 2 Terminals, each with a different Kube Context, and different Port-Forward commands.  In Terminal#1, try port-forward 9001:9000 for cluster1, and in Terminal#2, try port-forward 9002:9000 for cluster2.  Then two browser windows side by side for comparison.
 
 Try scaling the number of coffee pods in one cluster, and see what happens.
 
@@ -652,33 +637,61 @@ Try scaling the number of coffee pods in one cluster, and see what happens.
 kubectl scale deployment coffee --replicas=8
 ```
 
-> Pretty cool - Nginx Ingress picks up the new Pods, health-checks them first, and brings them online for loadbalancing just a few seconds after Kubernetes spins them up.  Scale them up and down as you choose, Nginx will track them accordingly.
+> Pretty cool - Nginx Ingress picks up the new Pods, health-checks them first, and brings them online for load balancing just a few seconds after Kubernetes spins them up.  Scale them up and down as you choose, while watching the Dashboard, Nginx will track them accordingly.
 
 ### Expose your Nginx Ingress Controller
 
-1. Inspect the `lab4/nodeport-static.yaml` manifest.  This is NodePort Service defintion that will open high-numbered ports on the Kubernets nodes, to expose several Services that are running in the cluster.  The NodePorts are defined as static, because you will be using these port numbers with N4A, and you don't them to change.
+1. Inspect the `lab4/nodeport-static.yaml` manifest.  This is a NodePort Service defintion that will open high-numbered ports on the Kubernetes nodes, to expose several Services that are running in the cluster.  The NodePorts are defined as static, because you will be using these port numbers with N4A, and you don't them to change.  We are using the following table to expose different Services on different Ports:
+
+Service Port | External NodePort | Name
+|:--------:|:------:|:-------:|
+80 | 32080 | http
+443 | 32443 | https
+9000 | 32090 | dashboard
+
 
 1. Deploy a NodePort Service to expose the Nginx Ingress Controller outside the cluster.
 
+```bash
+kubectl apply -f lab3/nodeport-static.yaml
+
+```
+
+1. Verify the NodePort Service was created:
+
+```bash
+kubectl get svc nginx-ingress -n nginx-ingress
+
+```
+
+```bash
+#Sample output
+
+
+```
+
 ## Deploy the Nginx CAFE Demo app in the 2nd cluster
 
-1. Repeat the previous section to deploy the CAFE Demo app in your second cluster.
+1. Repeat the previous section to deploy the CAFE Demo app in your second cluster.  Do not Scale the coffee and tea replicas down, leave three of each pod running.
 1. Report the same NodePort deployment, to expose the Nginx Ingress Controller outside the cluster.
 
 ## Update local DNS
 
-We will be using FQDN hostnames for the labs, and you will need to update your local computer's `hosts` file, to use these names with your NGINX Ingress Controller.
+We will be using FQDN hostnames for the labs, and you will need to update your local computer's `/etc/hosts` file, to use these names with N4A and Nginx Ingress Controller.
 
-Edit your local hosts file, adding the FQDNs as shown below.  Use the `External-IP` Address, from the previous step:
+Edit your local hosts file, adding the FQDNs as shown below.  Use the `External-IP` Address of Nginx for Azure:
 
 ```bash
 vi /etc/hosts
 
-13.86.100.10 cafe.example.com bar.example.com dashboard.example.com grafana.example.com prometheus.example.com juiceshop.example.com
+13.86.100.10 cafe.example.com dashboard.example.com    # Added for N4A Workshop 
 ```
 
->**Note:** All 6 hostnames are mapped to the same Loadbalancer External-IP.  You will use the NGINX Ingress Controller to route the traffic correctly in the upcoming labs.  
-Your External-IP address will likely be different than the example.
+>**Note:** Both hostnames are mapped to the same N4A External-IP.  You will use the NGINX Ingress Controller to route the traffic correctly in the upcoming labs.  
+Your N4A External-IP address will be different than the example.
+
+## Test Access to Nginx Cafe, and Nginx Ingress Dashboards
+
 
 
 **This completes the Lab.** 

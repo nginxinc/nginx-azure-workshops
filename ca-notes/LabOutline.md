@@ -7,11 +7,11 @@
 ## Lab 4 - NIC Dashboard / Cafe Demo / Redis Deployment
 ## Lab 5 - Nginx for Azure Load Balancing / Reverse Proxy
 ## Lab 6 - Azure Key Vault / TLS Essentials
-## Lab 7 - Azure Montoring / Logging Analytics
+## Lab 7 - Azure Monitoring / Logging Analytics
 ## Lab 8 - Nginx Garage or Azure Petshop
 ## Lab 9 - Nginx Caching / Rate Limits / Juiceshop
 ## Lab 10 - Grafana for Azure
-## Lab 11 - Optional Exercises
+## Lab 11 - Optional Exercises - Windows VM
 ## Summary and Wrap-up
 
 <br/>
@@ -48,12 +48,12 @@ In this lab, you will be adding and configuring the Azure Networking components 
 Setup your Azure Vnet and Subnets
 Setup your Azure Network Security Group for inbound traffic
 Explore Nginx for Azure
-Deploy an Nginx for Azure instance
-Create an initial Nginx configuration for testing
+Deploy an Nginx for Azure instance / enable logging
+Test Nginx for Azure welcome page
 
 <br/>
 
-### Lab 2 - UbuntuVM/Docker / Windows VM / Cafe Demo Deployment
+### Lab 2 - Ubuntu VM/Docker / Windows VM / Cafe Demo Deployment
 
 - Overview
 In this lab, you will deploy an Ubuntu VM, and configure it for a Legacy web application.  You will deploy a Windows VM.  You will configure Nginx for Azure to proxy and load balance these backends.
@@ -61,8 +61,8 @@ In this lab, you will deploy an Ubuntu VM, and configure it for a Legacy web app
 - Learning Objectives
 Deploy Ubuntu VM
 Install Docker and Docker-compose
-Run Legacy docker container apps
-Deploy Windows VM
+Run Legacy docker container apps - Cafe Demo
+Optional Exercise: Deploy Windows VM
 Configure Nginx Load Balancing for these apps
 
 <br/>
@@ -73,9 +73,9 @@ Configure Nginx Load Balancing for these apps
 In this lab, you will deploy 2 AKS clusters, with Nginx Ingress Controllers.  You will also deploy a private Container Registry.
 
 - Learning Objectives
-Deploy 2 AKS clusters using the Azure AZ CLI.
-Deploy a private Azure Container Registry.
-Deploy Nginx Plus Ingress Controller to Azure Container Registry, and to the Clusters.
+Deploy 1 AKS cluster using the Azure AZ CLI.
+Deploy 2nd AKS cluster with a bash script.
+Deploy Nginx Plus Ingress Controller with F5 Private Registry, to both the Clusters.
 Configure Nginx Plus Ingress Controller Dashboards.
 Expose the NIC Plus Dashboards externally for Live Monitoring.
 
