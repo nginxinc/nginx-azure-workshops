@@ -79,6 +79,30 @@ By the end of the lab you will be able to:
     --address-prefixes 172.16.0.0/16
     ```
 
+    ```bash
+    ##Sample Output##
+    {
+        "newVNet": {
+            "addressSpace": {
+            "addressPrefixes": [
+                "172.16.0.0/16"
+            ]
+            },
+            "enableDdosProtection": false,
+            "etag": "W/\"be1dfac2-9879-4a22-abe4-717badebb0ec\"",
+            "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet",
+            "location": "centralus",
+            "name": "n4a-vnet",
+            "provisioningState": "Succeeded",
+            "resourceGroup": "s.dutta-workshop",
+            "resourceGuid": "xxxx-xxxx-xxxx-xxxx-xxxx",
+            "subnets": [],
+            "type": "Microsoft.Network/virtualNetworks",
+            "virtualNetworkPeerings": []
+        }
+    }
+    ```
+
 1. Create a network security group(NSG) named `n4a-nsg` using below command.
 
     ```bash
@@ -125,6 +149,56 @@ By the end of the lab you will be able to:
     --description "Allow HTTPS traffic"
     ```
 
+    ```bash
+    ##Sample Output##
+    
+    #Rule1 Output
+    {
+        "access": "Allow",
+        "description": "Allow HTTP traffic",
+        "destinationAddressPrefix": "*",
+        "destinationAddressPrefixes": [],
+        "destinationPortRange": "80",
+        "destinationPortRanges": [],
+        "direction": "Inbound",
+        "etag": "W/\"7a178961-d3b8-4562-8493-4fcd7752e37b\"",
+        "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/HTTP",
+        "name": "HTTP",
+        "priority": 320,
+        "protocol": "Tcp",
+        "provisioningState": "Succeeded",
+        "resourceGroup": "s.dutta-workshop",
+        "sourceAddressPrefix": "<MY_PUBLICIP>",
+        "sourceAddressPrefixes": [],
+        "sourcePortRange": "*",
+        "sourcePortRanges": [],
+        "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+    }
+
+    #Rule2 Output
+    {
+        "access": "Allow",
+        "description": "Allow HTTPS traffic",
+        "destinationAddressPrefix": "*",
+        "destinationAddressPrefixes": [],
+        "destinationPortRange": "443",
+        "destinationPortRanges": [],
+        "direction": "Inbound",
+        "etag": "W/\"dc717c9f-3790-45ba-b7aa-e5e39c11142d\"",
+        "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/HTTPS",
+        "name": "HTTPS",
+        "priority": 300,
+        "protocol": "Tcp",
+        "provisioningState": "Succeeded",
+        "resourceGroup": "s.dutta-workshop",
+        "sourceAddressPrefix": "<MY_PUBLICIP>",
+        "sourceAddressPrefixes": [],
+        "sourcePortRange": "*",
+        "sourcePortRanges": [],
+        "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+    }
+    ```
+
 1. Create a subnet that you will use with NGINX for Azure resource. You will also attach the NSG that you just created to this subnet.
 
     ```bash
@@ -137,7 +211,40 @@ By the end of the lab you will be able to:
     --delegations NGINX.NGINXPLUS/nginxDeployments
     ```
 
-1. Create two more subnets that would be used with AKS cluster in later labs.
+    ```bash
+    ##Sample Output##
+    {
+        "addressPrefix": "172.16.1.0/24",
+        "delegations": [
+            {
+                "actions": [
+                    "Microsoft.Network/virtualNetworks/subnets/join/action"
+                ],
+                "etag": "W/\"a615708f-145c-4568-a7b1-29b262f04065\"",
+                "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet/delegations/0",
+                "name": "0",
+                "provisioningState": "Succeeded",
+                "resourceGroup": "s.dutta-workshop",
+                "serviceName": "NGINX.NGINXPLUS/nginxDeployments",
+                "type": "Microsoft.Network/virtualNetworks/subnets/delegations"
+            }
+        ],
+        "etag": "W/\"a615708f-145c-4568-a7b1-29b262f04065\"",
+        "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet",
+        "name": "n4a-subnet",
+        "networkSecurityGroup": {
+            "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg",
+            "resourceGroup": "s.dutta-workshop"
+        },
+        "privateEndpointNetworkPolicies": "Disabled",
+        "privateLinkServiceNetworkPolicies": "Enabled",
+        "provisioningState": "Succeeded",
+        "resourceGroup": "s.dutta-workshop",
+        "type": "Microsoft.Network/virtualNetworks/subnets"
+    }
+    ```
+
+1. In similar fashion create two more subnets that would be used with AKS cluster in later labs.
 
     ```bash
     az network vnet subnet create \
@@ -167,7 +274,35 @@ By the end of the lab you will be able to:
     --sku Standard
     ```
 
-2. Create a user assigned managed identity that would be tied to the NGINX for Azure resource. This managed identity would be used to read certificates and keys from Azure keyvault in later labs.
+    ```bash
+    ##Sample Output##
+    {
+        "publicIp": {
+            "ddosSettings": {
+                "protectionMode": "VirtualNetworkInherited"
+            },
+            "etag": "W/\"cbeb62f5-3ecc-404f-919d-bdea24c7b9f3\"",
+            "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP",
+            "idleTimeoutInMinutes": 4,
+            "ipAddress": "<AZURE_ASSIGNED_PUBLICIP>",
+            "ipTags": [],
+            "location": "centralus",
+            "name": "n4a-publicIP",
+            "provisioningState": "Succeeded",
+            "publicIPAddressVersion": "IPv4",
+            "publicIPAllocationMethod": "Static",
+            "resourceGroup": "s.dutta-workshop",
+            "resourceGuid": "xxxx-xxxx-xxxx-xxxx-xxxx",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "type": "Microsoft.Network/publicIPAddresses"
+        }
+    }
+    ```
+
+1. Create a user assigned managed identity that would be tied to the NGINX for Azure resource. This managed identity would be used to read certificates and keys from Azure keyvault in later labs.
 
    ```bash
    az identity create \
@@ -175,9 +310,25 @@ By the end of the lab you will be able to:
    --name n4a-useridentity
    ```
 
+   ```bash
+   ##Sample Output##
+   {
+        "clientId": "xxxx-xxxx-xxxx-xxxx-xxxx",
+        "id": "/subscriptions/<SUBSCRIPTION_ID>/resourcegroups/s.dutta-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity",
+        "location": "centralus",
+        "name": "n4a-useridentity",
+        "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx",
+        "resourceGroup": "s.dutta-workshop",
+        "systemData": null,
+        "tags": {},
+        "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
+        "type": "Microsoft.ManagedIdentity/userAssignedIdentities"
+    }
+   ```
+
 ### Deploy an Nginx for Azure resource
 
-1. Once all the previous Azure resources have been created, you will then create the NGINX for Azure resource using below commands
+1. Once all the previous Azure resources have been created, you will then create the NGINX for Azure resource using below commands (This would take couple of minutes to finish)
 
     ```bash
     ## Set environment variables
@@ -190,9 +341,67 @@ By the end of the lab you will be able to:
     --resource-group $MY_RESOURCEGROUP \
     --name nginx4a \
     --location centralus \
-    --sku name="standard_Monthly_gmz7xq9ge3py" \
+    --sku name="standard_Monthly" \
     --network-profile front-end-ip-configuration="{public-ip-addresses:[{id:/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP}]}" network-interface-configuration="{subnet-id:/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet}" \
     --identity="{type:UserAssigned,userAssignedIdentities:{/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity:{}}}"
+    ```
+
+    ```bash
+    ##Sample Output##
+    {
+        "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Nginx.NginxPlus/nginxDeployments/nginx4a",
+        "identity": {
+            "type": "UserAssigned",
+            "userAssignedIdentities": {
+                "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity": {
+                    "clientId": "xxxx-xxxx-xxxx-xxxx-xxxx",
+                    "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx"
+                }
+            }
+        },
+        "location": "centralus",
+        "name": "nginx4a",
+        "properties": {
+            "autoUpgradeProfile": {
+                "upgradeChannel": "stable"
+            },
+            "enableDiagnosticsSupport": false,
+            "ipAddress": "<AZURE_ASSIGNED_PUBLICIP>",
+            "managedResourceGroup": "NGX_s.dutta-workshop_nginx4a_centralus",
+            "networkProfile": {
+                "frontEndIPConfiguration": {
+                    "publicIPAddresses": [
+                        {
+                            "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP",
+                            "resourceGroup": "s.dutta-workshop"
+                        }
+                    ]
+                },
+                "networkInterfaceConfiguration": {
+                    "subnetId": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet"
+                }
+            },
+            "nginxVersion": "1.25.1 (nginx-plus-r30-p2)",
+            "provisioningState": "Succeeded",
+            "scalingProperties": {
+                "capacity": 20
+            },
+            "userProfile": {}
+        },
+        "resourceGroup": "s.dutta-workshop",
+        "sku": {
+            "name": "standard_Monthly"
+        },
+        "systemData": {
+            "createdAt": "2024-04-16T22:51:28.3015754Z",
+            "createdBy": "nginx@f5.com",
+            "createdByType": "User",
+            "lastModifiedAt": "2024-04-16T22:51:28.3015754Z",
+            "lastModifiedBy": "nginx@f5.com",
+            "lastModifiedByType": "User"
+        },
+        "type": "nginx.nginxplus/nginxdeployments"
+    }
     ```
 
 ### Create Log Analytics workspace to collect NGINX error and Access logs from NGINX for azure
