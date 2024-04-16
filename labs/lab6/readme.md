@@ -46,7 +46,7 @@ By the end of the lab you will be able to:
 
 2. The above command should provide a json output. If you look at its content then it should have a `provisioningState` key with `Succeeded` as it value. This field is an easy way to validate the command successfully provisioned the resource.
 
-3. Next you would provide permissions to access this keyvault to the user identity that you created while creating NGINX for Azure resource.
+3. Next you would provide permissions to access this keyvault to the user assigned managed identity that you created while creating NGINX for Azure resource.
 4. Copy the `PrincipalID` of the user identity into an environment variable using below command.
 
     ```bash
@@ -58,7 +58,7 @@ By the end of the lab you will be able to:
     --output tsv)
     ```
 
-5. Now assign GET secrets and GET certificates permission to this user identity for your keyvault using below command.
+5. Now assign GET secrets and GET certificates permission to this user assigned managed identity for your keyvault using below command.
 
     ```bash
     az keyvault set-policy \
