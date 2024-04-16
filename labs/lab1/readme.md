@@ -76,7 +76,7 @@ By the end of the lab you will be able to:
     az network vnet create \
     --resource-group $MY_RESOURCEGROUP \
     --name n4a-vnet \
-    --address-prefixes 10.0.0.0/16
+    --address-prefixes 172.16.0.0/16
     ```
 
 1. Create a network security group(NSG) named `n4a-nsg` using below command.
@@ -132,7 +132,7 @@ By the end of the lab you will be able to:
     --resource-group $MY_RESOURCEGROUP \
     --name n4a-subnet \
     --vnet-name n4a-vnet \
-    --address-prefixes 10.0.1.0/24 \
+    --address-prefixes 172.16.1.0/24 \
     --network-security-group n4a-nsg \
     --delegations NGINX.NGINXPLUS/nginxDeployments
     ```
@@ -144,7 +144,7 @@ By the end of the lab you will be able to:
     --resource-group $MY_RESOURCEGROUP \
     --name aks1-subnet \
     --vnet-name n4a-vnet \
-    --address-prefixes 10.0.10.0/23
+    --address-prefixes 172.16.10.0/23
     ```
 
     ```bash
@@ -152,7 +152,7 @@ By the end of the lab you will be able to:
     --resource-group $MY_RESOURCEGROUP \
     --name aks2-subnet \
     --vnet-name n4a-vnet \
-    --address-prefixes 10.0.20.0/23
+    --address-prefixes 172.16.20.0/23
     ```
 
 ### Create Public IP and user assigned managed identity to access NGINX for Azure
