@@ -3,7 +3,7 @@
 ## Lab 0 - Prequesites - Subscription / Resources
 ## Lab 1 - Azure VNet/Subnet / Network Security Group / Nginx for Azure Overview
 ## Lab 2 - UbuntuVM/Docker / Windows VM / Cafe Demo Deployment 
-## Lab 3 - AKS / ACR / Nginx Ingress Controller Deployment
+## Lab 3 - AKS / Nginx Ingress Controller Deployment
 ## Lab 4 - NIC Dashboard / Cafe Demo / Redis Deployment
 ## Lab 5 - Nginx for Azure Load Balancing / Reverse Proxy
 ## Lab 6 - Azure Key Vault / TLS Essentials
@@ -67,10 +67,10 @@ Configure Nginx Load Balancing for these apps
 
 <br/>
 
-### Lab 3 - AKS / ACR / Nginx Ingress Controller Deployment
+### Lab 3 - AKS / Nginx Ingress Controller Deployment
 
 - Overview
-In this lab, you will deploy 2 AKS clusters, with Nginx Ingress Controllers.  You will also deploy a private Container Registry.
+In this lab, you will deploy 2 AKS clusters, with Nginx Ingress Controllers. 
 
 - Learning Objectives
 Deploy 1 AKS cluster using the Azure AZ CLI.

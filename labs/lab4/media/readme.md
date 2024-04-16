@@ -1,4 +1,4 @@
-#  NGINX for Azure Overview and Deployment 
+#  NIC Dashboard / Cafe Demo / Redis Deployment 
 
 ## Introduction
 
@@ -6,18 +6,18 @@ In this lab, you will build ( x,y,x ).
 
 < Lab specific Images here, in the /media sub-folder >
 
-NGINX aaS | Docker
-:-------------------------:|:-------------------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)
+NGINX aaS | Cafe | Redis
+:-------------------:|:-------------------:|:-------------------:
+![NGINX aaS](media/nginx-azure-icon.png)  |![Cafe](media/cafe-icon.png) |![Redis](media/redis-icon.png)
   
 ## Learning Objectives
 
 By the end of the lab you will be able to:
 
-- Introduction to `xx`
-- Build an `yyy` Nginx configuration
-- Test access to your lab enviroment with Curl and Chrome
-- Investigate `zzz`
+- Deploying the Cafe Demo application
+- Deploying the Redis In Memory cache
+- Expose the Cafe Demo app with Nginx for Azure
+- Expose the Redis Cache with Nginx for Azure
 
 
 ## Pre-Requisites
