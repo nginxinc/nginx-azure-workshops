@@ -222,7 +222,7 @@ echo $JWT
 1. Create a Kubernetes `docker-registry` Secret type on the cluster, using the JWT token as the username and none for password (as the password is not used).  The name of the docker server is private-registry.nginx.com.  Replace the <docker-username> parameter with the contents of the `nginx-repo.jwt` file:
 
     ```bash
-    kubectl create secret docker-registry regcred --docker-server=private-registry.nginx.com --docker-username=$JWT --docker-password=none
+    kubectl create secret docker-registry regcred --docker-server=private-registry.nginx.com --docker-username=$JWT --docker-password=none -n nginx-ingress
     ```
     
    > It is important that the --docker-username=<JWT Token> contains the contents of the token and is not pointing to the token itself. Ensure that when you copy the contents of the JWT token, there are no additional characters or extra whitespaces. This can invalidate the token and cause 401 errors when trying to authenticate to the registry.
@@ -230,20 +230,20 @@ echo $JWT
 1. Confirm the Secret was created successfully by running:
 
 ```bash
-kubectl get secret regcred --output=yaml
+kubectl get secret regcred -n nginx-ingress -o yaml
 
 ```
 ```bash
 # Sample output
 apiVersion: v1
 data:
-  .dockerconfigjson: 
-  ...snipped Token Here
+  .dockerconfigjson: TokenHere
+  ...snipped
 kind: Secret
 metadata:
   creationTimestamp: "2024-04-16T19:21:09Z"
   name: regcred
-  namespace: default
+  namespace: nginx-ingress
   resourceVersion: "5838852"
   uid: 30c60523-6b89-41b3-84d8-d22ec60d30a5
 type: kubernetes.io/dockerconfigjson
@@ -261,17 +261,29 @@ kubectl config use-context n4a-aks2
 1. Create a Docker Config Secret in your Second cluster.  Replace the <docker-username> parameter with the contents of the `nginx-repo.jwt` file:
 
     ```bash
-    kubectl create secret docker-registry regcred --docker-server=private-registry.nginx.com --docker-username=$JWT --docker-password=none
+    kubectl create secret docker-registry regcred --docker-server=private-registry.nginx.com --docker-username=$JWT --docker-password=none -n nginx-ingress
     ```
 
 1. Confirm the Secret was created successfully by running:
 
 ```bash
-kubectl get secret regcred --output=yaml
+kubectl get secret regcred -n nginx-ingress -o yaml
 
 ```
 ```bash
 # Sample output
+apiVersion: v1
+data:
+  .dockerconfigjson: Token Here
+  ...snipped
+kind: Secret
+metadata:
+  creationTimestamp: "2024-04-16T23:16:07Z"
+  name: regcred
+  namespace: nginx-ingress
+  resourceVersion: "5921203"
+  uid: a3e36152-62ce-47b0-bc22-3644bcd9aa3d
+type: kubernetes.io/dockerconfigjson
 
 ```
 
@@ -303,34 +315,37 @@ In this section, you will be installing NGINX Plus Ingress Controller in both AK
    ```bash
    git clone https://github.com/nginxinc/kubernetes-ingress.git --branch v3.3.2
    cd kubernetes-ingress/deployments
+
    ```
    >**Note**: At the time of this writing `3.3.2` is the latest NGINX Plus Ingress version that is available. Please feel free to use the latest version of NGINX Plus Ingress Controller. Look into [references](#references) for the latest Ingress images.
 
-3. Create a namespace and a service account for the Ingress Controller
+3. Create a namespace and a service account for the Ingress Controller:
     ```bash
     kubectl apply -f common/ns-and-sa.yaml
+
     ```
-4. Create a cluster role and cluster role binding for the service account
+4. Create a cluster role and cluster role binding for the service account:
     ```bash
     kubectl apply -f rbac/rbac.yaml
+
     ```
 
 5. Create Common Resources:
      1. Create a secret with TLS certificate and a key for the default server in NGINX.
         ```bash
-        cd ..
-        kubectl apply -f examples/shared-examples/default-server-secret/default-server-secret.yaml
-        cd deployments
+        kubectl apply -f ../examples/shared-examples/default-server-secret/default-server-secret.yaml
+
         ```
      2. Create a config map for customizing NGINX configuration.
         ```bash
         kubectl apply -f common/nginx-config.yaml
+
         ```
      3. Create an IngressClass resource. 
    
-         >**Note:** If you would like to set the NGINX Ingress Controller as the default one, uncomment the annotation `ingressclass.kubernetes.io/is-default-class` within the below file.
         ```bash
         kubectl apply -f common/ingress-class.yaml
+
         ```
 
 6. Create Custom Resources
@@ -340,17 +355,20 @@ In this section, you will be installing NGINX Plus Ingress Controller in both AK
         kubectl apply -f common/crds/k8s.nginx.org_virtualserverroutes.yaml
         kubectl apply -f common/crds/k8s.nginx.org_transportservers.yaml
         kubectl apply -f common/crds/k8s.nginx.org_policies.yaml
+
         ```
    
     2. Create a custom resource for GlobalConfiguration resource:
         ```bash
         kubectl apply -f common/crds/k8s.nginx.org_globalconfigurations.yaml
+
         ```
 7. Deploy the Ingress Controller as a Deployment:
 
    The sample deployment file(`nginx-plus-ingress.yaml`) can be found within `deployment` sub-directory within your present working directory.
 
-   Highlighted below are some of the parameters that would be changed in the sample `nginx-plus-ingress.yaml` file.
+   However, you will use the Manifest provided in the /lab3 folder, which has the follow changes highlighted below:
+
    - Change Image Pull to Private Repo
    - Enable Prometheus
    - Add port and name for dashboard
@@ -359,27 +377,29 @@ In this section, you will be installing NGINX Plus Ingress Controller in both AK
    - Make use of default TLS certificate
    - Enable Global Configuration for Transport Server
    
-   <br/>
-
-   Navigate back to the Workshop's `labs` directory 
+1. Navigate back to the Workshop's `labs` directory 
     ```bash
     cd ../../labs
+
     ```
   
-    Observe the `lab3/nginx-plus-ingress.yaml` looking at below details:
-     - On line #36, the `nginx-plus-ingress:3.3.2` placeholder is changed to the workshop image that you pushed to your private ACR registry as instructed in a previous step.
+    Inspect the `lab3/nginx-plus-ingress.yaml` looking at these changes:
+
+     - On lines #16-19, we have enabled `Prometheus` related annotations.
+     - On Lines #22-23, the ImagePullSecret is set to the Docker Config Secret `regcred` you set previously.
+     - On line #36, the `nginx-plus-ingress:3.3.2` placeholder is changed to the Nginx Private Registry image.
   
-         >**Note:** Make sure you replace the image with the appropriate image that you pushed in your ACR registry.
-     - On lines #50-51, we have added TCP port 9000 for the Plus Dashboard.
-     - On lines #96-97, we have enabled the Dashboard and set the IP access controls to the Dashboard.
-     - On lines #16-19, we have enabled Prometheus related annotations.
-     - On line #106, we have enabled Prometheus to collect metrics from the NGINX Plus stats API.
-     - On line #95, uncomment to make use of default TLS secret.
-     - On line #109, uncomment to enable the use of Global Configurations.
+         >**Note:** Make sure you replace the `- image:` with the appropriate image.
+     - On lines #52-53, we have added TCP port 9000 for the Plus Dashboard.
+     - On line #97, uncomment to make use of default TLS secret
+     - On lines #98-99, we have enabled the Dashboard and set the IP access controls to the Dashboard.
+     - On line #108, we have enabled Prometheus to collect metrics from the NGINX Plus stats API.
+     - On line #111, uncomment to enable the use of Global Configurations.
 
     Now deploy NGINX Ingress Controller as a Deployment using your updated manifest file.
     ```bash
     kubectl apply -f lab3/nginx-plus-ingress.yaml
+
     ```
 
 
@@ -402,116 +422,76 @@ In this section, you will be installing NGINX Plus Ingress Controller in both AK
 
 2. Instead of remembering the unique pod name, `nginx-ingress-xxxxxx-yyyyy`, we can store the Ingress Controller pod name into the `$NIC` variable to be used throughout the lab.
 
-   >**Note:** This variable is stored for the duration of the terminal session, and so if you close the terminal it will be lost. At any time you can refer back to this step to save the `$NIC` variable again.
+   >**Note:** This variable is stored for the duration of the Terminal session, and so if you close the Terminal it will be lost. At any time you can refer back to this step to create the `$NIC` variable again.
 
    ```bash
    export NIC=$(kubectl get pods -n nginx-ingress -o jsonpath='{.items[0].metadata.name}')
+
    ```
 
    Verify the variable is set correctly.
    ```bash
    echo $NIC
+
    ```
    >**Note:** If this command doesn't show the name of the pod then run the previous command again.
 
-## Deploy the NGINX Ingress Controller Dashboard
+### Test Access to the Nginx Ingress Dashboard
 
-Finally, you are going to use the NGINX Plus Dashboard to monitor both NGINX Ingress Controller as well as our backend applications. This is a great feature to allow you to watch and triage any potential issues with NGINX Plus Ingress controller as well as any issues with your backend applications.
+Just a quick test, is your Nginx Plus Ingress Controller running, and can you see the Dashboard?  Let's try it:
 
-We will deploy a `Service` and a `VirtualServer` resource to provide access to the NGINX Plus Dashboard for live monitoring.  NGINX Ingress [`VirtualServer`](https://docs.nginx.com/nginx-ingress-controller/configuration/virtualserver-and-virtualserverroute-resources/) is a [Custom Resource Definition (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) used by NGINX to configure NGINX Server and Location blocks for NGINX configurations.
+1.  Using Kubernetes Port-Forward, connect to the $NIC pod:
 
+```bash
+kubectl port-forward $NIC -n nginx-ingress 9000:9000
+
+```
+
+1.  Open your browser to http://localhost:9000/dashboard.html.
+
+You should see the Nginx Plus Dashboard.  There is not much to see for now, but you will be adding resources to Nginx Ingress in the next few steps and Labs.
+
+1. Type Ctrl+C to stop the Port Forward when you are finished.
+
+## Deploy the NGINX Plus Ingress Controller Dashboard
+
+Next you are going to use the NGINX Plus Dashboard to monitor both NGINX Ingress Controller as well as your backend applications as Upstreams. This is a great Plus feature to allow you to watch and triage any potential issues with NGINX Plus Ingress controller as well as any issues with your backend applications in real time.
+
+You will deploy a `Service` and a `VirtualServer` resource to provide access to the NGINX Plus Dashboard for live monitoring.  NGINX Ingress [`VirtualServer`](https://docs.nginx.com/nginx-ingress-controller/configuration/virtualserver-and-virtualserverroute-resources/) is a [Custom Resource Definition (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) used by NGINX to configure NGINX Server and Location blocks for NGINX configurations.
 
 1. In the `lab3` folder, apply the `dashboard-vs.yaml` file to deploy a `Service` and a `VirtualServer` resource to provide access to the NGINX Plus Dashboard for live monitoring:
 
     ```bash
     kubectl apply -f lab3/dashboard-vs.yaml
+
     ```
     ```bash
     ###Sample output###
     service/dashboard-svc created
     virtualserver.k8s.nginx.org/dashboard-vs created
+
     ```
 
-## Deploy the Nginx CAFE Demo app
+1.  Switch Kubernetes Context to your Second AKS cluster, and repeat the previous step to deploy the same Manifest for the Nginx Dashboard.
 
-In this section, you will deploy the "Cafe Nginx" Ingress Demo, which represents a Coffee Shop website with Coffee and Tea applications. You will be adding the following components to your Kubernetes Cluster: Coffee and Tea pods, matching coffee and tea services, and a Cafe VirtualServer.
-
-The Cafe application that you will deploy looks like the following diagram below. Coffee and Tea pods and services, with NGINX Ingress routing the traffic for /coffee and /tea routes, using the `cafe.example.com` Hostname.  There is also a hidden third service - more on that later!
-
-< cafe diagram here >
-
-1. Inspect the `lab3/cafe.yaml` manifest.  You will see we are deploying 3 replicas of each the coffee and tea Pods, and create a matching Service for each.
-
-1. Deploy the Cafe application by applying these two manifests:
+1. Verify the Service and Virtual Server were created are Valid:
 
 ```bash
-kubectl apply -f lab3/cafe.yaml
-kubectl apply -f lab3/cafe-virtualserver.yaml
+kubectl get svc,vs -n nginx-ingress
 
 ```
 
 ```bash
-###Sample output###
-deployment.apps/coffee created
-service/coffee-svc created
-deployment.apps/tea created
-service/tea-svc created
-virtualserver.k8s.nginx.org/cafe-vs created
+#Sample output
+NAME                             TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                                                                   AGE
+service/dashboard-svc            ClusterIP   10.0.58.119   <none>        9000/TCP                                                                  21d
+
+NAME                                       STATE   HOST                         IP    PORTS   AGE
+virtualserver.k8s.nginx.org/dashboard-vs   Valid   dashboard.example.com                 21d
 
 ```
 
-1. Check that all pods are running, you should see three Coffee and three Tea pods:
-
-```bash
-kubectl get pods
-###Sample output###
-NAME                      READY   STATUS    RESTARTS   AGE
-coffee-56b7b9b46f-9ks7w   1/1     Running   0             28s
-coffee-56b7b9b46f-mp9gs   1/1     Running   0             28s
-coffee-56b7b9b46f-v7xxp   1/1     Running   0             28s
-tea-568647dfc7-54r7k      1/1     Running   0             27s
-tea-568647dfc7-9h75w      1/1     Running   0             27s
-tea-568647dfc7-zqtzq      1/1     Running   0          27s
-
-```
-
-1. In AKS1 cluster, you will run only 2 Replicas of the coffee and tea pods, so Scale both deployments down:
-
-```bash
-kubectl scale deployment coffee --replicas=2
-kubectl scale deployment tea --replicas=2
-
-```
-
-Now there should be only 2 of each running:
-
-```bash
-kubectl get pods
-###Sample output###
-NAME                      READY   STATUS    RESTARTS   AGE
-coffee-56b7b9b46f-9ks7w   1/1     Running   0             28s
-coffee-56b7b9b46f-mp9gs   1/1     Running   0             28s
-tea-568647dfc7-54r7k      1/1     Running   0             27s
-tea-568647dfc7-9h75w      1/1     Running   0             27s
-
-```
-
-1. Check that the Cafe `VirtualServer`, **cafe-vs**, is running:
-
-```bash
-kubectl get virtualserver cafe-vs
-
-```
-```bash
-###Sample output###
-NAME      STATE   HOST               IP    PORTS   AGE
-cafe-vs   Valid   cafe.example.com                 4m6s
-
-```
-
-**Note:** The `STATE` should be `Valid`. If it is not, then there is an issue with your yaml manifest file (cafe-vs.yaml). You could also use `kubectl describe vs cafe-vs` to get more information about the VirtualServer you just created.
-
-### Deploy the Nginx Ingress Dashboard
+### Deploy the Nginx Plus Ingress Dashboard
 
 1. Inspect the `lab3/dashboard-vs` manifest.  This will create an `nginx-ingress` Service and a VirtualServer that will expose the Nginx Ingress Controller's Plus Dashboard outside the cluster, so you can see what Nginx Ingress Controller is doing.
 
@@ -528,18 +508,21 @@ kubectl config use-context aks1-<name>
 
 ```
 
-Use the $NIC Nginx Ingress Controller pod name variable:
+Using your $NIC Nginx Ingress Controller pod name variable:
 
 Port-forward to the NIC Pod on port 9000:
 ```bash
+# Set Kube Context to cluster 1:
+kubectl config use-context n4a-aks1
 kubectl port-forward $NIC -n nginx-ingress 9000:9000
+
 ```
 
 Open your local browser to http://localhost:9000/dashboard.html.  You should see the Plus dashboard.  It should have the `HTTP Zones` cafe.example.com and dashboard.example.com - these are your VirtualServers / Hostnames.  If you check the `HTTP Upstreams` tab, it should have 2 coffee and 2 tea pods.
 
 When you are done checking out the Dashboard, type `Ctrl+C` to quit the Kubectl Port-Forward.
 
-1. Change your `Kube Context` to your second AKS cluster, and check access to the Dashboard using the steps as above.  You should find the exact same output, the Nginx Ingress Plus Dashboard running, with Zones and Upstreams of similar.  However, the IP addresses of the Upstreams `WILL` be different between the clusters, because each cluster assigns IPs to it's Pods.  
+1. Change your `Kube Context` to your second AKS cluster, and check access to the Dashboard using the steps as above.  You should find the exact same thing, the Nginx Ingress Plus Dashboard running, with Zones and Upstreams similar.  However, the IP addresses of the Upstreams `WILL` be different between the clusters, because each cluster assigns different IPs to the Pods.  
 
 1.  Optional Exercise:  If you want to see both NIC Dashboards at the same time, you can use 2 Terminals, each with a different Kube Context, and different Port-Forward commands.  In Terminal#1, try port-forward 9001:9000 for cluster1, and in Terminal#2, try port-forward 9002:9000 for cluster2.  Then two browser windows side by side for comparison.
 
@@ -551,9 +534,9 @@ kubectl scale deployment coffee --replicas=8
 
 > Pretty cool - Nginx Ingress picks up the new Pods, health-checks them first, and brings them online for load balancing just a few seconds after Kubernetes spins them up.  Scale them up and down as you choose, while watching the Dashboard, Nginx will track them accordingly.
 
-### Expose your Nginx Ingress Controller
+### Expose your Nginx Ingress Controller with NodePort
 
-1. Inspect the `lab4/nodeport-static.yaml` manifest.  This is a NodePort Service defintion that will open high-numbered ports on the Kubernetes nodes, to expose several Services that are running in the cluster.  The NodePorts are defined as static, because you will be using these port numbers with N4A, and you don't them to change.  We are using the following table to expose different Services on different Ports:
+1. Inspect the `lab3/nodeport-static.yaml` manifest.  This is a NodePort Service defintion that will open high-numbered ports on the Kubernetes nodes, to expose several Services that are running on the Nginx Ingress.  The NodePorts are intentionally defined as static, because you will be using these port numbers with N4A, and you don't them to change.  (Note: If you use ephemeral NodePorts, you will **blackhole** traffic when they change!) We are using the following table to expose different Services on different Ports:
 
 Service Port | External NodePort | Name
 |:--------:|:------:|:-------:|
@@ -564,47 +547,183 @@ Service Port | External NodePort | Name
 
 1. Deploy a NodePort Service to expose the Nginx Ingress Controller outside the cluster.
 
-```bash
-kubectl apply -f lab3/nodeport-static.yaml
+   ```bash
+   kubectl apply -f lab3/nodeport-static.yaml
 
-```
+   ```
 
 1. Verify the NodePort Service was created:
 
+   ```bash
+   kubectl get svc nginx-ingress -n nginx-ingress
+
+   ```
+
+   ```bash
+   #Sample output
+   NAME            TYPE       CLUSTER-IP    EXTERNAL-IP   PORT(S)                                                                   AGE
+   nginx-ingress   NodePort   10.0.169.30   <none>        80:32080/TCP,443:32443/TCP,9000:32090/TCP   2h
+
+   ```
+
+**NOTE:** You are probably asking, why not use the AKS/Azure Loadbalancer Service to expose the Ingress Controllers ?  It will automatically give you an External-IP, right ? You can certainly do that.  But if you do, you will need 2 additional Public external IP addresses, one for each cluster ($$$).  Instead, you will be using your Nginx for Azure instance for your Public External-IP, thereby `consolidating multiple Azure Loadbalancers into just ONE`, running on Nginx!  Nginx will use Host-based routing to forward the requests to the appropriate backends, including VMs, Docker containers, both AKS clusters, Ingress Controllers, Services, and Pods.
+
+## Expose the Nginx Ingress Dashboards with Nginx for Azure
+
+Being able to see your Nginx Ingress Dashboards remotely will be a big help in observing your traffic metrics and patterns within each AKS cluster.  It will require only 2 Nginx for Azure configuration items for each cluster - a new Nginx Server block and a new Upstream block.
+
+First, create the Upstream server block for AKS cluster #1.  You will need the Node Names from the Node Pool.  Make sure your Kube Context is n4a-aks1:
+
 ```bash
-kubectl get svc nginx-ingress -n nginx-ingress
+kubeclt config use-context n4a-aks1
+kubectl get nodes
 
 ```
-
 ```bash
 #Sample output
-
+NAME                                STATUS   ROLES   AGE   VERSION
+aks-userpool-76919110-vmss000008    Ready    agent   26h   v1.27.9
+aks-userpool-76919110-vmss000009    Ready    agent   27h   v1.27.9
 
 ```
 
-## Deploy the Nginx CAFE Demo app in the 2nd cluster
+Use the 2 Node Names as your Upstream Servers, and add `:32090` as your port numbers.  This matches the NodePort-Static that you configured previously.
 
-1. Repeat the previous section to deploy the CAFE Demo app in your second cluster.  Do not Scale the coffee and tea replicas down, leave three of each pod running.
-1. Report the same NodePort deployment, to expose the Nginx Ingress Controller outside the cluster.
+Using the Nginx4Azure Configuration Console in Azure Portal, create a new Nginx config file called `/etc/nginx/conf.d/nic1-dashboard-upstreams.conf`.  You can use the example provided, just edit the Node Names to match your cluster:
 
-## Update local DNS
+```nginx
+# Nginx 4 Azure to NIC, AKS Node for Upstreams
+# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+#
+# nginx ingress dashboard
+#
+upstream nic1_dashboard {
+  zone nic1_dashboard 256k;
+  
+  # from nginx-ingress NodePort Service / aks1 Node IPs
+  server aks-userpool-76919110-vmss000008:32090;    #aks1 node1:
+  server aks-userpool-76919110-vmss000009:32090;    #aks1 node2:
 
-We will be using FQDN hostnames for the labs, and you will need to update your local computer's `/etc/hosts` file, to use these names with N4A and Nginx Ingress Controller.
+  keepalive 8;
 
-Edit your local hosts file, adding the FQDNs as shown below.  Use the `External-IP` Address of Nginx for Azure:
+}
+
+```
+
+Submit your Nginx for Azure configuration.
+
+1. Repeat the previous Step, but for your Second AKS Cluster:
+
+Using the Nginx4Azure Azure Console, create a new Nginx config file called `/etc/nginx/conf.d/nic2-dashboard-upstreams.conf`.  You can use the example provided, just edit the Node Names to match your cluster:
+
+```nginx
+# Nginx 4 Azure to NIC, AKS Node for Upstreams
+# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+#
+# nginx ingress dashboard
+#
+upstream nic2_dashboard {
+  zone nic2_dashboard 256k;
+  
+  # from nginx-ingress NodePort Service / aks Node IPs
+  server aks-nodepool1-19485366-vmss00000h:32090;    #aks2 node1:
+  server aks-nodepool1-19485366-vmss00000i:32090;    #aks2 node2:
+  server aks-nodepool1-19485366-vmss00000j:32090;    #aks2 node3:     
+
+  keepalive 8;
+
+}
+
+```
+
+>Notice, there are 2 upstreams for Cluster1, and 3 upstreams for Cluster2, matching the Node count for each cluster.  This was intentional so you can see the differences.
+
+1. Still using the N4A Configuration Console, create a new file, called `/etc/nginx/conf.d/nic1-dashboard.conf`, using the example provided, just copy/paste.  This is the new Nginx Server block, with a hostname, port number 9001, and proxy_pass directives needed to route requests for the Dashboard to AKS Cluster1:NodePort where the Ingress Dashboard is listening:
+
+```nginx
+# N4A NIC Dashboard config for AKS1
+#
+server {
+   listen 9001;
+   server_name dashboard.example.com;
+   access_log off;
+   
+   location = /dashboard.html {
+    #return 200 "You have reached /nic1dashboard.";
+
+    proxy_pass http://nic1_dashboard;
+
+    }
+
+    location /api/ {
+    
+    proxy_pass http://nic1_dashboard;
+    }
+
+}
+
+```
+
+Submit your Nginx for Azure configuration.
+
+1. Repeat the previous step, for NIC2 in AKS2:
+
+Using the N4A Configuration Console, create a new file, called `/etc/nginx/conf.d/nic2-dashboard.conf`, using the example provided, just copy/paste.  This is the Second new Nginx Server block, with the same hostname, but using `port number 9002`, and proxy_pass directives needed to route requests for the Dashboard to AKS Cluster2:NodePort where the Ingress Dashboard is listening:
+
+```nginx
+# N4A NIC Dashboard config for AKS2
+#
+server {
+   listen 9002;
+   server_name dashboard.example.com;
+   access_log off;
+   
+   location = /dashboard.html {
+    #return 200 "You have reached /nic2dashboard.";
+
+    proxy_pass http://nic2_dashboard;
+
+    }
+
+    location /api/ {
+    
+    proxy_pass http://nic2_dashboard;
+    }
+
+}
+
+```
+
+1. Using the Azure CLI, add ports 9001-9002 to the NSG for your n4a-vnet:
 
 ```bash
-vi /etc/hosts
+< update NSG here >
 
-13.86.100.10 cafe.example.com dashboard.example.com    # Added for N4A Workshop 
 ```
 
->**Note:** Both hostnames are mapped to the same N4A External-IP.  You will use the NGINX Ingress Controller to route the traffic correctly in the upcoming labs.  
-Your N4A External-IP address will be different than the example.
+1. Update your local system DNS `/etc/hosts` file, to add `dashboard.example.com`, using the same public IP of your N4A instance.
 
-## Test Access to Nginx Cafe, and Nginx Ingress Dashboards
+```bash
+cat /etc/hosts
+
+127.0.0.1 localhost
+...
+# Nginx for Azure testing
+20.3.16.67 cafe.example.com dashboard.example.com
+...
 
 
+```
+
+1. Use Chrome or another browser to test remote access to your NIC Dashboards.  Create a new Tab or Window for each Dashboard.
+
+http://dashboard.example.com:9001/dashboard.html   > AKS1-NIC
+
+http://dashboard.example.com:9002/dashboard.html   > AKS2-NIC
+
+Bookmark these pages, and leave both of these browser Tabs or Windows open during the Workshop, you will be using them often in the next Lab Exercises, watching what Nginx Ingress is doing in each Cluster.
+
+If you are not familiar with the Nginx Plus Dashboard, you can find a link to more information in the References Section.
 
 **This completes the Lab.** 
 
@@ -615,10 +734,11 @@ Your N4A External-IP address will be different than the example.
 - [Deploy AKS cluster using Azure CLI](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli)
 - [Azure CLI command list for AKS](https://learn.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest)
 - [Installing NGINX Plus Ingress Controller Image](https://docs.nginx.com/nginx-ingress-controller/installation/nic-images/using-the-jwt-token-docker-secret/)
-- [Add Client Certificate Mac](https://docs.docker.com/desktop/faqs/macfaqs/#add-client-certificates)
-- [Add Client Certificate Windows](https://docs.docker.com/desktop/faqs/windowsfaqs/#how-do-i-add-client-certificates)
-- [Docker Engine Security Documentation](https://docs.docker.com/engine/security/certificates/)
 - [Latest NGINX Plus Ingress Images](https://docs.nginx.com/nginx-ingress-controller/technical-specifications/#images-with-nginx-plus)
+- [Nginx Live Monitoring Dashboard](https://docs.nginx.com/nginx/admin-guide/monitoring/live-activity-monitoring/)
+- [Nginx Ingress Controller Product](https://docs.nginx.com/nginx-ingress-controller/)
+- [Nginx Ingress Installation - the REAL Nginx](https://docs.nginx.com/nginx-ingress-controller/installation/installing-nic/installation-with-manifests/)
+- [Nginx Blog - Which Ingress AM I RUNNING?](https://www.nginx.com/blog/guide-to-choosing-ingress-controller-part-1-identify-requirements/)
 
 <br/>
 
@@ -627,8 +747,7 @@ Your N4A External-IP address will be different than the example.
 
 - Chris Akker - Solutions Architect - Community and Alliances @ F5, Inc.
 - Shouvik Dutta - Solutions Architect - Community and Alliances @ F5, Inc.
-- Adam Currier - Solutions Architect - Community and Alliances @ F5, Inc.
 
 -------------
 
-Navigate to ([Lab5](../lab5/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab4](../lab4/readme.md) | [LabX](../labX/readme.md))
