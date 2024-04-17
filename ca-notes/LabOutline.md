@@ -3,8 +3,8 @@
 ## Lab 0 - Prequesites - Subscription / Resources
 ## Lab 1 - Azure VNet/Subnet / Network Security Group / Nginx for Azure Overview
 ## Lab 2 - UbuntuVM/Docker / Windows VM / Cafe Demo Deployment 
-## Lab 3 - AKS / Nginx Ingress Controller Deployment
-## Lab 4 - NIC Dashboard / Cafe Demo / Redis Deployment
+## Lab 3 - AKS / Nginx Plus Ingress Deployment / NIC Dashboard
+## Lab 4 - Cafe Demo / Redis Deployment
 ## Lab 5 - Nginx for Azure Load Balancing / Reverse Proxy
 ## Lab 6 - Azure Key Vault / TLS Essentials
 ## Lab 7 - Azure Monitoring / Logging Analytics
@@ -67,7 +67,7 @@ Configure Nginx Load Balancing for these apps
 
 <br/>
 
-### Lab 3 - AKS / Nginx Ingress Controller Deployment
+### Lab 3 - AKS / Nginx Ingress Controller Deployment / NIC Dashboard
 
 - Overview
 In this lab, you will deploy 2 AKS clusters, with Nginx Ingress Controllers. 
@@ -81,17 +81,18 @@ Expose the NIC Plus Dashboards externally for Live Monitoring.
 
 <br/>
 
-### 4 - Cafe Demo / Redis Deployment / Plus Dashboard
+### 4 - Nginx Cafe Demo / Redis Deployment
 
 - Overview
-In this lab, you will deploy 2 AKS clusters, with Nginx Ingress Controllers, a Redis cluster, and a Modern Web Application.  
+In this lab, you will deploy the Nginx Cafe Demo, with Nginx Ingress Controllers, a Redis cluster, and expose them with Nginx for Azure.  
 
 - Learning Objectives
-Deploy a demo web application in the clusters.
-Deploy and test a Redis In Memory Cache to the AKS cluster.
-Configure Nginx Ingress for Cafe Demo.
+Deploy the Nginx Cafe Demo web application in both clusters.
+Configure Nginx Ingress for Cafe.
+Configure Nginx for Azure for Cafe applications.
+Deploy Redis In Memory Cache to the AKS cluster.
 Configure Nginx Ingress for Redis Leader.
-Configure Nginx for Azure for Cafe and Redis applications.
+Configure Nginx for Azure for Redis applications.
 
 <br/>
 
@@ -104,6 +105,8 @@ In this lab, you will configure Nginx for Azure to Load Balance various workload
 Configure Nginx for Azure, to Load Balance traffic to both AKS Nginx Ingress Controllers.
 Configure HTTP Split Clients, and route traffic to all 3 backend systems.
 Load test the Legacy and Modern web applications.
+Run an HTTP Load Test on Cafe.
+Run a Redis Benchmark test on Redis Leader.
 
 <br/>
 
