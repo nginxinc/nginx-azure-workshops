@@ -15,9 +15,9 @@ NGINX aaS | Docker
 By the end of the lab you will be able to:
 
 - Build your own Azure Key Vault resource.
-- Create your self-signed certificate.
-- Configure NGINX for Azure to listen for HTTPS traffic.
-- And finally, terminate TLS before proxying traffic back to backend application
+- Create your self-signed TLS certificate.
+- Configure NGINX for Azure to listen for HTTPS traffic
+- Test and validate TLS traffic components and settings
 
 ## Pre-Requisites
 
@@ -46,7 +46,7 @@ By the end of the lab you will be able to:
 
 2. The above command should provide a json output. If you look at its content then it should have a `provisioningState` key with `Succeeded` as it value. This field is an easy way to validate the command successfully provisioned the resource.
 
-3. Next you would provide permissions to access this keyvault to the user identity that you created while creating NGINX for Azure resource.
+3. Next you would provide permissions to access this keyvault to the user assigned managed identity that you created while creating NGINX for Azure resource.
 4. Copy the `PrincipalID` of the user identity into an environment variable using below command.
 
     ```bash
@@ -58,7 +58,7 @@ By the end of the lab you will be able to:
     --output tsv)
     ```
 
-5. Now assign GET secrets and GET certificates permission to this user identity for your keyvault using below command.
+5. Now assign GET secrets and GET certificates permission to this user assigned managed identity for your keyvault using below command.
 
     ```bash
     az keyvault set-policy \
@@ -68,7 +68,7 @@ By the end of the lab you will be able to:
     --object-id $MY_PRINCIPALID
     ```
 
-### Create a self-signed certificate
+### Create a self-signed TLS certificate
 
 1. In this section, you will create a self-signed certificate using the Azure CLI.
 
@@ -145,8 +145,52 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 
 1. Click on `Submit` to push the config changes to the NGINX for Azure resource.
 
-1. 
+### Test and validate TLS traffic components and settings
 
+1. Make sure you have mapped your NGINX for Azure resource public IP to `cafe.example.com` hostname within your host file. If not present then please do insert it as you would require the mapping for testing.
+
+   ```bash
+   cat /etc/hosts | grep cafe.example.com
+   ```
+
+1. Using your terminal, try to run the below curl command
+
+    ```bash
+    curl https://cafe.example.com
+    ```
+
+    ```bash
+    ##Sample Output##
+    curl: (60) SSL certificate problem: unable to get local issuer certificate
+    More details here: https://curl.se/docs/sslcerts.html
+
+    curl failed to verify the legitimacy of the server and therefore could not establish a secure connection to it. To learn more about this situation and how to fix it, please visit the web page mentioned above.
+    ```
+
+    As you can see, **curl reports an error** that the certificate is not legitimate (because it is self-signed) and refuses to complete the request. Adding the `-k` flag means `-insecure`, would tell curl to ignore this error. This flag is required for self-signed certificates.
+
+1. Try again now with a `-k` flag added to curl
+
+    ```bash
+    curl -k https://cafe.example.com
+    ```
+
+    << Copy sample output once cafe upstream has been added >>
+
+1. Now try it with a browser, go to https://cafe.example.com. YIKES - what's this?? Most modern browsers will display an **Error or Security Warning**:
+
+    ![Browser Cert Invalid](media/browser_cert_invalid.png)
+
+1. You can use browser's built-in certificate viewer to look at the details of the TLS certificate that was sent from NGINX to your browser. In address bar, click on the `Not Secure` icon, then click on `Certificate is not valid`. This will display the certificate. You can verify looking at the `Comman Name` field that this is the same certificate that you provided to NGINX for Azure resource.
+
+    ![Browser Cert Details](media/browser_cert_details.png)
+
+1. Within the browser, close the Certificate Viewer, click on the `Advanced` button, and then click on `Proceed to cafe.example.com (unsafe)` link, to bypass the warning and continue.
+   > CAUTION:  Ignoring Browser Warnings is **Dangerous**, only Ignore these warnings if you are 100% sure it is safe to proceed!!
+
+1. After you safely Proceed, you should see the cafe.example.com output as below
+
+    << Add output screenshot once cafe upstream has been added >>
 
 <br/>
 
@@ -157,12 +201,9 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 ## References:
 
 - [NGINX As A Service for Azure](https://docs.nginx.com/nginxaas/azure/)
-- [NGINX Plus Product Page](https://docs.nginx.com/nginx/)
-- [NGINX Ingress Controller](https://docs.nginx.com//nginx-ingress-controller/)
-- [NGINX on Docker](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-docker/)
+  
+- [NGINX As A Service SSL/TLS Docs](https://docs.nginx.com/nginxaas/azure/getting-started/ssl-tls-certificates/)
 - [NGINX Directives Index](https://nginx.org/en/docs/dirindex.html)
-- [NGINX Variables Index](https://nginx.org/en/docs/varindex.html)
-- [NGINX Technical Specs](https://docs.nginx.com/nginx/technical-specs/)
 - [NGINX - Join Community Slack](https://community.nginx.org/joinslack)
 
 <br/>
