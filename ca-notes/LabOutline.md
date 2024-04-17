@@ -16,6 +16,14 @@
 
 <br/>
 
+## Introduction
+
+This NGINXpert Workshop will explore the Nginx for Azure Service, available and running in Microsoft's Azure Cloud.  As a Cloud Architect, Platform or DevOps Engineer, you will create different Azure Resources and Services, and use Nginx for Azure to load balance, route, terminate TLS, split, cache, rate limit, and use other Nginx functions to manage traffic to these Azure resources.  The Workshop is led by Instructors that will show you how to do these things, and explain the technical and business merits of these solutions with Nginx for Azure.  As you follow along, the Hands On Lab Exercises will show you how to configure Nginx, and integrate with different Azure Services like Azure Key Vault, Azure Monitoring, Azure Logging / Analytics / Grafana.  A variety of different systems and applications are used as examples, including VMs, Docker containers, Kubernetes Clusters, Nginx Ingress Controllers.
+
+This is an Intermediate, 200 Level Workshop.  Students will require existing skills with Nginx, Azure CLI/Portal, Docker, Linux, and various networking tools.  You will also need a Subscription to Azure for the Hands On Labs, with Owner level access to create and configure various Azure Services.
+
+NGINXpert Workshops are also available for Nginx Basics and Nginx Ingress Controller, which are highly recommended as Prerequisites for this Workshop.  You can find those on Github as well.
+
 ### Lab 0 - Prequesites - Subscription / Resources
 
 - Overview
@@ -35,7 +43,7 @@ Verify you have the proper access to Azure resources.
 Students must be familiar with Nginx basic operations, configurations, and concepts for HTTP traffic.
 -- The Nginx Basics Workshop is HIGHLY recommended, students should have taken this workshop prior.
 -- The Nginx Plus Ingress Controller workshop is also HIGHLY recommended, students should have taken this workshop prior.
--- Previous training on Azure Resource Groups, VMs, Azure Networking, AKS, ACR, and NSG is HIGHLY recommended.
+-- Previous training on Azure Resource Groups, VMs, Azure Networking, AKS, and NSG is HIGHLY recommended.
 
 <br/>
 
@@ -99,14 +107,16 @@ Configure Nginx for Azure for Redis applications.
 ### Lab 5 - Nginx Load Balancing / Reverse Proxy
 
 - Overview
-In this lab, you will configure Nginx for Azure to Load Balance various workloads running in Azure.  After successful configuration and adding Best Practice Nginx parameters, you will Load Test these applications, and test multiple load balancing and request routing parameters to suit different use cases.
+In this lab, you will configure Nginx for Azure to Load Balance various workloads running in Azure.  After successful configuration and adding Nginx Best Practice parameters, you will Load Test these applications, and test multiple load balancing and request routing parameters to suit different use cases.
 
 - Learning Objectives
-Configure Nginx for Azure, to Load Balance traffic to both AKS Nginx Ingress Controllers.
-Configure HTTP Split Clients, and route traffic to all 3 backend systems.
+Configure Nginx for Azure, to Load Balance traffic to both AKS Clusters / Nginx Ingress Controllers.
+Configure HTTP Split Clients, Blue/Green traffic Splitting - route traffic to verious backend systems using 0-100% Ratios.
 Load test the Legacy and Modern web applications.
 Run an HTTP Load Test on Cafe.
+Configure Nginx for Azure, to Load Balance Nginx Ingress Controllers as a Headless Service with ClusterIPs.
 Run a Redis Benchmark test on Redis Leader.
+Configure Nginx for Azure, to Load Balance Nginx Ingress Controllers as a Headless Service with ClusterIPs.
 
 <br/>
 
