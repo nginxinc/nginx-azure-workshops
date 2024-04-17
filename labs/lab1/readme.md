@@ -18,9 +18,9 @@ By the end of the lab you will be able to:
 - Setup your Azure Virtual Network, Subnets and Network Security Group for inbound traffic
 - Create Public IP and user assigned managed identity to access NGINX for Azure
 - Deploy an Nginx for Azure resource
-- Create Log Analytics workspace to collect NGINX error and access logs from NGINX for azure
 - Explore Nginx for Azure
 - Create an initial Nginx configuration for testing
+- Create Log Analytics workspace to collect NGINX error and access logs from NGINX for azure
 
 ## Pre-Requisites
 
@@ -404,15 +404,99 @@ By the end of the lab you will be able to:
     }
     ```
 
+### Explore Nginx for Azure
+
+In this section you will be looking at all the resources that you created within Azure portal.
+
+1. Open Azure portal within your browser and then open your resource group.
+   ![Portal ResourceGroup home](media/portal_rg_home.png)
+
+1. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. You can see useful information like Status, NGINX for Azure resource's public IP, which nginx version is running, which vnet/subnet it is tied to etc.
+   ![Portal N4A home](media/portal_n4a_home.png)
+
+1. From the left pane click on `NGINX Configuration`. As you are opening this resource for first time and you donot have any configuration present, Azure would prompt you to "Get started with a Configuration example". Click on `Populate now` button to start with a sample configuration example.
+   ![nginx conf populate](media/nginx_conf_populate.png)
+
+1. Once you click on the `Populate now` button you will see the configuration editor section has been populated with `nginx.conf` and an `index.html` page. Click on the `Submit` button to deploy this sample config files to the NGINX for Azure resource.
+   ![nginx conf editor](media/nginx_conf_editor.png)
+
+1. Once you have submitted the configuration, you watch its progress in the notification tab present in right top corner. Intially status would be "Updating NGINX configuration" which would change to "Updated NGINX configuration successfully".
+   ![nginx conf submit success](media/nginx_conf_submit_success.png)
+
+1. Navigate back to Overview section and copy the public IP address of NGINX for Azure resource.
+
+1. In a new browser window, paste the public IP into address bar. You will notice the sample index page gets rendered into your browser.
+   ![n4a Index Page](media/n4a_index_page.png)
+
+1. This completes the validation of all the resources that you created using Azure CLI. In the upcoming labs you would be modifying the configuration files and exploring various features of NGINX for Azure resources.
+
 ### Create Log Analytics workspace to collect NGINX error and Access logs from NGINX for azure
 
-1. Create a Log Analytics workspace resource that you will attach to NGINX for Azure. This resource would be used to capture and store NGINX error and access logs. Use below command to create this resource.
+In this section you will create a Log Analytics resource that would collect Nginx logs from your Nginx for Azure resource. As this resource takes time to get provisioned and attached to NGINX for Azure resource, you are building it up here.
+
+1. Within the NGINX for Azure resource (nginx4a), navigate to managed identity section by clicking on `Identity` from the left menu. Within this section, inside the `System assigned` tab, enable system managed identity by changing the status to `on`. Click on `Save` to save your changes. Press `Yes` for the "Enable system assigned managed identity" prompt.
+    ![Enable System Identity](media/enable_system_identity.png)
+
+2. If you open up the Notifications pane, you should see a success status as shown below.
+   ![Enable system Identity success](media/enable_system_identity_success.png)
+
+3. Now open a terminal and create a Log Analytics workspace resource that you will attach to NGINX for Azure using Azure CLI. This resource would be used to capture and store NGINX error and access logs. Use below command to create this resource.
+
+    ```bash
+    ## Set environment variables
+    MY_RESOURCEGROUP=s.dutta-workshop
+    ```
 
     ```bash
     az monitor log-analytics workspace create \
     --resource-group $MY_RESOURCEGROUP \
     --name n4a-loganalytics
     ```
+
+4. Next you will update your NGINX for Azure resource to enable sending metrics to Azure monitor by setting the `--enable-diagnostics` flag to `true` using below command.
+
+    ```bash
+    az nginx deployment update \
+    --resource-group $MY_RESOURCEGROUP \
+    --name nginx4a \
+    --enable-diagnostics true
+    ```
+
+5. The last step that you need to perform to start collecting NGINX logs is to create an Azure diagnostic settings resource that will stream the NGINX logs to the log-analytics workspace that you created in previous step. Run below commands to create this resource.
+
+    ```bash
+    ## Set environment variables
+    N4A_ID=$(az nginx deployment show \
+    --resource-group $MY_RESOURCEGROUP \
+    --name nginx4a \
+    --query id \
+    --output tsv)
+
+    LOG_ANALYTICS_ID=$(az monitor log-analytics workspace show \
+    --resource-group $MY_RESOURCEGROUP \
+    --name n4a-loganalytics \
+    --query id \
+    --output tsv)
+    ```
+
+    Below command is throwing a Bad request as it doesn't recognize `NginxLogs` as a valid category. Working with Azure devs to see what is wrong.
+
+    ```bash
+    az monitor diagnostic-settings create \
+    --resource $N4A_ID \
+    --name n4a-nginxlogs \
+    --resource-group $MY_RESOURCEGROUP \
+    --workspace $LOG_ANALYTICS_ID \
+    --logs "[{category:NginxLogs,enabled:true,retention-policy:{enabled:false,days:0}}]"
+    ```
+
+    ```bash
+    az nginx deployment update -n $NAME -g $MY_RESOURCEGROUP --identity {type:SystemAssignedUserAssigned, user-assigned-identities:'/subscriptions/7a0bb4ab-c5a7-46b3-b4ad-c10376166020/resourceGroups/s.dutta-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity:{}'}
+
+    az nginx deployment update -n nginx4a -g s.dutta-workshop --identity{type:SystemAssignedUserAssigned,userAssignedIdentities:{/subscriptions/7a0bb4ab-c5a7-46b3-b4ad-c10376166020/resourceGroups/s.dutta-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity:{}}}
+    ```
+
+6. In lab7, you will explore and learn more about NGINX logs and make use of these resources that you built in this section.
 
 <br/>
 
@@ -424,10 +508,8 @@ By the end of the lab you will be able to:
 
 - [NGINX As A Service for Azure](https://docs.nginx.com/nginxaas/azure/)
 - [NGINX Plus Product Page](https://docs.nginx.com/nginx/)
-- [NGINX Ingress Controller](https://docs.nginx.com//nginx-ingress-controller/)
-- [NGINX Directives Index](https://nginx.org/en/docs/dirindex.html)
-- [NGINX Variables Index](https://nginx.org/en/docs/varindex.html)
-- [NGINX Technical Specs](https://docs.nginx.com/nginx/technical-specs/)
+- [NGINX Azure CLI command Reference](https://learn.microsoft.com/en-us/cli/azure/nginx?view=azure-cli-latest)
+- [Azure CLI Reference](https://learn.microsoft.com/en-us/cli/azure/)
 - [NGINX - Join Community Slack](https://community.nginx.org/joinslack)
 
 <br/>
