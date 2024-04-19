@@ -2,8 +2,7 @@
 
 ## Introduction
 
-
-In this lab, you will install the My Garage application, configure it for external access, learn to scale the web service, and set up caching for the image gallery (optional).
+In this lab, you will build ( x,y,x ).
 
 The My Garage application is a modern web application built using Microsoft .Net technologies. It is comprised of a frontend application and supporting web service backend. The front-end is a Single Page Application (SPA) that uses [Blazor WebAssembly](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) to render the UI in the browser. The back-end is a RESTful API built using [ASP.Net Core MVC](https://learn.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-8.0).
 
