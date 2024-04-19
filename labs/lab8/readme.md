@@ -1,36 +1,5 @@
 # NGINX Garage (UNDER CONSTRUCTION)
 
-<style>
-.tabbed-area {
-    overflow: hidden;
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
-}
-
-.tabbed-area input[type=radio] {
-    display: none;
-}
-
-.tabbed-area label {
-    float: left;
-    padding: 10px 20px;
-    cursor: pointer;
-    background-color: #ddd;
-}
-
-.tabbed-area input[type=radio]:checked + label {
-    background-color: #ccc;
-}
-
-.tabbed-area .tab {
-    display: none;
-}
-
-.tabbed-area input[type=radio]:checked ~ .tab {
-    display: block;
-    padding: 20px;
-}
-</style>
 
 ## Introduction
 
