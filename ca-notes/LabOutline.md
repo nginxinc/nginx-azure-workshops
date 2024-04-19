@@ -2,10 +2,10 @@
 
 ## Lab 0 - Prequesites - Subscription / Resources
 ## Lab 1 - Azure VNet/Subnet / Network Security Group / Nginx for Azure Overview
-## Lab 2 - UbuntuVM/Docker / Windows VM / Cafe Demo Deployment 
+## Lab 2 - Ubuntu VM / Docker / Windows VM / Cafe Demo Docker Deployment 
 ## Lab 3 - AKS / Nginx Plus Ingress Deployment / NIC Dashboard
-## Lab 4 - Cafe Demo / Redis Deployment
-## Lab 5 - Nginx for Azure Load Balancing / Reverse Proxy
+## Lab 4 - Cafe Demo / Redis AKS Deployment
+## Lab 5 - Nginx for Azure Load Balancing / Blue/Green/Canary
 ## Lab 6 - Azure Key Vault / TLS Essentials
 ## Lab 7 - Azure Monitoring / Logging Analytics
 ## Lab 8 - Nginx Garage or Azure Petshop
@@ -18,11 +18,11 @@
 
 ## Introduction
 
-This NGINXpert Workshop will explore the Nginx for Azure Service, available and running in Microsoft's Azure Cloud.  As a Cloud Architect, Platform or DevOps Engineer, you will create different Azure Resources and Services, and use Nginx for Azure to load balance, route, terminate TLS, split, cache, rate limit, and use other Nginx functions to manage traffic to these Azure resources.  The Workshop is led by Instructors that will show you how to do these things, and explain the technical and business merits of these solutions with Nginx for Azure.  As you follow along, the Hands On Lab Exercises will show you how to configure Nginx, and integrate with different Azure Services like Azure Key Vault, Azure Monitoring, Azure Logging / Analytics / Grafana.  A variety of different systems and applications are used as examples, including VMs, Docker containers, Kubernetes Clusters, Nginx Ingress Controllers.
+This NGINXpert Workshop will explore the Nginx for Azure Service, available and running in Microsoft's Azure Cloud.  As a Cloud Architect, Platform or DevOps Engineer, you will create different Azure Resources and Services, and use Nginx for Azure to load balance, route, terminate TLS, split, cache, rate limit, and use other Nginx functions to manage traffic to these Azure resources.  The Workshop is led by Instructors that will show you how to do these things, and explain the technical and business merits of these solutions using Nginx for Azure.  As you follow along, the Hands On Lab Exercises will show you how to configure Nginx, and integrate with different Azure Services like Azure Key Vault, Azure Monitoring, Azure Logging / Analytics / Grafana.  A variety of different systems and applications are used as examples, including VMs, Docker containers, Kubernetes Clusters, Nginx Ingress Controllers.
 
-This is an Intermediate, 200 Level Workshop.  Students will require existing skills with Nginx, Azure CLI/Portal, Docker, Linux, and various networking tools.  You will also need a Subscription to Azure for the Hands On Labs, with Owner level access to create and configure various Azure Services.
+*This is an Intermediate, 200 Level Workshop*, Workshop #3 in the **NGINXpert Series**.  Students will require existing skills with Nginx, Azure CLI/Portal, Docker, Linux, and various networking tools.  You will also need a Subscription to Azure for the Hands On Labs, with Owner level access to create and configure various Azure Services.
 
-NGINXpert Workshops are also available for Nginx Basics and Nginx Ingress Controller, which are highly recommended as Prerequisites for this Workshop.  You can find those on Github as well.
+NGINXpert Workshops are also available for Nginx Basics (Workshop #1) and Nginx Ingress Controller (Workshop #2), which are required as Prerequisites for this Workshop.  You can find these Workshops on Github, and there are also Nginx classes available from Nginx University. Microsoft has many great Tutorials and examples on Azure Learning, to get you prepared for this Workshop. You can find those at Microsoft Learn.
 
 ### Lab 0 - Prequesites - Subscription / Resources
 
