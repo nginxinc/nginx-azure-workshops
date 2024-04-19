@@ -192,3 +192,5 @@ az nginx deployment create \
 ## Things to improve
 
 1. Documentation for N4A AzureCLI still has sku pointing to `preview_Monthly_gmz7xq9ge3py`. It is not intuitive to guess what SKU name to use for standard deployment. I had to deploy N4A using Azure portal and then run `az nginx deployment show` command to look inside the deployment deployed via azure portal to figure out what is the name for Standard SKU.
+
+1. To create diagnostic-settings resource within azure monitor you require system assigned managed identity. There is not a single example as to how this can be done using Azure CLI. Also Managed Identity doc (https://docs.nginx.com/nginxaas/azure/getting-started/managed-identity/) misguides you as it says you can have either user assigned or system assigned identity to work with Azure keyvault, monitor and storage. It misses the point that Azure monitor needs to have a system assigned identity to create above mentioned resource.
