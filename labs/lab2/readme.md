@@ -42,6 +42,8 @@ By the end of the lab you will be able to:
 
 ## Deploy UbuntuVM with Azure CLI
 
+<< TODO - check variables >>
+
 After logging onto your Azure tenant, set the following Environment variables needed for this lab:
 
 ```bash
@@ -50,22 +52,6 @@ export REGION=CentralUS
 export MY_VM_NAME=ubuntuvm
 export MY_USERNAME=azureuser
 export MY_VM_IMAGE="Canonical:0001-com-ubuntu-server-jammy:server-22_04-lts-gen2:latest"
-
-```
-
-To see a list of UbuntuVMs available to you, try:
-
-```bash
-az vm image list --location $MY_LOCATION --publisher Canonical --output table
-
-```
-
-```bash
-#Sample output
-You are viewing an offline list of images, use --all to retrieve an up-to-date list
-Architecture    Offer                         Publisher    Sku             Urn                                                           UrnAlias    Version
---------------  ----------------------------  -----------  --------------  ------------------------------------------------------------  ----------  ---------
-x64             0001-com-ubuntu-server-jammy  Canonical    22_04-lts-gen2  Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:latest  Ubuntu2204  latest
 
 ```
 
@@ -262,7 +248,15 @@ Leave your SSH Terminal running, you will use it in the next Exercise.
 
 You will now use Docker Compose to create and deploy three Nginx `ingress-demo` containers.  These will be your first group of `backends` that will be used for load balancing with Nginx for Azure.
 
-On the Ubuntu VM, create a new folder in the `/home/azureuser` directory, call it `cafe`.
+1. Inspect the `lab2/docker-compose.yml` file.  Notice you are pulling the `nginxinc/ingress-demo` image, and starting three containers.  The three containers are configured as follows:
+
+Container Name | Name:port
+:-------------:|:------------:
+docker-web1 | ubuntuvm:81
+docker-web2 | ubuntuvm:82
+docker-web3 | ubuntuvm:83
+
+1. On the Ubuntu VM, create a new folder in the `/home/azureuser` directory, call it `cafe`.
 
 ```bash
 azureuser@ubuntuvm: cd $HOME
@@ -271,15 +265,6 @@ azureuser@ubuntuvm: cd cafe
 azureuser@ubuntuvm: sudo vi docker-compose.yml
 
 ```
-
-Inspect the `lab2/docker-compose.yml` file.  Notice you are pulling the `nginxinc/ingress-demo` image, and starting three containers.  The three containers are configured as follows:
-
-Container Name | Name:port
-:-------------:|:------------:
-docker-web1 | ubuntuvm:81
-docker-web2 | ubuntuvm:82
-docker-web3 | ubuntuvm:83
-
 
 Copy the contents from the `lab2/docker-compose.yml` file, into the same filename on the Ubuntu VM.  Save the file and exit VI.
 
@@ -297,7 +282,7 @@ sudo docker ps -a
 
 ```
 
-It should look similar to this.  Notice that each container is listening on a unique TCP port on the Docker host - Ports 81, 82, and 83 for web1, web2 and web3, respectively.
+It should look similar to this.  Notice that each container is listening on a unique TCP port on the Docker host - Ports 81, 82, and 83 for docker-web1, docker-web2 and docker-web3, respectively.
 
 ```bash
 #Sample output
@@ -337,7 +322,7 @@ tcp6       0      0 :::4431                 :::*                    LISTEN
 
 ```
 
-Yes, looks like ports 81, 82, and 83 are Listening.  Note:  If you used a different VM, you may need some host Firewall rules to allow traffic to the containers.
+Yes, looks like ports 81, 82, and 83 are Listening.  Note:  If you used a different VM, you may need to update the VM Host Firewall rules to allow traffic to the containers.
 
 Test all three containers with curl:
 
@@ -510,7 +495,9 @@ Try the coffee and tea URLs, at http://cafe.example.com/coffee and /tea.
 
 You should see a 200 OK Response.  Did you see the `X-Proxy-Pass` header - set to the Upstream block name.  
 
-Did you notice the `Server` header?  This is the Nginx Server Token. Optional - Change the Server token to your name, and Submit your configuration.  The server_tokens directive is found in the `nginx.conf` file.  Change it from `N4A-$nginx_version`, to `N4A-$nginx_version-myname`, and click Submit.
+Did you notice the `Server` header?  This is the Nginx Server Token. 
+
+**Optional** - Change the Server token to your name, and Submit your configuration.  The server_tokens directive is found in the `nginx.conf` file.  Change it from `N4A-$nginx_version`, to `N4A-$nginx_version-myname`, and click Submit.
 
 Try the curl again.  See the change ?  Set it back if you like, the Server token is usually hidden for Security reasons, but you can use it as a quick identity tool temporarily.  (Which server did I hit?)
 
@@ -538,6 +525,8 @@ Click Refresh serveral times.  You will notice the `Server Name` and `Server Ip`
 Congratulations!!  You have just completed launching a simple web application with Nginx for Azure, running on the Internet, with just a VM, Docker, and 2 config files for Nginx for Azure.  That wasn't so hard now, was it?
 
 <br/>
+
+ << TODO - check and fix >>
 
 ## Deploy Windows VM with Azure CLI
 
