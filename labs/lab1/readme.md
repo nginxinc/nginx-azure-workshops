@@ -1,8 +1,8 @@
-# Azure Network Build and Nginx for Azure Overview
+# Azure Network Build and NGINX for Azure Overview
 
 ## Introduction
 
-In this lab, you will be adding and configuring the Azure Networking components needed for this workshop.  This will require a few network resources, and a Network Security Group to allow incoming traffic to your Nginx for Azure workshop resources.  Then you will explore the Nginx for Azure product, as a quick Overview of what it is and how to deploy it.
+In this lab, you will be adding and configuring the Azure components needed for this workshop.  This will require a few network resources, a Network Security Group and a Public IP to allow incoming traffic to your NGINX for Azure workshop resource. You will also deploy NGINX for Azure resource. Then you will explore the Nginx for Azure product, as a quick Overview of what it is and how to deploy it.
 
 < Lab specific Images here, in the /media sub-folder >
 
@@ -64,6 +64,8 @@ By the end of the lab you will be able to:
 
 ### Setup your Azure Virtual Network, Subnets and Network Security Group
 
+<< Place Holder for a Network Diagram explaining network components being created in this section >>
+
 1. Create a virtual network (vnet) named `n4a-vnet` using below command.
 
     ```bash
@@ -103,7 +105,9 @@ By the end of the lab you will be able to:
     }
     ```
 
-1. Create a network security group(NSG) named `n4a-nsg` using below command.
+    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
+
+2. Create a network security group(NSG) named `n4a-nsg` using below command.
 
     ```bash
     az network nsg create \
@@ -111,7 +115,7 @@ By the end of the lab you will be able to:
     --name n4a-nsg
     ```
 
-1. Add two NSG rules to allow any traffic on port 80 and 443 from your system's public IP. Run below command to create the two rules.
+3. Add two NSG rules to allow any traffic on port 80 and 443 from your system's public IP. Run below command to create the two rules.
 
     ```bash
     ## Rule 1 for HTTP traffic
@@ -199,7 +203,7 @@ By the end of the lab you will be able to:
     }
     ```
 
-1. Create a subnet that you will use with NGINX for Azure resource. You will also attach the NSG that you just created to this subnet.
+4. Create a subnet that you will use with NGINX for Azure resource. You will also attach the NSG that you just created to this subnet.
 
     ```bash
     az network vnet subnet create \
@@ -244,7 +248,7 @@ By the end of the lab you will be able to:
     }
     ```
 
-1. In similar fashion create two more subnets that would be used with AKS cluster in later labs.
+5. In similar fashion create two more subnets that would be used with AKS cluster in later labs.
 
     ```bash
     az network vnet subnet create \
@@ -404,31 +408,37 @@ By the end of the lab you will be able to:
     }
     ```
 
+    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
+
 ### Explore Nginx for Azure
 
-In this section you will be looking at all the resources that you created within Azure portal.
+NGINX as a Service for Azure is a service offering that is tightly integrated into Microsoft Azure public cloud and its ecosystem, making applications fast, efficient, and reliable with full lifecycle management of advanced NGINX traffic services. NGINXaaS for Azure is available in the Azure Marketplace.
+
+NGINXaaS for Azure is powered by NGINX Plus, which extends NGINX Open Source with advanced functionality and provides customers with a complete application delivery solution. Initial use cases covered by NGINXaaS include L7 HTTP load balancing and reverse proxy which can be managed through various Azure management tools. NGINXaaS allows you to provision distinct deployments as per your business or technical requirements.
+
+In this section you will be looking at NGINX for Azure resource that you created within Azure portal.
 
 1. Open Azure portal within your browser and then open your resource group.
    ![Portal ResourceGroup home](media/portal_rg_home.png)
 
-1. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. You can see useful information like Status, NGINX for Azure resource's public IP, which nginx version is running, which vnet/subnet it is tied to etc.
+2. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. You can see useful information like Status, NGINX for Azure resource's public IP, which nginx version is running, which vnet/subnet it is tied to etc.
    ![Portal N4A home](media/portal_n4a_home.png)
 
-1. From the left pane click on `NGINX Configuration`. As you are opening this resource for first time and you donot have any configuration present, Azure would prompt you to "Get started with a Configuration example". Click on `Populate now` button to start with a sample configuration example.
+3. From the left pane click on `NGINX Configuration`. As you are opening this resource for first time and you donot have any configuration present, Azure would prompt you to "Get started with a Configuration example". Click on `Populate now` button to start with a sample configuration example.
    ![nginx conf populate](media/nginx_conf_populate.png)
 
-1. Once you click on the `Populate now` button you will see the configuration editor section has been populated with `nginx.conf` and an `index.html` page. Click on the `Submit` button to deploy this sample config files to the NGINX for Azure resource.
+4. Once you click on the `Populate now` button you will see the configuration editor section has been populated with `nginx.conf` and an `index.html` page. Click on the `Submit` button to deploy this sample config files to the NGINX for Azure resource.
    ![nginx conf editor](media/nginx_conf_editor.png)
 
-1. Once you have submitted the configuration, you watch its progress in the notification tab present in right top corner. Intially status would be "Updating NGINX configuration" which would change to "Updated NGINX configuration successfully".
+5. Once you have submitted the configuration, you watch its progress in the notification tab present in right top corner. Intially status would be "Updating NGINX configuration" which would change to "Updated NGINX configuration successfully".
    ![nginx conf submit success](media/nginx_conf_submit_success.png)
 
-1. Navigate back to Overview section and copy the public IP address of NGINX for Azure resource.
+6. Navigate back to Overview section and copy the public IP address of NGINX for Azure resource.
 
-1. In a new browser window, paste the public IP into address bar. You will notice the sample index page gets rendered into your browser.
+7. In a new browser window, paste the public IP into address bar. You will notice the sample index page gets rendered into your browser.
    ![n4a Index Page](media/n4a_index_page.png)
 
-1. This completes the validation of all the resources that you created using Azure CLI. In the upcoming labs you would be modifying the configuration files and exploring various features of NGINX for Azure resources.
+8. This completes the validation of all the resources that you created using Azure CLI. In the upcoming labs you would be modifying the configuration files and exploring various features of NGINX for Azure resources.
 
 ### Create Log Analytics workspace to collect NGINX error and Access logs from NGINX for azure
 
@@ -496,7 +506,7 @@ In this section you will create a Log Analytics resource that would collect Ngin
     az nginx deployment update -n nginx4a -g s.dutta-workshop --identity{type:SystemAssignedUserAssigned,userAssignedIdentities:{/subscriptions/7a0bb4ab-c5a7-46b3-b4ad-c10376166020/resourceGroups/s.dutta-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity:{}}}
     ```
 
-6. In lab7, you will explore and learn more about NGINX logs and make use of these resources that you built in this section.
+6. In upcoming lab, you will explore and learn more about NGINX logs and make use of these resources that you built in this section.
 
 <br/>
 
