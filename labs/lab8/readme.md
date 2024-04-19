@@ -1,24 +1,24 @@
-#  NGINX Garage or Azure Petshop
+#  NGINX My Garage
 
 ## Introduction
 
-In this lab, you will build ( x,y,x ).
 
-< Lab specific Images here, in the /media sub-folder >
+In this lab, you will install the My Garage application, configure it for external access, learn to scale the web service, and set up caching for the image gallery (optional).
 
-NGINX aaS | Docker
-:-------------------------:|:-------------------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)
-  
+The My Garage application is a modern web application built using Microsoft .Net technologies. It is comprised of a frontend application and supporting web service backend. The front-end is a Single Page Application (SPA) that uses [Blazor WebAssembly](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) to render the UI in the browser. The back-end is a RESTful API built using [ASP.Net Core MVC](https://learn.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-8.0).
+
+| ![My Garage Home Page](./MyGarage-Home.png) | ![My Garage Vehicles Page](./MyGarage-Vehicles.png) |
+|------|------|
+| ![My Garage Photo Gallery Page](./MyGarage-PhotoGallery.png) | ![My Garage Seed Data Page](./MyGarage-SeedData.png) |
+
+
 ## Learning Objectives
 
 By the end of the lab you will be able to:
 
-- Introduction to `xx`
-- Build an `yyy` Nginx configuration
-- Test access to your lab enviroment with Curl and Chrome
-- Investigate `zzz`
-
+- Create all the resources necessary to deploy the My Garage application
+- Ensure the My Garage application is accessible from the internet
+- Monitor traffic to the My Garage application using the NGINX Dashboard
 
 ## Pre-Requisites
 
