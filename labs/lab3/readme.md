@@ -62,7 +62,7 @@ will name your Clusters:
 - `n4a-aks1`
 - `n4a-aks2`
 
-- You will also use your name or email for the Owner tag, like  `owner=shouvik` to further identify your assets in a shared Azure account.
+- You will also use your name or email for the Owner tag, like  `owner=s.dutta` to further identify your assets in a shared Azure account.
 
 ## Deploy 1st Kubernetes Cluster with Azure CLI
 
@@ -76,23 +76,25 @@ First, you need to set multiple ENVIRONMENT variables, which are passed to the A
     MY_LOCATION=centralus
     MY_AKS=n4a-aks1
     MY_NAME=s.dutta
-    AKS_NODE_VM=Standard_B2s
     K8S_VERSION=1.27
-    MY_VNET=n4a-vnet
-    MY_SUBNET=/subscriptions/7a0bb4ab-c5a7-46b3-b4ad-c10376166020/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/virtualNetworks/$MY_VNET/subnets/aks1
+    MY_SUBNET=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks1-subnet --vnet-name n4a-vnet --query id -o tsv)
 
+    ```
+    
+    ```bash
     # Create First AKS Cluster
     az aks create \
         --resource-group $MY_RESOURCEGROUP \
         --name $MY_AKS \
         --location $MY_LOCATION \
         --node-count 3 \
-        --node-vm-size $AKS_NODE_VM \
+        --node-vm-size Standard_B2s \
         --kubernetes-version $K8S_VERSION \
         --tags owner=$MY_NAME \
         --vnet-subnet-id=$MY_SUBNET
         --enable-addons monitoring \
         --generate-ssh-keys
+
    ```
    >**Note**: 
    >At the time of this writing, 1.27 is the latest kubernetes version available in Azure AKS. 
@@ -103,12 +105,13 @@ First, you need to set multiple ENVIRONMENT variables, which are passed to the A
    az aks install-cli
    ```
 
-3. Configure `kubectl`` to connect to your Azure AKS cluster using below command.
+3. Configure `kubectl` to connect to your Azure AKS cluster using below command.
    ```bash
    MY_RESOURCEGROUP=s.dutta
    MY_AKS=n4a-aks1
 
    az aks get-credentials --resource-group $MY_RESOURCEGROUP --name $MY_AKS
+
    ```
 
 ## Deploy 2nd Kubernetes Cluster with script in Azure Bash
@@ -121,20 +124,22 @@ First, you need to set multiple ENVIRONMENT variables, which are passed to the A
     # Set Variables to match your Workshop settings
     MY_RESOURCEGROUP=s.dutta
     MY_LOCATION=centralus
-    MY_AKS=n4a-aks2           # Change name 
+    MY_AKS=n4a-aks2                # Change name 
     MY_NAME=s.dutta
-    AKS_NODE_VM=Standard_B2s
     K8S_VERSION=1.27
-    MY_VNET=n4a-vnet
-    MY_SUBNET=/subscriptions/7a0bb4ab-c5a7-46b3-b4ad-c10376166020/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/virtualNetworks/$MY_VNET/subnets/aks2
+    MY_SUBNET=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks2-subnet --vnet-name n4a-vnet --query id -o tsv)
+
+    ```
 
     # Create Second AKS Cluster
+
+    ```bash
     az aks create \
         --resource-group $MY_RESOURCEGROUP \
         --name $MY_AKS \
         --location $MY_LOCATION \
         --node-count 4 \
-        --node-vm-size $AKS_NODE_VM \
+        --node-vm-size Standard_B2s \
         --kubernetes-version $K8S_VERSION \
         --tags owner=$MY_NAME \
         --vnet-subnet-id=$MY_SUBNET \
@@ -143,36 +148,44 @@ First, you need to set multiple ENVIRONMENT variables, which are passed to the A
         --generate-ssh-keys
    ```
 
+< TODO - check that both Kube Contexts are created >
+
 1. **Managing Both Clusters:** As you are managing multiple Kubernetes clusters, you can easily change between Kubectl Admin Contexts using the `kubectl config use-context` command:
    
    ```bash
-   # Get a list of kubernetes clusters in your local .kube config file:
+   # Get a list of kubernetes contexts in your local .kube config file:
    kubectl config get-contexts
+
    ```
 
    ```bash
    ###Sample Output###
    CURRENT   NAME                          CLUSTER           AUTHINFO                         NAMESPACE
-*         n4a-aks1                   n4a-aks1        clusterUser_shouvik_n4a-aks1
-          n4a-aks2                   n4a-aks2        clusterUser_shouvik_n4a-aks2
+*         n4a-aks1                   n4a-aks1        clusterUser_s.dutta-workshop_n4a-aks1
+          n4a-aks2                   n4a-aks2        clusterUser_s.dutta-workshop_n4a-aks2
           kubernetes-admin@kubernetes   kubernetes        kubernetes-admin
           rancher-desktop               rancher-desktop   rancher-desktop
+
    ```
    ```bash 
    # Set context
    kubectl config use-context n4a-aks1
+
    ```
    ```bash
    # Check which context you are currently targeting
    kubectl config current-context
+
    ```
    ```bash
    ###Sample Output###
    n4a-aks1
+
    ```
    ```bash
    # Allows you to switch between contexts using their name
    kubectl config use-context <CONTEXT_NAME>
+
    ```
 
 1. Test if you are able to access your Second AKS2 cluster.
