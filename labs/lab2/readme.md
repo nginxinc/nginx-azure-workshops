@@ -272,7 +272,7 @@ azureuser@ubuntuvm: sudo vi docker-compose.yml
 
 ```
 
-Inspect the `lab3/docker-compose.yml` file.  Notice you are pulling the `nginxinc/ingress-demo` image, and starting three containers.  The three containers are configured as follows:
+Inspect the `lab2/docker-compose.yml` file.  Notice you are pulling the `nginxinc/ingress-demo` image, and starting three containers.  The three containers are configured as follows:
 
 Container Name | Name:port
 :-------------:|:------------:
@@ -281,7 +281,7 @@ docker-web2 | ubuntuvm:82
 docker-web3 | ubuntuvm:83
 
 
-Copy the contents from the `lab3/docker-compose.yml` file, into the same filename on the Ubuntu VM.  Save the file and exit VI.
+Copy the contents from the `lab2/docker-compose.yml` file, into the same filename on the Ubuntu VM.  Save the file and exit VI.
 
 Start up the three Nginx demo containers.  This tells Docker to read the compose file and start the three containers:
 
