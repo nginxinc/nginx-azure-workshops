@@ -72,21 +72,13 @@ In this exercise you will establish the necessary Azure resources to deploy the 
 
 First, let's establish the Storage Account.
 
-<div class="tabbed-area">
-    <input id="tab1" type="radio" name="tabs" checked>
-    <label for="tab1">Bash</label>
-    
-    <input id="tab2" type="radio" name="tabs">
-    <label for="tab2">PowerShell</label>
-    
-    <div class="tab">
-        ```bash
-        # Bash code here
-        ```
-    </div>
-    
-    <div class="tab">
-        ```powershell
+Shell script to create the Azure resources:
+```shell
+
+```
+
+PowerShell script to create the Azure resources:
+```powershell
 <#
     establish-azure-resources.ps1
 
@@ -95,79 +87,64 @@ First, let's establish the Storage Account.
     The script assumes that you have the Azure CLI installed and configured to point to the desired Azure Subscription.
 #>
 
-$Ticks = (Get-Date).Ticks
-$Location = "westus2"
-$ResourceGroupName = "<YOUR_RESOURCE_GROUP_NAME>"
+# These need to be set by the user before running the script
+$ResourceGroupName = "<YOUR_RESOURCE_GROUP_NAME>"                       # **User Input: This is the name of the Resource Group created in previous labs
+$SasExpiry = "<YOUR_EXPIRY_DATE_AND_TIME>"                              # **User Input: Example: "2024-12-31T23:59:59Z"
+$RedisConnectionString = "<YOUR_REDIS_CONNECTION_STRING>"               # **User Input: This is the connection string for the Redis Cache
+
+$Ticks = (Get-Date).Ticks                                               # This is used to make the resource names unique
+$Location = "westus2"                                                   # Change this to the Azure Region of choice
 $StorageAccountName = "mygsa" + $Ticks
 $StorageContainerName = "mygsc" + $Ticks
 $SasTokenName = "mygsas" + $Ticks
-$SasExpiry = "2024-05-31T23:59:59Z"
 $AppConfigName = "mygac" + $Ticks
+$owner = $(whoami)                                                      # Used for tagging resources, change as desired
+
+# These correspond to the keys in the AppConfig that the My Garage application will use to access the resources, do not modify
 $SasTokenAppConfigKey = "AzureStorageSasToken"
-$StorageConnectionStringConfigKey = "AzureStorageConnectionString"
+$StorageConnectionStringConfigKey = "AzureStorageConnectionString"      
 $StorageContainerNameConfigKey = "AzureStorageContainerName"
 $RedisConnectionStringConfigKey = "RedisConnectionString"
-$owner = $(whoami)
 
 clear
-
-<# -------------------------------- #>
-<# Clean Up Previous Run #>
-
-echo "Deleting existing resources..."
-
-az group delete --name $ResourceGroupName --yes
 
 <# -------------------------------- #>
 <# Create a new set of stuff #>
 
 echo "Creating resources..."
     
-#-- Storage Account, The Place to Store Stuff
+# Storage Account, The Place to Store Stuff
 # * The --allow-blob-public-access true is required to allow the container to be public
 az storage account create --name $StorageAccountName --resource-group $ResourceGroupName --location $Location --sku Standard_LRS --kind StorageV2 --access-tier Cool --allow-blob-public-access true --tags environment=production owner=$owner
 
-#-- The Account Key is needed for subsequent resources
+# The Account Key is needed for subsequent resources
 $accountKey=$(az storage account keys list --resource-group $ResourceGroupName --account-name $StorageAccountName --query "[0].value" --output tsv)
 
-#-- CORS ensure that the storage account can be accessed from the web
+# CORS ensure that the storage account can be accessed from the web
 az storage cors add --account-name $StorageAccountName --account-key $accountKey --services b --origins "*" --methods GET HEAD --allowed-headers "*" --exposed-headers "*" --max-age 3600
 
-#-- The Storage Connection String is necessary for the App Configuration Store, it is used to let the Application store images
+# The Storage Connection String is necessary for the App Configuration Store, it is used to let the Application store images
 $storageConnectionString=$(az storage account show-connection-string --name $StorageAccountName --resource-group $ResourceGroupName --output tsv)
 
-#-- Storage Container, The Place to Store Images
+# Storage Container, The Place to Store Images
 az storage container create --name $StorageContainerName --account-name $StorageAccountName --account-key $accountKey --public-access blob
 
-#-- Is this really necessary??
-#az storage container set-permission --name $StorageContainerName --account-name $StorageAccountName --account-key $accountKey --public-access blob
-
-#-- The App Configuration Store, The Place to Store Configuration
+# The App Configuration Store, The Place to Store Configuration
 az appconfig create --name $AppConfigName --resource-group $ResourceGroupName --location $Location --sku Standard --query id --output tsv
 
-#-- The Web Application -- My Garage -- needs this to be able to connect to the AppConfig instance and grab configuration
+# The Web Application -- My Garage -- needs this to be able to connect to the AppConfig instance and grab configuration
 $appConfigConnectionString=$(az appconfig credential list --name $AppConfigName --resource-group $ResourceGroupName --query "[?name=='Primary Read Only'].connectionString" -o tsv)
 
-#-- The values required by the application need to be seeded. Note that all except for the RedisConnectionString have been gathered by this script
+# The values required by the application need to be seeded. Note that all except for the RedisConnectionString have been gathered by this script
 az appconfig kv set --yes --name $AppConfigName --key $StorageConnectionStringConfigKey --value "$storageConnectionString"
 az appconfig kv set --yes --name $AppConfigName --key $StorageContainerNameConfigKey --value "$StorageContainerName"
-az appconfig kv set --yes --name $AppConfigName --key $RedisConnectionStringConfigKey --value "kungdu.wagner-x.net"
+az appconfig kv set --yes --name $AppConfigName --key $RedisConnectionStringConfigKey --value "$RedisConnectionString"
 
-#echo "Resource Group ID: $(az group show --name $ResourceGroupName --query id --output tsv)"
-#echo "Storage Account ID: $(az storage account show --name $StorageAccountName --resource-group $ResourceGroupName --query id --output tsv)"
-#echo "App Configuration Store ID: $(az appconfig show --name $AppConfigName --resource-group $ResourceGroupName --query id --output tsv)"
-#echo "Storage Container ID: $(az storage container show --name $StorageContainerName --account-name $StorageAccountName --account-key $accountKey --query id --output tsv)"
-#echo "Account Key: $accountKey"
-#echo "Storage Connection String: $storageConnectionString"
-#echo "Storage Container Name: $StorageContainerName"
-
-#-- Burp out the AppConfig ConnectionString so it can be included in the MyGarage application startup. It is an argument to the docker-compose command:
-# docker-compose -e AppConfigurationConnectionString=$appConfigConnectionString up 
+# Burp out the AppConfig ConnectionString so it can be included in the MyGarage application startup. It is an argument to the docker-compose command:
+# The docker-compose file will be updated to include this value in the environment variables
 echo "AppConfig Connection String: $appConfigConnectionString"
 
-        ```
-    </div>
-</div>
+```
 
 
 <numbered steps are here>
