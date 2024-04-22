@@ -250,7 +250,7 @@ So, why the funny names for the Upstreams with Nginx Ingress ?  If follows a Sta
 
 So that displays the Cafe Upstreams as:
 - vs_default_cafe-vs_coffee
-- vs_default_cafe-vs_test
+- vs_default_cafe-vs_tea
 
 This naming convention helps you identify the VirtualServers, namespaces, and Services that Nginx Ingress is using.
 
@@ -845,7 +845,7 @@ split_clients $request_id $upstream {
 
         proxy_pass http://$upstream;          # Use Split Clients config
 
-        add_header X-Proxy-Pass SplitClient;  # Custom Header
+        add_header X-Proxy-Pass $upstream;    # Custom Header
          
         #proxy_pass http://cafe_nginx;        # Proxy AND load balance to Docker VM
         #add_header X-Proxy-Pass cafe_nginx;  # Custom Header
@@ -900,7 +900,7 @@ split_clients $request_id $upstream {
    #95% aks1_ingress;
    #99% aks1_ingress;
    #* aks1_ingress;
-   30% aks2_ingress;
+   #30% aks2_ingress;
    * cafe_nginx;          # Ubuntu VM containers
    #* aks1_nic_direct;    # Direct to NIC pods - headless/no nodeport
 
@@ -908,7 +908,7 @@ split_clients $request_id $upstream {
 
 ```
 
-Submit your Nginx Configuration, while watching the AKS1 NIC Dashboard.  In a few seconds, traffic stats should jump now to 30% !  Hang on to your debugger ...
+Submit your Nginx Configuration, while watching the AKS1 NIC Dashboard.  In a few seconds, traffic stats should jump now to 30%!  Hang on to your debugger ...
 
 After a couple hours of 30%, all the logs are clean, the dev and test tools are happy, there are NO support tickets, and all is looky peachy.
 
@@ -989,11 +989,11 @@ Voila!!  You are now splitting Live traffic to THREE separate backend platforms,
 - If all the servers in an Upstream Block are DOWN, you will get that ratio of 502 errors, so always test your Upstreams prior to adding them to Split configurations.  There is no elegant way to "re-try" when using Splits.  Changing Splits under HIGH load is not recommended, there is always a chance something could go wrong and you will drop clients/traffic.  A maintenance window for changes is always a Best Practice.
 - Split Clients is also available for TCP traffic, like your Redis Cluster.  It splits traffic based on new incoming TCP connections.
 
-*HIT a bug! - Director of Dev says the new code can't handle that load, some other dependent system has crashed!*
+>*HIT a bug! - Director of Dev says the new code can't handle that 1% load, several other backend systems have crashed!*
 
-No worries, you comment out the `aks2_ingress` in the Split Config, and his 1% Live traffic is now going somewhere safe, when you Submit your Nginx Configuration!
+>>No worries, you comment out the `aks2_ingress` in the Split Config, and his 1% Live traffic is now going somewhere safe, when you Submit your Nginx Configuration!
 
-### Nginx HTTP Split Clients Use Cases
+### Nginx HTTP Split Clients Solutions
 
 Using the HTTP Split Clients module from Nginx unlocks multiple traffic management solutions.  Consider some of these that might be applicable to your environment:
 
@@ -1003,13 +1003,13 @@ Using the HTTP Split Clients module from Nginx unlocks multiple traffic manageme
 - - Node upgrades / additions
 - - Software upgrades/security patches
 - - Cluster resource expansions - memory, compute, storage, network, nodes
-- - Troubleshooting, using Live Traffic if needed
+- - QA and Troubleshooting, using Live Traffic if needed
 - - ^^ With NO downtime or reloads
 - API Gateway testing/upgrades/migrations
 
 ## Wrap Up
 
-As you have seen, using Nginx for Azure is quite easy, to create various backend Systems, Services, even platforms of different types; and have Nginx to Load Balance them through a single entry point. Using Advanced Nginx directives/configs with Resolver, Nginx Ingress Controllers, Headless, and even Split Clients help you control and manage dev/test/pre-prod and even Production workloads with ease.  Dashboards and Monitoring give you insight with over 200 useful metrics, providing data needed for decisions based on both real time and historal metadata about your Apps and Traffic.
+As you have seen, using Nginx for Azure is quite easy, to create various backend Systems, Services, even platforms of different types; and have Nginx Load Balance them through a single entry point. Using Advanced Nginx directives/configs with Resolver, Nginx Ingress Controllers, Headless, and even Split Clients help you control and manage dev/test/pre-prod and even Production workloads with ease.  Dashboards and Monitoring give you insight with over 240 useful metrics, providing data needed for decisions based on both real time and historal metadata about your Apps and Traffic.
 
 **This completes Lab5.**
 
