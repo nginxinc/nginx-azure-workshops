@@ -944,7 +944,7 @@ Submit your 50% configuration and cross your fingers.  HERO or ZERO, what will i
 
 >Now that you get the concept and the configuration steps, you can see how EASY it is with Nginx Split Clients to route traffic to different backend applications, including different versions of apps - it's as easy as creating a new Upstream block, and determining the Split Ratio.  And consider this not so subtle point - you did not have to create ONE ticket, change a DNS record, change a firewall rules, update cloudXYZ device - nothing!  All you did was tell Nginx to split existing traffic, accelerating your app development velocity into Warp Drive.
 
->>The Director of Development has heard about your success with Nginx for Azure Split Clients, and now also wants a small percentage of Live Traffic for the next App version, running in AKS2.  Oh NO!!  - Success usually does mean more work.  But lucky for you, Split clients can work with many Upstreams.  So after several beers and intense discussions, your team decides on the following Split:
+>>The Director of Development has heard about your success with Nginx for Azure Split Clients, and now also wants a small percentage of Live Traffic for the next App version, running in AKS Cluster2.  Oh NO!!  - Success usually does mean more work.  But lucky for you, Split clients can work with many Upstreams.  So after several beers and intense discussions, your QA team decides on the following Split:
 
 - AKS1 will get 80% traffic - for new version
 - Docker VM will get 19% traffic - for legacy/current version
@@ -987,15 +987,19 @@ Voila!!  You are now splitting Live traffic to THREE separate backend platforms,
 - .01% is the smallest split ratio available, that = 1/10,000th.  
 - The * asterick means either 100%, or the remainder after other ratios.   
 - If all the servers in an Upstream Block are DOWN, you will get that ratio of 502 errors, so always test your Upstreams prior to adding them to Split configurations.  There is no elegant way to "re-try" when using Splits.  Changing Splits under HIGH load is not recommended, there is always a chance something could go wrong and you will drop clients/traffic.  A maintenance window for changes is always a Best Practice.
-- Split Clients is also available for TCP traffic, like your Redis Cluster.  It splits traffic based on new incoming TCP connections.
+- Split Clients is also available for TCP traffic, like your Redis Cluster.  It splits traffic based on new incoming TCP connections.  Every heard of Active/Active Redis Clusters?  Yes, you can do that and control the ratios, just like shown here for HTTP traffic.
 
->*HIT a bug! - Director of Dev says the new code can't handle that 1% load, several other backend systems have crashed!*
+>*HIT a nasty bug! - Director of Dev says the new code can't handle that 1% load, and several other backend systems have crashed!*  - not quite ready for testing like his devs told him...
 
->>No worries, you comment out the `aks2_ingress` in the Split Config, and his 1% Live traffic is now going somewhere safe, when you Submit your Nginx Configuration!
+>>No worries, you comment out the `aks2_ingress` in the Split Config, and his 1% Live traffic is now going somewhere safe, as soon as you Submit your Nginx Configuration!
+
+But don't be surprised - in a few days he will ask again to send traffic to AKS2, and you can begin the Split migration process, this time from AKS1 to AKS2.  Now you've reached the Ultimate Kubernetes Application Solution, `Mutli Cluster Load Balancing, Active/Active, with Dynamic Split Ratios.`  No one else can do this for your team this easily, it's just Nginx!  
+
+Cherry on top - not only can you do Split Client `outside` the Cluster with Nginx for Azure, Nginx Ingress Controller can also do Split Clients `inside` the cluster, ratios between different Services.  You can find that example in Lab10 in the Nginx Plus Ingress Workshop :-)
 
 ### Nginx HTTP Split Clients Solutions
 
-Using the HTTP Split Clients module from Nginx unlocks multiple traffic management solutions.  Consider some of these that might be applicable to your environment:
+Using the HTTP Split Clients module from Nginx can provide multiple traffic management Solutions.  Consider some of these that might be applicable to your environment:
 
 - MultiCluster Active/Active Load Balancing
 - Horizontal Cluster Scaling

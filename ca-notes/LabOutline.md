@@ -104,19 +104,17 @@ Configure Nginx for Azure for Redis applications.
 
 <br/>
 
-### Lab 5 - Nginx Load Balancing / Reverse Proxy
+### Lab 5 - Nginx for Azure Load Balancing / Blue/Green
 
 - Overview
-In this lab, you will configure Nginx for Azure to Load Balance various workloads running in Azure.  After successful configuration and adding Nginx Best Practice parameters, you will Load Test these applications, and test multiple load balancing and request routing parameters to suit different use cases.
+In this lab, you will configure Nginx for Azure to Load Balance various workloads running in Azure.  After successful configuration and adding Nginx Best Practice parameters, you will Load Test these applications, and test multiple load balancing features for different use cases.  You will explore, configure, and test the HTTP Split Clients feature in detail.
 
 - Learning Objectives
 Configure Nginx for Azure, to Load Balance traffic to both AKS Clusters / Nginx Ingress Controllers.
+Profile Redis Leader performance with Redis Benchmark.
+Load test various web applications.
+Configure Nginx for Azure, to Load Balance Nginx Ingress Controllers as a Kubernetes Headless Service.
 Configure HTTP Split Clients, Blue/Green traffic Splitting - route traffic to verious backend systems using 0-100% Ratios.
-Load test the Legacy and Modern web applications.
-Run an HTTP Load Test on Cafe.
-Configure Nginx for Azure, to Load Balance Nginx Ingress Controllers as a Headless Service with ClusterIPs.
-Run a Redis Benchmark test on Redis Leader.
-Configure Nginx for Azure, to Load Balance Nginx Ingress Controllers as a Headless Service with ClusterIPs.
 
 <br/>
 
