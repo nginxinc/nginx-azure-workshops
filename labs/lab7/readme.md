@@ -14,28 +14,50 @@ NGINX aaS | Docker
 
 By the end of the lab you will be able to:
 
-- Introduction to `xx`
-- Build an `yyy` Nginx configuration
-- Test access to your lab enviroment with Curl and Chrome
-- Investigate `zzz`
+- Create and enable basic log format within NGINX for Azure resource
 
+- Create enhance log format with additional logging metrics
+
+- Test the new log format within log analytics workspace.
+
+- Understanding Kusto Query Language (KQL) to pull out and print all access and error logs from log analytics workspace
 
 ## Pre-Requisites
 
-- You must have `aaaa` installed and running
-- You must have `bbbbb` installed
-- See `Lab0` for instructions on setting up your system for this Workshop
-- Familiarity with basic Linux commands and commandline tools
-- Familiarity with basic Docker concepts and commands
-- Familiarity with basic HTTP protocol
+- Within your NGINX for Azure resource, you must have enabled sending metrics to Azure monitor.
+  
+- You must have created `Log Analytics workspace`.
+- You must have created an Azure diagnostic settings resource that will stream the NGINX logs to the Log Analytics workspace.
+- See `Lab1` for instructions if you missed any of the above steps.
 
 <br/>
 
-### Lab exercise 1
+### Create and enable basic log format
 
-<numbered steps are here>
+1. Within Azure portal, open your resource group and then open your NGINX for Azure resource (nginx4a). From the left pane click on `NGINX Configuration`. This should open the configuration editor section. Open `nginx.conf` file.
+    ![NGINX Config](media/nginx_conf_editor.png)
 
-### Lab exercise 2
+2. Add below default basic log format inside the `http` block within the `nginx.conf` file as shown in screenshot. Click on `Submit` to save the config file.
+
+    ```nginx
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+    ```
+
+    ![main logformat add](media/main_logformat_add.png)
+
+3. Update the `access_log` directive to enable logging. Within this directive, you will pass the full path of the log file (eg. `/var/log/nginx/access.log`) and also the `main` log format that you created in previous step. Click on `Submit` to apply the changes.
+
+    ```nginx
+    access_log  /var/log/nginx/access.log  main;
+    ```
+
+    ![Access log update](media/access_log_update.png)
+
+4. In subsequent sections you will test out the logs inside log analytics workspace.
+
+### Create enhance log format with additional logging metrics
 
 <numbered steps are here>
 
