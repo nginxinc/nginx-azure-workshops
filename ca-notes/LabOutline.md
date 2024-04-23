@@ -164,8 +164,10 @@ In this lab, you will deploy an image rich application, and use Nginx Caching to
 
 - Learning Objectives
 Deploy JuiceShop in AKS cluster.
+Deploy Mygarage on Ubuntu VM.
 Expose JuiceShop with Nginx Ingress Controller.
 Configure Nginx for Azure for load balancing JuiceShop.
+Configure Nginx for Azure for load balancing Mygarage.
 Add Nginx Caching to improve delivery of images.
 
 <br/>
