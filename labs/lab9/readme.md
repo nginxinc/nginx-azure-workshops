@@ -63,7 +63,7 @@ In this exercise, you will deploy the demo Juiceshop application to AKS1.  Juice
 
 ## Add Caching to Nginx for Azure
 
-In this exercise, you will creata an Nginx for Azure configuration, to add Caching for the images of the Juiceshop application. You will also configure Nginx for Azure to expose your Juiceshop application to the Internet. You will test it, and use various tools to verify that caching is working as expected. 
+In this exercise, you will create an Nginx for Azure configuration, to add Caching for the images of the Juiceshop application. You will also configure Nginx for Azure to expose your Juiceshop application to the Internet. You will test it, and use various tools to verify that caching is working as expected. 
 
 1. Inspect the `lab9/juiceshop.example.com.conf` configuration file.  Make note of the following items, which enable `Nginx Proxy Caching` for images:
 
@@ -84,7 +84,7 @@ In this exercise, you will creata an Nginx for Azure configuration, to add Cachi
 - - Line #57 - Send requests to Nginx Ingress in AKS1
 - - Line #58 - Set another Custom Header for tracking
 
-As you can see, there are quite a few Caching directives and parameters that must be set properly.  There are Advanced Nginx Caching classes available from Nginx University that cover architectures and many more details and use cases if you would like to learn more.  You will also find quite a few blogs and an E-book on Nginx Caching, it is a popular topic.  See the References Section.
+As you can see, there are quite a few Caching directives and parameters that must be set properly.  There are Advanced Nginx Caching classes available from Nginx University that cover architectures and many more details and use cases if you would like to learn more.  You will also find quite a few blogs and a Webinar on Nginx Caching, it is a popular topic.  See the References Section.
 
 But for this exercise, you will just enable it with the minimal configuration and test it out with Chrome.
 
@@ -169,7 +169,7 @@ cat /etc/hosts
 
 ### Test out Nginx for Azure Caching with Juiceshop
 
-1. Open Chrome and go to `http://juiceshop.example.com`.  You should see them main Juiceshop page, explore around a bit if you like.
+1. Open Chrome and go to `http://juiceshop.example.com`.  You should see the main Juiceshop page, explore around a bit if you like.
 
 1. Right+Click, and choose `Inspect` on the Chrome menu to open Developer tools.  On the top Nav bar, click the Network Tab, and make sure the `Disable cache` is checked, you don't want Chrome caching our images for this exercise.
 
@@ -197,7 +197,7 @@ What does X-Proxy-Pass show?  Does it show 2 different Values?
 - YES, for items not in the REGEX, right?
 - NO, for Cache HITS, they are served from cache and do not need to be sent to the origin server.
 
-**Optional Exercise:**  If you are comfortable with Regex, modify it to ADD `.js` and `.css` objects, Javascript and Cascading Style Sheet files, and re-test.  What were your observations? 
+**Optional Exercise:**  If you are comfortable with Regex, modify it to ADD `.js` and `.css` objects, Javascript and Cascading Style Sheet files, and re-test.  What are your observations? 
 
 < Click for a hint: >
 
@@ -222,7 +222,7 @@ In this exercise, you will add Caching to Nginx for Azure for the My Garage imag
 
 ## Nginx for Azure Caching Wrap Up
 
-Notice that is was pretty easy to define, and enable Nginx Caching for images and even other static page objects.  Also notice that you set the Valid time = 60 seconds.  This was intentional so you cand see object Expire quickly.  However, in Production, you will coordinate with your app team to determine the proper Age timer for different object types.  You can create multiple caches, with different names and Regex's, to have granular control over type, time, and size.  It's EASY with Nginx for Azure!
+Notice that is was pretty easy to define, and enable Nginx Caching for images and even other static page objects.  Also notice that you set the Valid time = 60 seconds.  This was intentional so you can see object Expire quickly.  However, in Production, you will coordinate with your app team to determine the proper Cache age timer for different object types.  You can create multiple caches, with different names and Regex's, to have granular control over type, age time, size, etc.  It's EASY with Nginx for Azure!
 
 <br/>
 
@@ -233,7 +233,9 @@ Notice that is was pretty easy to define, and enable Nginx Caching for images an
 ## References:
 
 - [NGINX As A Service for Azure](https://docs.nginx.com/nginxaas/azure/)
-- [NGINX Caching](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_cache)
+- [NGINX Caching](https://www.nginx.com/products/nginx/caching/)
+- [NGINX Caching Blog](https://www.nginx.com/blog/nginx-caching-guide/)
+- [NGINX Caching Admin Guide](https://docs.nginx.com/nginx/admin-guide/content-cache/content-caching/)
 - [NGINX Plus Product Page](https://docs.nginx.com/nginx/)
 - [NGINX Ingress Controller](https://docs.nginx.com//nginx-ingress-controller/)
 - [NGINX on Docker](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-docker/)
