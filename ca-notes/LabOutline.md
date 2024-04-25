@@ -1,6 +1,6 @@
 # Nginx for Azure Workshop Outline / Summary
 
-## Lab 0 - Prequesites - Subscription / Resources
+## Lab 0 - Prerequisites - Subscription / Resources
 ## Lab 1 - Azure VNet/Subnet / Network Security Group / Nginx for Azure Overview
 ## Lab 2 - Ubuntu VM / Docker / Windows VM / Cafe Demo Docker Deployment 
 ## Lab 3 - AKS / Nginx Plus Ingress Deployment / NIC Dashboard
