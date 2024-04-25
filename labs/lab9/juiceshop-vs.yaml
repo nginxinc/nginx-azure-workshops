@@ -14,6 +14,12 @@ spec:
     service: juiceshop-svc
     port: 80
     #slow-start: 5s
+    sessionCookie:
+      enable: true
+      name: srv_id
+      path: /
+      expires: 1h
+      domain: .example.com
     healthCheck:
       enable: true
       port: 3000

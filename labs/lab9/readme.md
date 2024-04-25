@@ -17,6 +17,7 @@ NGINX aaS | Cache | Juiceshop | My Garage
 - Configure Nginx for Azure for load balancing JuiceShop.
 - Configure Nginx for Azure for load balancing Mygarage.
 - Add Nginx Caching to improve delivery of images.
+- Explore, configure, and test HTTP Request Limits
 
 
 ## Pre-Requisites
@@ -223,6 +224,179 @@ In this exercise, you will add Caching to Nginx for Azure for the My Garage imag
 ## Nginx for Azure Caching Wrap Up
 
 Notice that is was pretty easy to define, and enable Nginx Caching for images and even other static page objects.  Also notice that you set the Valid time = 60 seconds.  This was intentional so you can see object Expire quickly.  However, in Production, you will coordinate with your app team to determine the proper Cache age timer for different object types.  You can create multiple caches, with different names and Regex's, to have granular control over type, age time, size, etc.  It's EASY with Nginx for Azure!
+
+<br/>
+
+## Explore, configure, and test HTTP Request Limits
+
+In this exercise, Nginx HTTP Rate Limiting will be explored.  You will configure some Limits, apply them to the Juiceshop application, and see the results of introducing various Limits.  Rate Limiting has many practical use cases - limiting attacks, limiting bots, protecting request load sensitive URLs/APIs, classes of service, and others.
+
+1. Inspect the `lab9/rate-limits.conf` file.  You will see 4 different Rate Limits defined, using the `limit_req_zone` directive.  This directive creates an Nginx memory zone where the limit Keys and counters are stored.  When a request matches a Key, the counter is incremented.  If no key exists, it is added to the zone and the counter is incremented, as you would expect.  Keys are ephemeral, they are lost if you restart Nginx, but are preserved during an Nginx Reload.
+
+A. The first parameter, `$binary_remote_addr` is the Key used in the memory zone for tracking.  In this example, the client's IP Address in binary format is used.  Binary being shorter, using less memory, than a dot.ted.dec.imal IP Address string.  You can use whatever Key $variable you like, as long as it is an Nginx $variable available when Nginx receives an HTTP request, like a cookie, URL argument, HTTP Header, TLS Serial Number, etc.  There are literally hundreds of request $variables you could use, and you can combine multiple $variables together.
+
+B. The second parmater, `zone=limitX:10m`, is the name of the zone, and the size of 10MB.  You can define larger memory zones if needed, 10MB is a good starting point. Each zone must have a unique name, which matches the actual limit being defined in this example.
+
+- - limitone is the zone for 1 request/second
+- - limit10 is the zone for 10 requests/second
+- - limit100 is the zone for 100 requests/second
+- - limit1000 is the zone for 1,000 requests/second
+
+C. The third parameter is the actual Rate Limit Value, expressed as `r/s` for `requests/second`.
+
+You can define as many zones as you need, as long as you have enough memory for it.  You can use a zone more than once in an Nginx configuration.  You can see the number of requests that are being counted in each limit zone with Azure Monitoring.  You can also use Nginx Logging $variables to track when Limits are being counted and used for the request.  You will create an HTTP Header that will also show you the limit status of the request when Nginx sends back the response.  So you will have very good visibility into how/when the limits are being used.
+
+1. Using the Nginx for Azure Console, create a new file called `/etc/nginx/includes/rate-limits.conf`.  You can use the example file provided, just Copy/Paste.
+
+```nginx
+# Nginx 4 Azure - Mar 2024
+# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+#
+# Define HTTP Request Limit Zones
+#
+limit_req_zone $binary_remote_addr zone=limitone:10m rate=1r/s;
+limit_req_zone $binary_remote_addr zone=limit10:10m rate=10r/s;
+limit_req_zone $binary_remote_addr zone=limit100:10m rate=100r/s;
+limit_req_zone $binary_remote_addr zone=limit1000:10m rate=1000r/s;
+
+```
+
+1. Enable the Rate Limit section of the `/etc/nginx/conf.d/juiceshop.example.com.conf` file, by removing the comments - these have already been provided for this exercise.  You will test them all, but one at a time, starting with `limit100`, 100 reqs/second:
+
+```nginx
+...
+
+    location / {
+        
+        # return 200 "You have reached juiceshop server block, location /\n";
+
+        # Set Rate Limit, uncomment below
+        limit_req zone=limit100;  #burst=110;       # Set  Limit and burst here
+        # limit_req_status 429;           # Set HTTP Return Code, better than 503s
+        # limit_req_dry_run on;           # Test the Rate limit, logged, but not enforced
+        add_header X-Ratelimit-Status $limit_req_status;   # Add a custom status header
+
+        proxy_pass http://aks1_ingress;       # Proxy to AKS1 Nginx Ingress Controllers
+        add_header X-Proxy-Pass aks1_ingress_juiceshop;  # Custom Header
+
+        # proxy_pass http://aks1_juice_headless;  # Proxy directly to Juiceshop Headless Service
+
+    }
+
+```
+
+Notice the 2 directives enabled:
+
+- `limit_req` sets the active zone being used, in this example, limit100, meaning 100 requests/second.  `Burst` is optional, allowing you to define an overage of 100+10, allowing for some elasticity in the limit enforcement.
+- `add_header` creates a Custom Header, and adds the limit_req_status $variable, so you can see it with Chrome Dev Tools or curl.
+
+Submit your Nginx Configuration.
+
+### Test Rate Limit on Juiceshop application
+
+Using Chrome, navigate to `http://juiceshop.example.com`, and open the Chrome Dev Tools.  You previously added the Nginx Custom Headers to the display, so you should already have a Header Column labeled `X-Ratelimit-Status`.  Click Refresh Several times, what do you see?
+
+You will see a partial Juiceshop webpage, as Nginx is only allowing your computer to send 100 req/s.  You see the Header status set to PASSED for requests that were allowed.  Other requests were stopped for `Exceeding the Rate Limit`. Check the HTTP Status Code on an item that failed, you will find the `503 Service Temporarily Unavailable`.  Well, this is not actually the real situation, right?  You have set a limit, not turned off the Service.  So you will `change the HTTP Status code`, using the `limit_req_status` directive, which lets you set a custom HTTP Status code.  The HTTP standard for "excessive requests" is normally `429.`  So you will change it to that.
+
+
+1. Using the Nginx for Azure Console, uncomment the  `limit_req_status 429`, as shown.  This will change the 503 Status Code to a more friendly HTTP Status Code of 429, which means `Too Many Requests`.  This could be useful for clients that can use this 429 code to perform a back-off of the Requests, and try again after a time delay.  (Most Browsers do not do this).
+
+```nginx
+...
+    location / {
+        
+        # return 200 "You have reached juiceshop server block, location /\n";
+
+        # Set Rate Limit, uncomment below
+        limit_req zone=limit100;  #burst=110;       # Set  Limit and burst here
+        limit_req_status 429;           # Set HTTP Status Code, better than 503s
+        # limit_req_dry_run on;           # Test the Rate limit, logged, but not enforced
+        add_header X-Ratelimit-Status $limit_req_status;   # Add a custom status header
+
+        proxy_pass http://aks1_ingress;       # Proxy to AKS1 Nginx Ingress Controllers
+        add_header X-Proxy-Pass aks1_ingress_juiceshop;  # Custom Header
+        # proxy_pass http://aks1_juice_headless;  # Proxy directly to Juiceshop Headless Service
+
+    }
+
+```
+
+Submit your Nginx Configuration.
+
+1. Test again with Chrome and Dev Tools, and verify that you now see HTTP Status Code 429 for limited requests.
+
+Ater consulation with your Dev team and testing different limits, you decide to change the limit to `1,000 Requests/Second`, to accommodate the normal traffic profile of the Juiceshop application.  *This is likely an exercise you will have to do for every application using limits - determine normal traffic patterns and backend system performance, and set limits appropriately.*
+
+1. Using the Nginx for Azure Console, change the `req_limit` to the `limit1000` zone.
+
+```nginx
+    location / {
+        
+        # return 200 "You have reached juiceshop server block, location /\n";
+
+        # Set Rate Limit, uncomment below
+        limit_req zone=limit1000;  #burst=110;       # Set  Limit and burst here
+        limit_req_status 429;           # Set HTTP Status Code, better than 503s
+        # limit_req_dry_run on;           # Test the Rate limit, logged, but not enforced
+        add_header X-Ratelimit-Status $limit_req_status;   # Add a custom status header
+
+        proxy_pass http://aks1_ingress;       # Proxy to AKS1 Nginx Ingress Controllers
+        add_header X-Proxy-Pass aks1_ingress_juiceshop;  # Custom Header
+        # proxy_pass http://aks1_juice_headless;  # Proxy directly to Juiceshop Headless Service
+
+    }
+
+```
+
+Submit your Nginx Configuration.
+
+1. Clear the Chrome Dev Tools display, and try Juiceshop again, much better!
+
+However, 1,000 Reqs/s may not quite be enough, if you Refresh several times, you will still see some 429 Status codes.
+
+### Test Nginx Rate Limit Dry Run
+
+To make it easier to `fine-tune and test` your Rate Limits, Nginx provides the `limit_req_dry_run` directive. This creates the limit, but DOES NOT enforce the limit. So you can see the impact of the limit without actually dropping traffic - a very nice tool indeed!
+
+1. Using the Nginx for Azure Console, uncomment the `limit_req_dry_run on` directive.
+
+```nginx
+    location / {
+        
+        # return 200 "You have reached juiceshop server block, location /\n";
+
+        # Set Rate Limit, uncomment below
+        limit_req zone=limit1000;  #burst=110;       # Set  Limit and burst here
+        limit_req_status 429;           # Set HTTP Status Code, better than 503s
+        limit_req_dry_run on;           # Test the Rate limit, logged, but not enforced
+        add_header X-Ratelimit-Status $limit_req_status;   # Add a custom status header
+
+        proxy_pass http://aks1_ingress;       # Proxy to AKS1 Nginx Ingress Controllers
+        add_header X-Proxy-Pass aks1_ingress_juiceshop;  # Custom Header
+        # proxy_pass http://aks1_juice_headless;  # Proxy directly to Juiceshop Headless Service
+
+    }
+
+```
+
+Submit your Nginx Configuration.
+
+1. Test again with Chrome and Dev Tools.  What do you see?  You should see the `X-RateLimit-Status` Header now have some more metadata, like `REJECTED_DRY_RUN` - which means, this request exceeded the limit and `would be dropped` if dry run is disabled.  You will also find this info in your Enhanced Logging format.
+
+>**IMPORTANT NOTE:** The Rate Limit does NOT apply to the Regex location block for Juiceshop Images, because you enabled the limit in the `/  location` block.  As image requests do NOT match that location block, so the Limit1000 does not apply, and the X-RateLimit-Status is not set for either.
+
+<br/>
+
+## Nginx Rate Limit Wrap Up
+
+During these exercises, you configured, enabled various Request Limit directives, and tested them with an example application. You improved the information for your Dev team to help tune the Limits to match the application.  Nginx can also set headers and logging values to monitor how your Requests Limits work.
+
+As a side note, NGINX also provides Limit directives for TCP, and for Bandwidth:
+
+- limit_conn for TCP Connection controls (https://nginx.org/en/docs/http/ngx_http_limit_conn_module.html#limit_conn)
+- limit_rate for bandwidth/throughput controls (https://nginx.org/en/docs/http/ngx_http_limit_conn_module.html#limit_conn)
+
+And you can use multiple limit directives together for very fine-grain control of your traffic.
 
 <br/>
 
