@@ -13,7 +13,13 @@ spec:
   - name: juiceshop
     service: juiceshop-svc
     port: 80
-    slow-start: 5s
+    sessionCookie:
+      enable: true
+      name: srv_id
+      path: /
+      expires: 1m
+      domain: .nginxazure.build
+    #slow-start: 5s
     healthCheck:
       enable: true
       port: 3000

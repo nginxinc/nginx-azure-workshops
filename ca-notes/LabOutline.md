@@ -169,6 +169,7 @@ Expose JuiceShop with Nginx Ingress Controller.
 Configure Nginx for Azure for load balancing JuiceShop.
 Configure Nginx for Azure for load balancing Mygarage.
 Add Nginx Caching to improve delivery of images.
+Explore, configure, and test HTTP Request Limits
 
 <br/>
 
