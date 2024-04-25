@@ -15,7 +15,7 @@ spec:
   - name: tea
     service: tea-svc
     port: 80
-    slow-start: 20s
+    #slow-start: 20s
     healthCheck:
       enable: true
       path: /tea
@@ -28,7 +28,7 @@ spec:
   - name: coffee
     service: coffee-svc
     port: 80
-    slow-start: 20s
+    #slow-start: 20s
     healthCheck:
       enable: true
       path: /coffee
