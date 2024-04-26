@@ -18,8 +18,8 @@ By the end of the lab you will be able to:
 - Test access to your N4A configurations with Curl and Chrome
 - Inspect the HTTP content coming from these systems
 - Run an HTTP Load Test on your systems
-- Configure Nginx4Azure to Proxy to Nginx Ingress Headless
 - Enable HTTP Split Clients for Blue/Green, A/B Testing
+- Configure Nginx4Azure to Proxy to Nginx Ingress Headless
 
 ## Pre-Requisites
 
@@ -497,6 +497,235 @@ This demonstrates how easy it is to have different platforms/versions for your b
 
 Nginx for Azure can find and load balance traffic, with whichever Kubernetes CNI your Cluster is using.
 
+<br/>
+
+## Nginx for Azure Split Clients for Blue/Green, A/B, Canary Testing
+
+This concept of using `Live Traffic`, to test a new version or release of an application has several names, like Blue/Green, or A/B, or Canary testing.  We will use the term Blue/Green for this exercise, and show you how to control 0-100% of your incoming requests, and route/split them to different Upstreams with Nginx for Azure.  You will use the Nginx `http_split_clients` feature, to support these common application software Dev/Test/Pre-Prod/Prod patterns.  
+
+You will start with the Nginx Cafe Demo, and your Docker VMs, as the current running Version of your application.  As your team is working towards all applications being developed and tested, and hosted in Kubernetes, you could use a process to make that migration easier!
+
+Also using Cafe Demo, you decide that AKS Cluster1 is your Pre-Production test environment, where final QA checks of software releases are `signed-off` before being rolled out into Production.  
+- As the software QA tests in your pipeline continue to pass, you will incrementally `increase the split ratio to AKS1`, and eventually migrate ALL 100% of your Live Traffic to the AKS1 Cluster - `with NO DOWNTIME, lost packets, connections, or user disruption.`  No WAY - it can't be that EASY?
+- Just as importantly, if you do encounter any serious application bugs or even infrastructure problems, you can just as quickly `roll-back` to 100% to the Docker VMs.  *You will be an NGINXpert HERO.*
+
+Your first CI/CD test case, is taking just 1% of your Live incoming traffic, and send it to AKS Cluster 1, where you likely have enabled debug level logging and monitoring of your containers, so you can see how the new Version is running.  (You do run these types of pre-release tests, right?)
+
+To accomplist the Split Client functionality with Nginx, you only need 3 things.  
+- The `split_clients directive`
+- A Map block to configure the incoming request object of interest (a cookie name, cookie value, Header, or URL, etc)
+- The destination Upstream Blocks, with percentages declared for the split ratios, with a new `$upstream` variable
+-- As you want 99% for Docker, and 1% for AKS1, that is the configuration you will start with
+-- The other ratios are provided, but commented out, you will use them as more of the QA tests pass
+
+1. Inspect the `/lab5/split-clients.conf` file.  This is the Map Block you will use, configured to look at the `$request_id` Nginx variable.  As you should already know, the $request_id is a unique 64-bit number assigned to every incoming request by Nginx.  So you are telling Nginx to look at `every single request` when performing the Split hash algorithm.  You can use any Nginx Request $variable that you choose, and combinations of $variables is supported as well.  You can find more details on the http_split_clients module in the References section.
+
+1.  Create a new Nginx config file for the Split Clients directive and Map Block, called `/etc/nginx/includes/split-clients.conf`.  You can use the example provided, just Copy/Paste:
+
+```nginx
+# Nginx 4 Azure to AKS1/2 NICs and/or UbuntuVMs for Upstreams
+# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+# HTTP Split Clients Configuration for AKS Cluster1/Cluster2 or UbuntuVM ratios
+#
+split_clients $request_id $upstream {
+
+   # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
+   #0.1% aks1_ingress;
+   1.0% aks1_ingress;
+   #5.0% aks1_ingress;
+   #30% aks1_ingress; 
+   #50% aks1_ingress;
+   #80% aks1_ingress;
+   #95% aks1_ingress;
+   #99% aks1_ingress;
+   #* aks1_ingress;
+   #* aks2_ingress;
+   #30% aks2_ingress;
+   * cafe_nginx;          # Ubuntu VM containers
+   #* aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
+
+}
+
+```
+
+1. In your `/etc/nginx/conf.d/cafe.example.com.conf` file, modify the `proxy_pass` directive in your `location /` block, to use the `$upstream variable`.  This tells Nginx to use the Map Block where Split Clients is configured.
+
+```nginx
+...
+    location / {
+        #
+        # return 200 "You have reached cafe.example.com, location /\n";
+
+        proxy_pass http://$upstream;          # Use Split Clients config
+
+        add_header X-Proxy-Pass $upstream;    # Custom Header
+         
+        #proxy_pass http://cafe_nginx;        # Proxy AND load balance to Docker VM
+        #add_header X-Proxy-Pass cafe_nginx;  # Custom Header
+
+        #proxy_pass http://aks1_ingress;        # Proxy AND load balance to AKS1 Nginx Ingress
+        #add_header X-Proxy-Pass aks1_ingress;  # Custom Header
+
+        #proxy_pass http://aks2_ingress;        # Proxy AND load balance to AKS2 Nginx Ingress
+        #add_header X-Proxy-Pass aks1_ingress;  # Custom Header
+
+    }
+
+...
+
+```
+
+Submit your Nginx Configuration.
+
+1. Test with Chrome, hit Refresh several times, and Inspect the page, look at your custom Header.  It should say `cafe_nginx` or `aks1_ingress` depending on which Upstream was chosen by Split Client.
+
+Unfortunately, Refreshing about 100 times, and trying to catch the 1% send to AKS1 will be difficult with a browser.  So you will use an HTTP Loadtest tool called `WRK`, which runs as a local Docker container, sending HTTP requests to your Nginx for Azure's Cafe Demo.
+
+1. Open a separate Terminal, and start the WRK load tool.  Use the example here, but change the IP address to your Nginx for Azure Public IP:
+
+```bash
+docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d15m -H 'Host: cafe.example.com' --timeout 2s http://20.3.16.67/coffee
+
+```
+
+This will open 200 Connections, and run for 15 minutes while we try different Split Ratios.  The Host Header `cafe.example.com` is required, to match your Server Block in your N4A configuration.
+
+1. Scale your `nginx-ingress` deployment Replicas=1, so there is only one NIC running.  Then open your AKS1 NIC Dashboard (the one you bookmarded earlier), the HTTP Upstreams Tab, coffee upstreams.  These are the Pods running the latest version of your Application.  You should see about 1% of your Requests trickling into the AKS1 Ingress Controller, and it is load balancing those requests to a couple Pods.  If you can check your Azure Monitor, you would find the 99% going to the cafe_nginx upstreams, the three Docker containers running on Ubuntu.
+
+*Great news* - the QA Lead has signed off on the 1% test and your code, and you are `good to go` for the next test.  Turn down your logging level, as now you will try `30% Live traffic to AKS1`, you are confident and bold, *make it or break it* is your motto.  
+
+1. Again modify your `/etc/nginx/includes/split-clients.conf` file, this time setting `aks1_ingress` to 30%:
+
+```nginx
+# Nginx 4 Azure to AKS1/2 NICs and/or UbuntuVMs for Upstreams
+# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+# HTTP Split Clients Configuration for AKS Cluster1/Cluster2 or UbuntuVM ratios
+#
+split_clients $request_id $upstream {
+
+   # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
+   #0.1% aks1_ingress;
+   #1.0% aks1_ingress;
+   #5.0% aks1_ingress;
+   30% aks1_ingress; 
+   #50% aks1_ingress;
+   #80% aks1_ingress;
+   #95% aks1_ingress;
+   #99% aks1_ingress;
+   #* aks1_ingress;
+   #30% aks2_ingress;
+   * cafe_nginx;          # Ubuntu VM containers
+   #* aks1_nic_direct;    # Direct to NIC pods - headless/no nodeport
+
+}
+
+```
+
+Submit your Nginx Configuration, while watching the AKS1 NIC Dashboard.  In a few seconds, traffic stats should jump now to 30%!  Hang on to your debugger ...
+
+After a couple hours of 30%, all the logs are clean, the dev and test tools are happy, there are NO support tickets, and all is looky peachy.
+
+1. Next up is the 50% test.  You know what to do.  Modify your `split-clients.conf` file, setting AKS1 Ingress to 50% Live traffic.  Watch the NIC Dashboard, and your Monitoring tools closely.
+
+```nginx
+# Nginx 4 Azure to AKS1/2 NICs and/or UbuntuVMs for Upstreams
+# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+# HTTP Split Clients Configuration for AKS Cluster1/Cluster2 or UbuntuVM ratios
+#
+split_clients $request_id $upstream {
+
+   # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
+   #0.1% aks1_ingress;
+   #1.0% aks1_ingress;
+   #5.0% aks1_ingress;
+   #30% aks1_ingress; 
+   50% aks1_ingress;
+   #80% aks1_ingress;
+   #95% aks1_ingress;
+   #99% aks1_ingress;
+   #* aks1_ingress;
+   #* aks2_ingress;
+   #30% aks2_ingress;
+   * cafe_nginx;          # Ubuntu VM containers
+   #* aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
+
+}
+
+```
+
+Submit your 50% configuration and cross your fingers.  HERO or ZERO, what will it be today?  If the WRK load test has stopped, start it again.
+
+>Now that you get the concept and the configuration steps, you can see how EASY it is with Nginx Split Clients to route traffic to different backend applications, including different versions of apps - it's as easy as creating a new Upstream block, and determining the Split Ratio.  And consider this not so subtle point - you did not have to create ONE ticket, change a DNS record, change a firewall rules, update cloudXYZ device - nothing!  All you did was tell Nginx to split existing traffic, accelerating your app development velocity into Warp Drive.
+
+>>The Director of Development has heard about your success with Nginx for Azure Split Clients, and now also wants a small percentage of Live Traffic for the next App version, running in AKS Cluster2.  Oh NO!!  - Success usually does mean more work.  But lucky for you, Split clients can work with many Upstreams.  So after several beers and intense discussions, your QA team decides on the following Split:
+
+- AKS1 will get 80% traffic - for new version
+- Docker VM will get 19% traffic - for legacy/current version
+- AKS2 will get 1% traffic - for the Dev Director's request
+
+1. Once again, modify the `split-clients.conf` file, with the percentages needed.  Open your Dashboards and Monitoring so you can watch in real time.  You tell the Director, here it comes:
+
+```nginx
+# Nginx 4 Azure to AKS1/2 NICs and/or UbuntuVMs for Upstreams
+# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+# HTTP Split Clients Configuration for AKS Cluster1/Cluster2 or UbuntuVM ratios
+#
+split_clients $request_id $upstream {
+
+   # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
+   #0.1% aks1_ingress;
+   1.0% aks2_ingress;      # For the Dev Director
+   #5.0% aks1_ingress;
+   #30% aks1_ingress; 
+   #50% aks1_ingress;
+   80% aks1_ingress;
+   #95% aks1_ingress;
+   #99% aks1_ingress;
+   #* aks1_ingress;
+   #* aks2_ingress;
+   #30% aks2_ingress;
+   * cafe_nginx;           # Ubuntu VM containers
+   #* aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
+
+}
+
+```
+
+Submit your Nginx Configuration.
+
+Voila!!  You are now splitting Live traffic to THREE separate backend platforms, simulating multiple versions of your application code.  To be far, in this lab exercise we used the same Cafe Demo image, but you get the idea.  Just as quick and easy, you can fire up another Upstream target, and add it to the Splits configuration.
+
+**NOTE:** Several words of caution with Split Clients.  
+- The ratios must add up to 100%, or Nginx will not apply the configuration.  
+- .01% is the smallest split ratio available, that = 1/10,000th.  
+- The * asterick means either 100%, or the remainder after other ratios.   
+- If all the servers in an Upstream Block are DOWN, you will get that ratio of 502 errors, so always test your Upstreams prior to adding them to Split configurations.  There is no elegant way to "re-try" when using Splits.  Changing Splits under HIGH load is not recommended, there is always a chance something could go wrong and you will drop clients/traffic.  A maintenance window for changes is always a Best Practice.
+- Split Clients is also available for TCP traffic, like your Redis Cluster.  It splits traffic based on new incoming TCP connections.  Every heard of Active/Active Redis Clusters?  Yes, you can do that and control the ratios, just like shown here for HTTP traffic.
+
+>*HIT a nasty bug! - Director of Dev says the new code can't handle that 1% load, and several other backend systems have crashed!*  - not quite ready for testing like his devs told him...
+
+>>No worries, you comment out the `aks2_ingress` in the Split Config, and his 1% Live traffic is now going somewhere safe, as soon as you Submit your Nginx Configuration!
+
+But don't be surprised - in a few days he will ask again to send traffic to AKS2, and you can begin the Split migration process, this time from AKS1 to AKS2.  Now you've reached the Ultimate Kubernetes Application Solution, `Mutli Cluster Load Balancing, Active/Active, with Dynamic Split Ratios.`  No one else can do this for your team this easily, it's just Nginx!  
+
+Cherry on top - not only can you do Split Client `outside` the Cluster with Nginx for Azure, Nginx Ingress Controller can also do Split Clients `inside` the cluster, ratios between different Services.  You can find that example in Lab10 in the Nginx Plus Ingress Workshop :-)
+
+### Nginx HTTP Split Clients Solutions
+
+Using the HTTP Split Clients module from Nginx can provide multiple traffic management Solutions.  Consider some of these that might be applicable to your environment:
+
+- MultiCluster Active/Active Load Balancing
+- Horizontal Cluster Scaling
+- HTTP Split Clients - for A/B, Blue/Green, and Canary test and production traffic steering. Allows Cluster operations/maintainence like:
+- - Node upgrades / additions
+- - Software upgrades/security patches
+- - Cluster resource expansions - memory, compute, storage, network, nodes
+- - QA and Troubleshooting, using Live Traffic if needed
+- - ^^ With NO downtime or reloads
+- API Gateway testing/upgrades/migrations
+
+<br/>
+
 ## Nginx for Azure - Load Balancing the Nginx Ingress Headless Service
 
 In this Advanced Lab Exercise, you will configure a Headless Kubernetes Service, and configure Nginx for Azure to load balance requests directly to the Nginx Ingress Controller running in AKS2, leveraging the Azure CNI / Calico.  This architecture will `bypass NodePort` on the Kubernetes Nodes, allowing N4A to connect to Nginx Ingress Pod(s) directly on the same Subnet.  You will use the `Nginx 4 Azure/Plus Resolver`, to dynamically create the Upstream list, by querying Kube-DNS.  
@@ -786,234 +1015,11 @@ NOTE:  It is considered a Best Practice, to run at least THREE Nginx Ingress Con
 
 <br/>
 
-## Nginx for Azure Split Clients for Blue/Green, A/B, Canary Testing
-
-This concept of using `Live Traffic`, to test a new version or release of an application has several names, like Blue/Green, or A/B, or Canary testing.  We will use the term Blue/Green for this exercise, and show you how to control 0-100% of your incoming requests, and route/split them to different Upstreams with Nginx for Azure.  You will use the Nginx `http_split_clients` feature, to support these common application software Dev/Test/Pre-Prod/Prod patterns.  
-
-You will start with the Nginx Cafe Demo, and your Docker VMs, as the current running Version of your application.  As your team is working towards all applications being developed and tested, and hosted in Kubernetes, you could use a process to make that migration easier!
-
-Also using Cafe Demo, you decide that AKS Cluster1 is your Pre-Production test environment, where final QA checks of software releases are `signed-off` before being rolled out into Production.  
-- As the software QA tests in your pipeline continue to pass, you will incrementally `increase the split ratio to AKS1`, and eventually migrate ALL 100% of your Live Traffic to the AKS1 Cluster - `with NO DOWNTIME, lost packets, connections, or user disruption.`  No WAY - it can't be that EASY?
-- Just as importantly, if you do encounter any serious application bugs or even infrastructure problems, you can just as quickly `roll-back` to 100% to the Docker VMs.  *You will be an NGINXpert HERO.*
-
-Your first CI/CD test case, is taking just 1% of your Live incoming traffic, and send it to AKS Cluster 1, where you likely have enabled debug level logging and monitoring of your containers, so you can see how the new Version is running.  (You do run these types of pre-release tests, right?)
-
-To accomplist the Split Client functionality with Nginx, you only need 3 things.  
-- The `split_clients directive`
-- A Map block to configure the incoming request object of interest (a cookie name, cookie value, Header, or URL, etc)
-- The destination Upstream Blocks, with percentages declared for the split ratios, with a new `$upstream` variable
--- As you want 99% for Docker, and 1% for AKS1, that is the configuration you will start with
--- The other ratios are provided, but commented out, you will use them as more of the QA tests pass
-
-1. Inspect the `/lab5/split-clients.conf` file.  This is the Map Block you will use, configured to look at the `$request_id` Nginx variable.  As you should already know, the $request_id is a unique 64-bit number assigned to every incoming request by Nginx.  So you are telling Nginx to look at `every single request` when performing the Split hash algorithm.  You can use any Nginx Request $variable that you choose, and combinations of $variables is supported as well.  You can find more details on the http_split_clients module in the References section.
-
-1.  Create a new Nginx config file for the Split Clients directive and Map Block, called `/etc/nginx/includes/split-clients.conf`.  You can use the example provided, just Copy/Paste:
-
-```nginx
-# Nginx 4 Azure to AKS1/2 NICs and/or UbuntuVMs for Upstreams
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-# HTTP Split Clients Configuration for AKS Cluster1/Cluster2 or UbuntuVM ratios
-#
-split_clients $request_id $upstream {
-
-   # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
-   #0.1% aks1_ingress;
-   1.0% aks1_ingress;
-   #5.0% aks1_ingress;
-   #30% aks1_ingress; 
-   #50% aks1_ingress;
-   #80% aks1_ingress;
-   #95% aks1_ingress;
-   #99% aks1_ingress;
-   #* aks1_ingress;
-   #* aks2_ingress;
-   #30% aks2_ingress;
-   * cafe_nginx;          # Ubuntu VM containers
-   #* aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
-
-}
-
-```
-
-1. In your `/etc/nginx/conf.d/cafe.example.com.conf` file, modify the `proxy_pass` directive in your `location /` block, to use the `$upstream variable`.  This tells Nginx to use the Map Block where Split Clients is configured.
-
-```nginx
-...
-    location / {
-        #
-        # return 200 "You have reached cafe.example.com, location /\n";
-
-        proxy_pass http://$upstream;          # Use Split Clients config
-
-        add_header X-Proxy-Pass $upstream;    # Custom Header
-         
-        #proxy_pass http://cafe_nginx;        # Proxy AND load balance to Docker VM
-        #add_header X-Proxy-Pass cafe_nginx;  # Custom Header
-
-        #proxy_pass http://aks1_ingress;        # Proxy AND load balance to AKS1 Nginx Ingress
-        #add_header X-Proxy-Pass aks1_ingress;  # Custom Header
-
-        #proxy_pass http://aks2_ingress;        # Proxy AND load balance to AKS2 Nginx Ingress
-        #add_header X-Proxy-Pass aks1_ingress;  # Custom Header
-
-    }
-
-...
-
-```
-
-Submit your Nginx Configuration.
-
-1. Test with Chrome, hit Refresh several times, and Inspect the page, look at your custom Header.  It should say `cafe_nginx` or `aks1_ingress` depending on which Upstream was chosen by Split Client.
-
-Unfortunately, Refreshing about 100 times, and trying to catch the 1% send to AKS1 will be difficult with a browser.  So you will use an HTTP Loadtest tool called `WRK`, which runs as a local Docker container, sending HTTP requests to your Nginx for Azure's Cafe Demo.
-
-1. Open a separate Terminal, and start the WRK load tool.  Use the example here, but change the IP address to your Nginx for Azure Public IP:
-
-```bash
-docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d15m -H 'Host: cafe.example.com' --timeout 2s http://20.3.16.67/coffee
-
-```
-
-This will open 200 Connections, and run for 15 minutes while we try different Split Ratios.  The Host Header `cafe.example.com` is required, to match your Server Block in your N4A configuration.
-
-1. Scale your `nginx-ingress` deployment Replicas=1, so there is only one NIC running.  Then open your AKS1 NIC Dashboard (the one you bookmarded earlier), the HTTP Upstreams Tab, coffee upstreams.  These are the Pods running the latest version of your Application.  You should see about 1% of your Requests trickling into the AKS1 Ingress Controller, and it is load balancing those requests to a couple Pods.  If you can check your Azure Monitor, you would find the 99% going to the cafe_nginx upstreams, the three Docker containers running on Ubuntu.
-
-*Great news* - the QA Lead has signed off on the 1% test and your code, and you are `good to go` for the next test.  Turn down your logging level, as now you will try `30% Live traffic to AKS1`, you are confident and bold, *make it or break it* is your motto.  
-
-1. Again modify your `/etc/nginx/includes/split-clients.conf` file, this time setting `aks1_ingress` to 30%:
-
-```nginx
-# Nginx 4 Azure to AKS1/2 NICs and/or UbuntuVMs for Upstreams
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-# HTTP Split Clients Configuration for AKS Cluster1/Cluster2 or UbuntuVM ratios
-#
-split_clients $request_id $upstream {
-
-   # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
-   #0.1% aks1_ingress;
-   #1.0% aks1_ingress;
-   #5.0% aks1_ingress;
-   30% aks1_ingress; 
-   #50% aks1_ingress;
-   #80% aks1_ingress;
-   #95% aks1_ingress;
-   #99% aks1_ingress;
-   #* aks1_ingress;
-   #30% aks2_ingress;
-   * cafe_nginx;          # Ubuntu VM containers
-   #* aks1_nic_direct;    # Direct to NIC pods - headless/no nodeport
-
-}
-
-```
-
-Submit your Nginx Configuration, while watching the AKS1 NIC Dashboard.  In a few seconds, traffic stats should jump now to 30%!  Hang on to your debugger ...
-
-After a couple hours of 30%, all the logs are clean, the dev and test tools are happy, there are NO support tickets, and all is looky peachy.
-
-1. Next up is the 50% test.  You know what to do.  Modify your `split-clients.conf` file, setting AKS1 Ingress to 50% Live traffic.  Watch the NIC Dashboard, and your Monitoring tools closely.
-
-```nginx
-# Nginx 4 Azure to AKS1/2 NICs and/or UbuntuVMs for Upstreams
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-# HTTP Split Clients Configuration for AKS Cluster1/Cluster2 or UbuntuVM ratios
-#
-split_clients $request_id $upstream {
-
-   # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
-   #0.1% aks1_ingress;
-   #1.0% aks1_ingress;
-   #5.0% aks1_ingress;
-   #30% aks1_ingress; 
-   50% aks1_ingress;
-   #80% aks1_ingress;
-   #95% aks1_ingress;
-   #99% aks1_ingress;
-   #* aks1_ingress;
-   #* aks2_ingress;
-   #30% aks2_ingress;
-   * cafe_nginx;          # Ubuntu VM containers
-   #* aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
-
-}
-
-```
-
-Submit your 50% configuration and cross your fingers.  HERO or ZERO, what will it be today?  If the WRK load test has stopped, start it again.
-
->Now that you get the concept and the configuration steps, you can see how EASY it is with Nginx Split Clients to route traffic to different backend applications, including different versions of apps - it's as easy as creating a new Upstream block, and determining the Split Ratio.  And consider this not so subtle point - you did not have to create ONE ticket, change a DNS record, change a firewall rules, update cloudXYZ device - nothing!  All you did was tell Nginx to split existing traffic, accelerating your app development velocity into Warp Drive.
-
->>The Director of Development has heard about your success with Nginx for Azure Split Clients, and now also wants a small percentage of Live Traffic for the next App version, running in AKS Cluster2.  Oh NO!!  - Success usually does mean more work.  But lucky for you, Split clients can work with many Upstreams.  So after several beers and intense discussions, your QA team decides on the following Split:
-
-- AKS1 will get 80% traffic - for new version
-- Docker VM will get 19% traffic - for legacy/current version
-- AKS2 will get 1% traffic - for the Dev Director's request
-
-1. Once again, modify the `split-clients.conf` file, with the percentages needed.  Open your Dashboards and Monitoring so you can watch in real time.  You tell the Director, here it comes:
-
-```nginx
-# Nginx 4 Azure to AKS1/2 NICs and/or UbuntuVMs for Upstreams
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-# HTTP Split Clients Configuration for AKS Cluster1/Cluster2 or UbuntuVM ratios
-#
-split_clients $request_id $upstream {
-
-   # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
-   #0.1% aks1_ingress;
-   1.0% aks2_ingress;      # For the Dev Director
-   #5.0% aks1_ingress;
-   #30% aks1_ingress; 
-   #50% aks1_ingress;
-   80% aks1_ingress;
-   #95% aks1_ingress;
-   #99% aks1_ingress;
-   #* aks1_ingress;
-   #* aks2_ingress;
-   #30% aks2_ingress;
-   * cafe_nginx;           # Ubuntu VM containers
-   #* aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
-
-}
-
-```
-
-Submit your Nginx Configuration.
-
-Voila!!  You are now splitting Live traffic to THREE separate backend platforms, simulating multiple versions of your application code.  To be far, in this lab exercise we used the same Cafe Demo image, but you get the idea.  Just as quick and easy, you can fire up another Upstream target, and add it to the Splits configuration.
-
-**NOTE:** Several words of caution with Split Clients.  
-- The ratios must add up to 100%, or Nginx will not apply the configuration.  
-- .01% is the smallest split ratio available, that = 1/10,000th.  
-- The * asterick means either 100%, or the remainder after other ratios.   
-- If all the servers in an Upstream Block are DOWN, you will get that ratio of 502 errors, so always test your Upstreams prior to adding them to Split configurations.  There is no elegant way to "re-try" when using Splits.  Changing Splits under HIGH load is not recommended, there is always a chance something could go wrong and you will drop clients/traffic.  A maintenance window for changes is always a Best Practice.
-- Split Clients is also available for TCP traffic, like your Redis Cluster.  It splits traffic based on new incoming TCP connections.  Every heard of Active/Active Redis Clusters?  Yes, you can do that and control the ratios, just like shown here for HTTP traffic.
-
->*HIT a nasty bug! - Director of Dev says the new code can't handle that 1% load, and several other backend systems have crashed!*  - not quite ready for testing like his devs told him...
-
->>No worries, you comment out the `aks2_ingress` in the Split Config, and his 1% Live traffic is now going somewhere safe, as soon as you Submit your Nginx Configuration!
-
-But don't be surprised - in a few days he will ask again to send traffic to AKS2, and you can begin the Split migration process, this time from AKS1 to AKS2.  Now you've reached the Ultimate Kubernetes Application Solution, `Mutli Cluster Load Balancing, Active/Active, with Dynamic Split Ratios.`  No one else can do this for your team this easily, it's just Nginx!  
-
-Cherry on top - not only can you do Split Client `outside` the Cluster with Nginx for Azure, Nginx Ingress Controller can also do Split Clients `inside` the cluster, ratios between different Services.  You can find that example in Lab10 in the Nginx Plus Ingress Workshop :-)
-
-### Nginx HTTP Split Clients Solutions
-
-Using the HTTP Split Clients module from Nginx can provide multiple traffic management Solutions.  Consider some of these that might be applicable to your environment:
-
-- MultiCluster Active/Active Load Balancing
-- Horizontal Cluster Scaling
-- HTTP Split Clients - for A/B, Blue/Green, and Canary test and production traffic steering. Allows Cluster operations/maintainence like:
-- - Node upgrades / additions
-- - Software upgrades/security patches
-- - Cluster resource expansions - memory, compute, storage, network, nodes
-- - QA and Troubleshooting, using Live Traffic if needed
-- - ^^ With NO downtime or reloads
-- API Gateway testing/upgrades/migrations
-
 ## Wrap Up
 
 As you have seen, using Nginx for Azure is quite easy, to create various backend Systems, Services, even platforms of different types; and have Nginx Load Balance them through a single entry point. Using Advanced Nginx directives/configs with Resolver, Nginx Ingress Controllers, Headless, and even Split Clients help you control and manage dev/test/pre-prod and even Production workloads with ease.  Dashboards and Monitoring give you insight with over 240 useful metrics, providing data needed for decisions based on both real time and historal metadata about your Apps and Traffic.
+
+<br/>
 
 **This completes Lab5.**
 
