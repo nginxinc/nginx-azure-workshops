@@ -18,7 +18,7 @@ By the end of the lab you will be able to:
 
 - Create enhance log format with additional logging metrics
 
-- Test the new log format within log analytics workspace.
+- Test access logs within log analytics workspace
 
 - Understanding Kusto Query Language (KQL) to pull out and print all access and error logs from log analytics workspace
 
@@ -37,7 +37,7 @@ By the end of the lab you will be able to:
 1. Within Azure portal, open your resource group and then open your NGINX for Azure resource (nginx4a). From the left pane click on `NGINX Configuration`. This should open the configuration editor section. Open `nginx.conf` file.
     ![NGINX Config](media/nginx_conf_editor.png)
 
-2. Add below default basic log format inside the `http` block within the `nginx.conf` file as shown in screenshot. Click on `Submit` to save the config file.
+1. Add below default basic log format inside the `http` block within the `nginx.conf` file as shown in the below screenshot. Click on `Submit` to save the config file.
 
     ```nginx
     log_format main '$remote_addr - $remote_user [$time_local] "$request" '
@@ -47,25 +47,69 @@ By the end of the lab you will be able to:
 
     ![main logformat add](media/main_logformat_add.png)
 
-3. Update the `access_log` directive to enable logging. Within this directive, you will pass the full path of the log file (eg. `/var/log/nginx/access.log`) and also the `main` log format that you created in previous step. Click on `Submit` to apply the changes.
+1. Update the `access_log` directive to enable logging. Within this directive, you will pass the full path of the log file (eg. `/var/log/nginx/access.log`) and also the `main` log format that you created in previous step. Click on `Submit` to apply the changes.
 
     ```nginx
     access_log  /var/log/nginx/access.log  main;
     ```
 
-    ![Access log update](media/access_log_update.png)
+    ![Access log update](media/main_access_log_update.png)
 
-4. In subsequent sections you will test out the logs inside log analytics workspace.
+1. In subsequent sections you will test out the logs inside log analytics workspace.
 
 ### Create enhance log format with additional logging metrics
 
-<numbered steps are here>
+1. Within the NGINX for Azure resource (nginx4a), open the `NGINX Configuration` pane.
 
-### Lab exercise 3
+1. Within the `nginx.conf` file add a new extended log format named `main_ext` as shown in the below screenshot. Click on `Submit` to save the config file
 
-<numbered steps are here>
+    ```nginx
+    # Extended Log Format
+    log_format  main_ext    'remote_addr="$remote_addr", '
+                            '[time_local=$time_local], '
+                            'request="$request", '
+                            'status="$status", '
+                            'http_referer="$http_referer", '
+                            'body_bytes_sent="$body_bytes_sent", '
+                            'Host="$host", '
+                            'sn="$server_name", '
+                            'request_time=$request_time, '
+                            'http_user_agent="$http_user_agent", '
+                            'http_x_forwarded_for="$http_x_forwarded_for", '
+                            'request_length="$request_length", '
+                            'upstream_address="$upstream_addr", '
+                            'upstream_status="$upstream_status", '
+                            'upstream_connect_time="$upstream_connect_time", '
+                            'upstream_header_time="$upstream_header_time", '
+                            'upstream_response_time="$upstream_response_time", '
+                            'upstream_response_length="$upstream_response_length", ';
+    ```
 
-### << more exercises/steps>>
+    ![Extended log format add](media/main_ext_logformat_add.png)
+
+1. Once the extended log format has been created, open `cafe.example.com.conf` file and update the `access_log` to make use of the extended log format as shown in the below screenshot. Click on `Submit` to apply the changes.
+
+    ```nginx
+    access_log  /var/log/nginx/cafe.example.com.log main_ext;
+    ```
+
+    ![cafe access log format update](media/cafe_access_log_update.png)
+
+1. In subsequent sections you will test out the extended log format within inside log analytics workspace.
+
+### Test the access logs within log analytics workspace
+
+1. To test out access logs, generate some traffic on your `cafe.example.com` server.
+
+1. Open your browser and send some request to [http://cafe.example.com](http://cafe.example.com) so that you can look into the access logs.
+
+1. Within Azure portal, open your NGINX for Azure resource (nginx4a). From the left pane click on `Logs`. This should open a new Qeury pane. Select `Resource type` from drop down and then type in `nginx` in the searchbox. This should show all the sample queries related to NGINX for Azure. Under `Show NGINXaaS access logs` click on `Run` button
+
+    ![nginx4a logs](media/nginx4a_logs.png)
+
+
+
+### Understanding Kusto Query Language (KQL) to pull out and print all access and error logs from log analytics workspace
 
 <numbered steps are here>
 
