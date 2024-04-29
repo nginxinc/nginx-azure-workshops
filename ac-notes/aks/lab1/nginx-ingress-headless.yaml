@@ -1,0 +1,65 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-ingress-headless
+  namespace: nginx-ingress
+  uid: 6d6dfa9d-2037-46b2-9339-c30c18e8bdb8
+  resourceVersion: '3253432'
+  creationTimestamp: '2024-04-01T19:40:48Z'
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"name":"nginx-ingress-headless","namespace":"nginx-ingress"},"spec":{"clusterIP":"None","ports":[{"name":"http","port":80,"protocol":"TCP","targetPort":80},{"name":"https","port":443,"protocol":"TCP","targetPort":443}],"selector":{"app":"nginx-ingress"},"type":"ClusterIP"}}
+  managedFields:
+    - manager: kubectl-client-side-apply
+      operation: Update
+      apiVersion: v1
+      time: '2024-04-01T19:40:48Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+        f:spec:
+          f:clusterIP: {}
+          f:internalTrafficPolicy: {}
+          f:ports:
+            .: {}
+            k:{"port":80,"protocol":"TCP"}:
+              .: {}
+              f:name: {}
+              f:port: {}
+              f:protocol: {}
+              f:targetPort: {}
+            k:{"port":443,"protocol":"TCP"}:
+              .: {}
+              f:name: {}
+              f:port: {}
+              f:protocol: {}
+              f:targetPort: {}
+          f:selector: {}
+          f:sessionAffinity: {}
+          f:type: {}
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+  selector:
+    app: nginx-ingress
+  clusterIP: None
+  clusterIPs:
+    - None
+  type: ClusterIP
+  sessionAffinity: None
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  internalTrafficPolicy: Cluster
+status:
+  loadBalancer: {}

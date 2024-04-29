@@ -1,0 +1,34 @@
+{
+    "issuerParameters": {
+      "certificateTransparency": null,
+      "name": "Self"
+    },
+    "keyProperties": {
+      "curve": null,
+      "exportable": true,
+      "keySize": 2048,
+      "keyType": "RSA",
+      "reuseKey": false
+    },
+    "lifetimeActions": [
+      {
+        "action": {
+          "actionType": "AutoRenew"
+        },
+        "trigger": {
+          "daysBeforeExpiry": 90
+        }
+      }
+    ],
+    "secretProperties": {
+      "contentType": "application/x-pem-file"
+    },
+    "x509CertificateProperties": {
+      "keyUsage": [
+        "digitalSignature",
+        "keyEncipherment"
+      ],
+      "subject": "CN=n4a-Workshop",
+      "validityInMonths": 12
+    }
+  }
