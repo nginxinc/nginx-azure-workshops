@@ -1,4 +1,4 @@
-#  UbuntuVM/Docker / Windows VM / Cafe Demo Deployment 
+#  Ubuntu VM / Docker / Windows VM / Cafe Demo Deployment 
 
 ## Introduction
 
@@ -6,13 +6,13 @@ In this lab, you will be creating various application backend resources.  You wi
 
 Your completed Ubuntu and Windows VM deployment will look like this:
 
-< Lab specific Images here, in the /media sub-folder >
+![Lab2 diagram](media/lab2_diagram.png)
 
 <br/>
 
 NGINX aaS | Ubuntu | Docker | Windows
-:---------------------:|:---------------------:|:---------------------:
-![NGINX aaS](media/nginx-azure-icon.png) |![Ubuntu](media/ubuntu-icon.png) |![Docker](media/docker-icon.png) |![Docker](media/docker-icon.png)
+:---------------------:|:---------------------:|:---------------------:|:---------------------:
+![NGINX aaS](media/nginx-azure-icon.png) |![Ubuntu](media/ubuntu-icon.png) |![Docker](media/docker-icon.png) |![Docker](media/windows-icon.png)
   
 ## Learning Objectives
 
@@ -374,11 +374,16 @@ If you able to see Responses from all THREE containers, you can continue.
 
 In this exercise, you will create your first Nginx config files, for the Nginx Server, Location, and Upstream blocks, to load balance your three Docker containers running on the Ubuntu VM.
 
-< diagram here >
+
+![Lab2 Cafe diagram](media/lab2_cafe-diagram.png)
+
+<br/>
 
 NGINX aaS | Docker | Cafe Demo
 :-------------------------:|:-------------------------:|:-------------------------:
 ![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)  |![Nginx Cafe](media/cafe-icon.png)
+
+<br/>
 
 Open the Azure Portal, your Resource Group, then Nginx for Azure, Settings, and then the NGINX Configuration panel.
 
@@ -468,7 +473,7 @@ Save your /etc/hosts file, and quit VI.
 
 ### Update your Azure Network Security Group
 
-You likely have one, or more, Azure Network Security Groups that need to updated to allow port 80 HTTP traffic inbound to your Resources.  Check and verify that your Source IP is allowed access to both your VNet, and your `nginx1` instance.
+You likely have one, or more, Azure Network Security Groups that need to updated to allow port 80 HTTP traffic inbound to your Resources.  Check and verify that your Source IP is allowed access to both your VNet, and your `nginx4a` instance.
 
 ### Test your Nginx4Azure configuration
 
