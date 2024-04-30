@@ -119,11 +119,11 @@ docker run --rm williamyeh/wrk -t20 -d360s -c5000 https://cafe.example.com/
 
 ### Grafana
 
-We now have a working dashboard displaying some key metrics of the NGINX for Azure service. As with most dashboards, you can adjust the time intervals, etc. to get a better look at the data.  Feel free to explore the dasboards.  
+We now have a working dashboard displaying some key metrics of the NGINX for Azure service. As with most dashboards, you can adjust the time intervals, etc. to get a better look at the data. Feel free to explore the dashboards.  
 
 ![Grafana Dashboard](media/grafana-dashboards-sample.png)
 
-There are many different Grafana Dashboards available, and you have the option to create and build dashboards to suite your needs.  There are many metrics for TCP, HTTP, SSL, Virtual Servers, Locations, Rate Limits, and Upstreams.
+There are many different Grafana Dashboards available, and you have the option to create and build dashboards to suite your needs. There are many metrics for TCP, HTTP, SSL, Virtual Servers, Locations, Rate Limits, and Upstreams.
 
 > If `wrk` load generation tool is still running, then you can stop it by pressing `ctrl + c`.
 
