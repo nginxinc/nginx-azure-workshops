@@ -4,7 +4,15 @@
 
 In this lab, you will be exploring the integration between NGINXaaS for Azure and Grafana for monitoring of the service. NGINX as a Service for Azure is a service offering that is tightly integrated into Microsoft Azure public cloud and its ecosystem, making applications fast, efficient, and reliable with full lifecycle management of advanced NGINX traffic services.
 
-NGINXaaS is powered by NGINX Plus, so much of the configuration is similar to what you are already used to. We will use Grafana to create a dashboard in which we will monitor HTTP requests, HTTP Metrics, our Cache Hit Ratio, SSL Metrics, Upstream Response Time and our Health checks. The data for these will be based on the work done in previous labs.
+NGINXaaS is powered by NGINX Plus, so much of the configuration is similar to what you are already used to. We will use Grafana to create a dashboard in which we will monitor:
+- HTTP requests
+- HTTP Metrics
+- Cache Hit Ratio
+- SSL Metrics 
+- Upstream Response Time
+- Health checks 
+
+The data for these will be based on the work done in previous labs.
 
 
 
@@ -25,12 +33,13 @@ By the end of the lab you will be able to:
 
 - You must be using NGINXaaS for Azure
 - See `Lab0` for instructions on setting up your system for this Workshop
+- Have Docker installed to run workloads (for graph data)
 - Familiarity with basic Linux commands and commandline tools
 - Familiarity with basic HTTP protocol
-- Familiartiy with Grafana
+- Familiarity with Grafana
 
 
-1. Ensure you are in the `lab10` folder.  We will set three environment variables and then use these to create the Grafana Instance via the Azure CLI. 
+1. Ensure you are in the `lab10` folder. We will set two environment variables and then use these to create the Grafana Instance via the Azure CLI. 
 
 > Please Note there is a charge associated with standing up a Managed Grafana instance in Azure and you should be sure to delete the resources when you are finished exploring the lab.
 
@@ -39,12 +48,11 @@ The resource group should be the same as the one you have been using for the who
 ```bash
 export MY_RESOURCEGROUP=a.currier-workshop
 export MY_GRAFANA=grafanaworkshop
-export MY_LOCATION=eastus
 
-az grafana create --name $MY_GRAFANA --resource-group $MY_RESOURCEGROUP --location $MY_LOCATION
+az grafana create --name $MY_GRAFANA --resource-group $MY_RESOURCEGROUP
 ```
 
-2. In the output of the above command, take note of the endpoint that has been created for you.  It should be found in a key labelled *endpoint*.
+2. In the output of the above command, take note of the endpoint that has been created for you. It should be found in a key labelled *endpoint*.
 
 ![Managed Grafana](media/managed_grafana.png) 
 
@@ -70,7 +78,7 @@ In the upper right of the page is a blue drop down button. We will select *Impor
 
 ![Dashboard Import](media/grafana-dashboards-new.png)
 
-In Visual Studio Code we will need to modify the template JSON to reflect the values of our resources. First let's grab the values we wil need in the terminal:
+In Visual Studio Code we will need to modify the template JSON to reflect the values of our resources. First let's grab the values we will need in the terminal:
 
 ```bash
 export MY_RESOURCEGROUP=$(az resource list --resource-group a.currier-workshop --resource-type Nginx.NginxPlus/nginxDeployments --query "[].resourceGroup" -o tsv)
@@ -85,11 +93,11 @@ set | grep MY
 MY_LOCATION=eastus
 MY_RESOURCEGROUP=a.currier-workshop
 MY_RESOURCENAME=nginx4a
-MY_SUBSCRIPTIONID=7a0bb4ab-c5a7-46b3-b4ad-c10376xxxxxx
+MY_SUBSCRIPTIONID=<INSERT SUBSCRIPTION ID>
 ```
 
 Now that we have these 4 values we can use the Find/Replace function in Visual Studio to modify the JSON of the dashboad file. In the Lab10 folder, open the N4A-Dashboard.json file.
-![isualStudio Replace](media/visualstudio-replace.png)
+![VisualStudio Replace](media/visualstudio-replace.png)
 
 In the search field look for MY_RESOURCENAME and in the replace field use the value of that environment variable (here it is nginx4a).
 
@@ -138,6 +146,8 @@ There are many different Grafana Dashboards available, and you have the option t
 ## References:
 
 - [NGINX For Azure](https://docs.nginx.com/nginxaas/azure/)
+- [Azure Managed Grafana Docs](https://learn.microsoft.com/en-us/azure/managed-grafana/)
+- [Build a Grafana Dashboard](https://grafana.com/docs/grafana/latest/getting-started/build-first-dashboard/)
 - [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/)
 - [NGINX Technical Specs](https://docs.nginx.com/nginx/technical-specs/)
 
