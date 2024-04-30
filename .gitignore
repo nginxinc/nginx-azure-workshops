@@ -14,6 +14,7 @@ Thumbs.db
 # Logs #
 ########
 *.log
+/.vs
 
 # Misc Dir #
 ############
