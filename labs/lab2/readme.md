@@ -1,4 +1,4 @@
-#  UbuntuVM/Docker / Windows VM / Cafe Demo Deployment 
+# UbuntuVM/Docker / Windows VM / Cafe Demo Deployment
 
 ## Introduction
 
@@ -18,9 +18,9 @@ NGINX aaS | Ubuntu | Docker | Windows
 
 By the end of the lab you will be able to:
 
-- Deploy Ubuntu VM with Azure CLI
-- Install Docker and Docker Compose
+- Deploy Ubuntu VM with Docker and Docker-Compose preinstalled using Azure CLI
 - Run Nginx demo application containers
+- Configure Nginx for Azure to Load Balance Docker containers
 - Deploy Windows VM with Azure CLI
 - Test and validate your lab environment
 - Configure Nginx for Azure to load balance these resources
@@ -40,209 +40,151 @@ By the end of the lab you will be able to:
 
 <br/>
 
-## Deploy UbuntuVM with Azure CLI
+### Deploy Ubuntu VM with Docker and Docker-Compose preinstalled using Azure CLI
 
-<< TODO - check variables >>
+1. In your local machine open terminal and make sure you are logged onto your Azure tenant. Set the following Environment variable which points to your Resource Group:
 
-After logging onto your Azure tenant, set the following Environment variables needed for this lab:
+    ```bash
+    ## Set environment variables
+    export MY_RESOURCEGROUP=s.dutta-workshop
+    ```
 
-```bash
-export MY_RESOURCEGROUP=myResourceGroup
-export REGION=CentralUS
-export MY_VM_NAME=ubuntuvm
-export MY_USERNAME=azureuser
-export MY_VM_IMAGE="Canonical:0001-com-ubuntu-server-jammy:server-22_04-lts-gen2:latest"
+1. Create the Ubuntu VM that would be acting as your backend application server using below command:
 
-```
+    ```bash
+    az vm create \
+        --resource-group $MY_RESOURCEGROUP \
+        --name n4a-ubuntuvm \
+        --image Ubuntu2204 \
+        --admin-username azureuser \
+        --vnet-name n4a-vnet \
+        --subnet vm-subnet \
+        --assign-identity \
+        --generate-ssh-keys \
+        --public-ip-sku Standard \
+        --custom-data lab2/init.sh
+    ```
 
-Create the Ubuntu VM:
+    ```bash
+    ##Sample Output##
+    {
+      "fqdns": "",
+      "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Compute/virtualMachines/n4a-ubuntuvm",
+      "identity": {
+        "systemAssignedIdentity": "xxxx-xxxx-xxxx-xxxx-xxxx",
+        "userAssignedIdentities": {}
+      },
+      "location": "centralus",
+      "macAddress": "00-22-48-4A-3B-1E",
+      "powerState": "VM running",
+      "privateIpAddress": "172.16.2.4",
+      "publicIpAddress": "<AZURE_ASSIGNED_PUBLICIP>",
+      "resourceGroup": "s.dutta-workshop",
+      "zones": ""
+    }
+    ```
 
-```bash
-az vm create \
+    Make a Note of the `publicIpAddress`, this IP would be needed later on to access your VM remotely, with SSH.
+
+    The above command would create below resources within your resource group:
+      - **n4a-ubuntuvm:** This is your virtual machine(vm) resource.
+      - **n4a-ubuntuvm_OsDisk_1_4d41e0726:** This is your OS Disk resource tied to your vm.
+      - **n4a-ubuntuvmVMNic:** This is your network interface resource tied to your vm.
+      - **n4a-ubuntuvmNSG:** This is your network security group resource tied to the network interface of your vm.
+      - **n4a-ubuntuvmPublicIP:** This is your public IP resource tied to your vm.
+  
+    This command will also generate a SSH key file named `id_rsa` under `~/.ssh` folder.
+
+    **SECURITY Warning** This new VM has SSH/port22 open to the entire Internet, and is only using an SSH Key file for security.  Take appropriate steps to secure your VM if you will be using it for more than a couple hours!
+
+1. (Optional Step) You can lock down your Network Security Group by allowing SSH/port22 access only to your publicIP using below command.
+
+    ```bash
+    ##Set environment variable
+    export MY_PUBLICIP=$(curl -4 ifconfig.co)
+    ```
+
+    ```bash
+    az network nsg rule update \
     --resource-group $MY_RESOURCEGROUP \
-    --location $MY_LOCATION \
-    --tags owner=$MY_NAME \
-    --name $MY_VM_NAME \
-    --image $MY_VM_IMAGE \
-    --admin-username $MY_USERNAME \
-    --vnet-name $MY_VNET \
-    --subnet $MY_SUBNET \
-    --assign-identity \
-    --generate-ssh-keys \
-    --public-ip-sku Standard
+    --nsg-name n4a-ubuntuvmNSG \
+    --name default-allow-ssh \
+    --source-address-prefix $MY_PUBLICIP
+    ```
 
-```
+1. Verify you have SSH access to the Ubuntu VM that you deployed in previous steps. Open a Terminal, and use your public IP tied to ubuntu vm, to start a new ssh session.
 
-```bash
-#Sample output
-{
-  "fqdns": "",
-  "id": "/subscriptions/7a0bb4ab-c5a7-46b3-b4ad-c10376166020/resourceGroups/cakker/providers/Microsoft.Compute/virtualMachines/ubuntuvm",
-  "identity": {
-    "systemAssignedIdentity": "39f7bca4-830b-402a-b773-b381a65de685",
-    "userAssignedIdentities": {}
-  },
-  "location": "westus2",
-  "macAddress": "00-22-48-79-32-B6",
-  "powerState": "VM running",
-  "privateIpAddress": "172.16.24.4",
-  "publicIpAddress": "52.137.81.233",
-  "resourceGroup": "cakker",
-  "zones": ""
-}
+    ```bash
+    ssh azureuser@<UBUNTU_VM_PUBLICIP>
 
-```
+    #eg
+    ssh azureuser@11.22.33.44
+    ```
 
-Make a Note of the `publicIpAddress`, this is how you will access your VM remotely, with SSH.
+    Where:
+    - `ssh` - is the local command to start an SSH session, or use another applcation of your choosing.
+    - `azureuser` is the local user for Azure VM that you created.
+    -`@11.22.33.44` is the Public IP Addresses assinged to your Ubuntu VM.
 
-**SECURITY Warning** This new VM has SSH/port22 open to the entire Internet, and is not using an SSH Key file or NSG for security.  Take appropriate steps to secure your VM if you will be using it for more than a couple hours!
+    **Note:** If you cannot connect, you likely having ssh client issues. You can make use of Azure CloudShell to create your vm which would create an `id_rsa` ssh key file within the `~/.ssh` directory of your Azure cloud shell.
 
-**Note:** If you cannot connect, you likely have a networking issue.  Most often, you need to add your local public IP address to the Network Security Group for SSH access to the VM.  You will find the NSG in the Azure Portal, under your Resource Group, called `ubuntuvm-nsg`.  Use `whatsmyip.org` or other tool to display what your local public IP is using across the Internet.  Update the NSG rule, to allow your Public IP inbound SSH access to the Ubuntu VM.
+    ![cloudshell](media/lab2-cloudshell.png)
 
-Verify you have SSH access to the Ubuntu VM that was deployed previously.  Open a Terminal, and using your `ubuntuvm.pem` SSH key file, connect to the public `ubuntuvm-ip`, and log in.  For example:
+1. Within the ubuntu vm, run below commands to validate docker and docker compose are installed as part of the `init.sh` script that you passed as one of the parameters to the `az vm create` command
 
-```bash
-ssh -i ubuntuvm_key.pem azureuser@52.247.231.156
-```
+    ```bash
+    docker version
+    docker-compose version
+    ```
 
-Where:
-`ssh` - is the local command to start an SSH session, or use another applcation of your choosing.
-`-i ~/ubuntuvm.key.pem` -  is your local ssh key file in your Home directory, it must be in a path where the SSH program can read it.  You should have saved this file when you created the VM earlier.  If you don't have it, you will find it in the Azure Portal, under your Resource Group, called `unbuntuvm_key`.
-`azureuser` is the default user for Azure hosted Linux VMs
-`@52.247.231.156` is the Public IP Addresses assinged to your Ubuntu VM.  You will find this in Azure Portal, under your Resource Group, `ubuntuvm-ip`.
+1. Test and see if Docker will run the `Hello-World` container:
 
-<< OPTIONAL >>
-Using your local system's SSH program, connect to your `ubuntuvm`, and login with `azureuser`:
+    ```bash
+    sudo docker run hello-world
+    ```
 
-```bash
-ssh azureuser@52.137.81.233
+    ```bash
+    ##Sample Output##
+    Unable to find image 'hello-world:latest' locally
+    latest: Pulling from library/hello-world
+    c1ec31eb5944: Pull complete
+    Digest: sha256:53641cd209a4fecfc68e21a99871ce8c6920b2e7502df0a20671c6fccc73a7c6
+    Status: Downloaded newer image for hello-world:latest
 
-```
-<< END OPTIOINAL >>
+    Hello from Docker!
+    This message shows that your installation appears to be working correctly.
 
-Install some Linux Networking Tools, needed for lab exercises:
+    To generate this message, Docker took the following steps:
+    1. The Docker client contacted the Docker daemon.
+    2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+        (amd64)
+    3. The Docker daemon created a new container from that image which runs the
+        executable that produces the output you are currently reading.
+    4. The Docker daemon streamed that output to the Docker client, which sent it
+        to your terminal.
 
-```bash
-sudo apt install net-tools
+    To try something more ambitious, you can run an Ubuntu container with:
+    $ docker run -it ubuntu bash
 
-```
+    Share images, automate workflows, and more with a free Docker ID:
+    https://hub.docker.com/
 
-Install Docker Community Edition, run these commands:
+    For more examples and ideas, visit:
+    https://docs.docker.com/get-started/
+    ```
 
-```bash
-sudo apt update
-sudo apt install apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update
-apt-cache policy docker-ce
-sudo apt install docker-ce
+1. Checkout a few Docker things:
 
-```
+    ```bash
+    sudo docker images
+    sudo docker ps -a
+    ```
 
-Install Docker Compose, run these commands:
+    You should find the hello-world image was pulled, and that the container ran and exited.
 
-```bash
-sudo apt install docker-compose
-mkdir -p ~/.docker/cli-plugins/
-curl -SL https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
-chmod +x ~/.docker/cli-plugins/docker-compose
+    Success!  You have an Ubuntu VM with Docker that can run various containers needed for future Lab exercises. Reminder: Don't forget to shutdown this VM when you are finished with it later, or set an Auto Shutdown policy using Azure Portal.
 
-```
-
-After installation, check the versions:
-
-```bash
-sudo docker version
-sudo docker compose version
-
-```
-
-```bash
-#Sample output
-Client: Docker Engine - Community
- Version:           26.0.0
- API version:       1.45
- Go version:        go1.21.8
- Git commit:        2ae903e
- Built:             Wed Mar 20 15:17:48 2024
- OS/Arch:           linux/amd64
- Context:           default
-
-Server: Docker Engine - Community
- Engine:
-  Version:          26.0.0
-  API version:      1.45 (minimum version 1.24)
-  Go version:       go1.21.8
-  Git commit:       8b79278
-  Built:            Wed Mar 20 15:17:48 2024
-  OS/Arch:          linux/amd64
-  Experimental:     false
- containerd:
-  Version:          1.6.28
-  GitCommit:        ae07eda36dd25f8a1b98dfbf587313b99c0190bb
- runc:
-  Version:          1.1.12
-  GitCommit:        v1.1.12-0-g51d5e94
- docker-init:
-  Version:          0.19.0
-  GitCommit:        de40ad0
-azureuser@ubuntuvm:~$ sudo docker compose version
-Docker Compose version v2.25.0
-
-```
-
-Test and see if Docker will run the `Hello-World` container:
-
-```bash
-sudo docker run hello-world
-
-```
-
-```bash
-#Sample output
-Unable to find image 'hello-world:latest' locally
-latest: Pulling from library/hello-world
-c1ec31eb5944: Pull complete
-Digest: sha256:53641cd209a4fecfc68e21a99871ce8c6920b2e7502df0a20671c6fccc73a7c6
-Status: Downloaded newer image for hello-world:latest
-
-Hello from Docker!
-This message shows that your installation appears to be working correctly.
-
-To generate this message, Docker took the following steps:
- 1. The Docker client contacted the Docker daemon.
- 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
-    (amd64)
- 3. The Docker daemon created a new container from that image which runs the
-    executable that produces the output you are currently reading.
- 4. The Docker daemon streamed that output to the Docker client, which sent it
-    to your terminal.
-
-To try something more ambitious, you can run an Ubuntu container with:
- $ docker run -it ubuntu bash
-
-Share images, automate workflows, and more with a free Docker ID:
- https://hub.docker.com/
-
-For more examples and ideas, visit:
- https://docs.docker.com/get-started/
-
-```
-
-Checkout a few Docker things:
-
-```bash
-sudo docker image list
-sudo docker ps -a
-
-```
-
-You should find the hello-world image was pulled, and that the container ran and exited.
-
-Success!  You have an Ubuntu VM with Docker that can run various containers needed for future Lab exercises.   Reminder: Don't forget to shutdown this VM when you are finished with it later, or set an Auto Shutdown policy using Azure Portal.
-
-Leave your SSH Terminal running, you will use it in the next Exercise.
+    Leave your SSH Terminal running, you will use it in the next Exercise.
 
 ### Deploy Nginx Demo containers
 
@@ -250,127 +192,117 @@ You will now use Docker Compose to create and deploy three Nginx `ingress-demo` 
 
 1. Inspect the `lab2/docker-compose.yml` file.  Notice you are pulling the `nginxinc/ingress-demo` image, and starting three containers.  The three containers are configured as follows:
 
-Container Name | Name:port
-:-------------:|:------------:
-docker-web1 | ubuntuvm:81
-docker-web2 | ubuntuvm:82
-docker-web3 | ubuntuvm:83
+    Container Name | Name:port
+    :-------------:|:------------:
+    docker-web1 | ubuntuvm:81
+    docker-web2 | ubuntuvm:82
+    docker-web3 | ubuntuvm:83
 
 1. On the Ubuntu VM, create a new folder in the `/home/azureuser` directory, call it `cafe`.
 
-```bash
-azureuser@ubuntuvm: cd $HOME
-azureuser@ubuntuvm: sudo mkdir cafe
-azureuser@ubuntuvm: cd cafe
-azureuser@ubuntuvm: sudo vi docker-compose.yml
+      ```bash
+      cd $HOME
+      mkdir cafe
+      cd cafe
+      vi docker-compose.yml
+      ```
 
-```
+    << Lets replace vi command with a wget when git repo is public >>
 
-Copy the contents from the `lab2/docker-compose.yml` file, into the same filename on the Ubuntu VM.  Save the file and exit VI.
+    Copy the contents from the `lab2/docker-compose.yml` file, into the same filename on the Ubuntu VM.  Save the file and exit VI.
 
-Start up the three Nginx demo containers.  This tells Docker to read the compose file and start the three containers:
+1. Start up the three Nginx demo containers using below command. This instructs Docker to read the compose file and start the three containers:
 
-```bash
-sudo docker-compose up -d
+    ```bash
+    sudo docker-compose up -d
+    ```
 
-```
+1. Check the containers are running:
 
-Check the containers are running:
+    ```bash
+    sudo docker ps
+    ```
 
-```bash
-sudo docker ps -a
+    ```bash
+    ##Sample Output##
+    CONTAINER ID   IMAGE                   COMMAND                  CREATED          STATUS                      PORTS                                                                        NAMES
+    33ca8329cece   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:82->80/tcp, :::82->80/tcp, 0.0.0.0:4432->443/tcp, :::4432->443/tcp   docker-web2
+    d3bf38f7b575   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:83->80/tcp, :::83->80/tcp, 0.0.0.0:4433->443/tcp, :::4433->443/tcp   docker-web3
+    1982b1a4356d   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:81->80/tcp, :::81->80/tcp, 0.0.0.0:4431->443/tcp, :::4431->443/tcp   docker-web1
+    ```
 
-```
+    Notice that each container is listening on a unique TCP port on the Docker host - Ports 81, 82, and 83 for docker-web1, docker-web2 and docker-web3, respectively.
 
-It should look similar to this.  Notice that each container is listening on a unique TCP port on the Docker host - Ports 81, 82, and 83 for docker-web1, docker-web2 and docker-web3, respectively.
+1. Verify that all THREE containers have their TCP ports exposed on the Ubuntu VM host:
 
-```bash
-#Sample output
-CONTAINER ID   IMAGE                   COMMAND                  CREATED          STATUS                      PORTS                                                                        NAMES
-33ca8329cece   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:82->80/tcp, :::82->80/tcp, 0.0.0.0:4432->443/tcp, :::4432->443/tcp   docker-web2
-d3bf38f7b575   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:83->80/tcp, :::83->80/tcp, 0.0.0.0:4433->443/tcp, :::4433->443/tcp   docker-web3
-1982b1a4356d   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:81->80/tcp, :::81->80/tcp, 0.0.0.0:4431->443/tcp, :::4431->443/tcp   docker-web1
+    ```bash
+    netstat -tnl
+    ```
 
-```
+    ```bash
+    #Sample output
+    Active Internet connections (only servers)
+    Proto Recv-Q Send-Q Local Address           Foreign Address         State
+    tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN
+    tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN
+    tcp        0      0 0.0.0.0:81              0.0.0.0:*               LISTEN
+    tcp        0      0 0.0.0.0:83              0.0.0.0:*               LISTEN
+    tcp        0      0 0.0.0.0:82              0.0.0.0:*               LISTEN
+    tcp        0      0 0.0.0.0:4433            0.0.0.0:*               LISTEN
+    tcp        0      0 0.0.0.0:4432            0.0.0.0:*               LISTEN
+    tcp        0      0 0.0.0.0:4431            0.0.0.0:*               LISTEN
+    tcp6       0      0 :::22                   :::*                    LISTEN
+    tcp6       0      0 :::81                   :::*                    LISTEN
+    tcp6       0      0 :::83                   :::*                    LISTEN
+    tcp6       0      0 :::82                   :::*                    LISTEN
+    tcp6       0      0 :::4433                 :::*                    LISTEN
+    tcp6       0      0 :::4432                 :::*                    LISTEN
+    tcp6       0      0 :::4431                 :::*                    LISTEN
+    ```
 
-Verify that all THREE containers have their TCP ports exposed on the Ubuntu VM host:
+    Yes, looks like ports 81, 82, and 83 are Listening.  Note:  If you used a different VM, you may need to update the VM Host Firewall rules to allow traffic to the containers.
 
-```bash
-azureuser@ubuntuvm:~/cafe$ netstat -tnl
+1. Test all three containers by running curl command within the ubuntu vm:
 
-```
+    ```bash
+    curl -s localhost:81 |grep Server
+    ```
 
-```bash
-#Sample output
-Active Internet connections (only servers)
-Proto Recv-Q Send-Q Local Address           Foreign Address         State
-tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN
-tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN
-tcp        0      0 0.0.0.0:81              0.0.0.0:*               LISTEN
-tcp        0      0 0.0.0.0:83              0.0.0.0:*               LISTEN
-tcp        0      0 0.0.0.0:82              0.0.0.0:*               LISTEN
-tcp        0      0 0.0.0.0:4433            0.0.0.0:*               LISTEN
-tcp        0      0 0.0.0.0:4432            0.0.0.0:*               LISTEN
-tcp        0      0 0.0.0.0:4431            0.0.0.0:*               LISTEN
-tcp6       0      0 :::22                   :::*                    LISTEN
-tcp6       0      0 :::81                   :::*                    LISTEN
-tcp6       0      0 :::83                   :::*                    LISTEN
-tcp6       0      0 :::82                   :::*                    LISTEN
-tcp6       0      0 :::4433                 :::*                    LISTEN
-tcp6       0      0 :::4432                 :::*                    LISTEN
-tcp6       0      0 :::4431                 :::*                    LISTEN
+    Gives you the 1st Container Name as `Server Name`, and Container's IP address as `Server Address`:
 
-```
+    ```bash
+    ##Sample Output##
+          <p class="smaller"><span>Server Name:</span> <span>docker-web1</span></p>
+          <p class="smaller"><span>Server Address:</span> <span><font color="green">172.18.0.2:80</font></span></p>
+    ```
 
-Yes, looks like ports 81, 82, and 83 are Listening.  Note:  If you used a different VM, you may need to update the VM Host Firewall rules to allow traffic to the containers.
+    ```bash
+    curl -s localhost:82 |grep Server
+    ```
 
-Test all three containers with curl:
+    Gives you the 2nd Container Name as `Server Name`, and Container's IP address as `Server Address`:
 
-```bash
-azureuser@ubuntuvm:~/cafe$ curl -s localhost:81 |grep Server
+    ```bash
+    ##Sample Output##
+          <p class="smaller"><span>Server Name:</span> <span>docker-web2</span></p>
+          <p class="smaller"><span>Server Address:</span> <span><font color="green">172.18.0.3:80</font></span></p>
+    ```
 
-```
+    ```bash
+    curl -s localhost:83 |grep Server
+    ```
 
-Gives you the 1st Container Name as `Server Name`, and Container's IP address as `Server Address`:
+    Gives you the 3rd Container Name as `Server Name`, and Container's IP address as `Server Address`:
 
-```bash
-#Sample output
-      <p class="smaller"><span>Server Name:</span> <span>docker-web1</span></p>
-      <p class="smaller"><span>Server Address:</span> <span><font color="green">172.18.0.2:80</font></span></p>
+    ```bash
+    ##Sample Output##
+          <p class="smaller"><span>Server Name:</span> <span>docker-web3</span></p>
+          <p class="smaller"><span>Server Address:</span> <span><font color="green">172.18.0.4:80</font></span></p>
+    ```
 
-```
+    If you able to see Responses from all THREE containers, you can continue.
 
-```bash
-azureuser@ubuntuvm:~/cafe$ curl -s localhost:82 |grep Server
-
-```
-
-Gives you the 2nd Container Name as `Server Name`, and Container's IP address as `Server Address`:
-
-```bash
-#Sample output
-      <p class="smaller"><span>Server Name:</span> <span>docker-web2</span></p>
-      <p class="smaller"><span>Server Address:</span> <span><font color="green">172.18.0.3:80</font></span></p>
-
-```
-
-```bash
-azureuser@ubuntuvm:~/cafe$ curl -s localhost:83 |grep Server
-
-```
-
-Gives you the 3rd Container Name as `Server Name`, and Container's IP address as `Server Address`:
-
-```bash
-#Sample output
-      <p class="smaller"><span>Server Name:</span> <span>docker-web3</span></p>
-      <p class="smaller"><span>Server Address:</span> <span><font color="green">172.18.0.4:80</font></span></p>
-
-```
-
-If you able to see Responses from all THREE containers, you can continue.
-
-## Configure Nginx for Azure to Load Balance Docker containers
+### Configure Nginx for Azure to Load Balance Docker containers
 
 In this exercise, you will create your first Nginx config files, for the Nginx Server, Location, and Upstream blocks, to load balance your three Docker containers running on the Ubuntu VM.
 
