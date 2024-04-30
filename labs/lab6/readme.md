@@ -16,7 +16,7 @@ By the end of the lab you will be able to:
 
 - Build your own Azure Key Vault resource.
 - Create your self-signed TLS certificate.
-- Configure NGINX for Azure to listen for HTTPS traffic
+- Configure NGINX for Azure to listen and terminate TLS traffic
 - Test and validate TLS traffic components and settings
 
 ## Pre-Requisites
@@ -33,6 +33,7 @@ By the end of the lab you will be able to:
     ```bash
     ## Set environment variable
     MY_RESOURCEGROUP=s.dutta-workshop
+    MY_KEYVAULT=n4a-keyvault-s.dutta
     ```
 
     Once the environment variables are all set, run below command to create the key vault resource
@@ -40,7 +41,7 @@ By the end of the lab you will be able to:
     ```bash
     az keyvault create \
     --resource-group $MY_RESOURCEGROUP \
-    --name n4a-keyvault \
+    --name $MY_KEYVAULT \
     --enable-rbac-authorization false
     ```
 
@@ -62,7 +63,7 @@ By the end of the lab you will be able to:
 
     ```bash
     az keyvault set-policy \
-    --name n4a-keyvault \
+    --name $MY_KEYVAULT \
     --certificate-permissions get \
     --secret-permissions get \
     --object-id $MY_PRINCIPALID
@@ -78,7 +79,7 @@ By the end of the lab you will be able to:
 
     ```bash
     az keyvault certificate create \
-    --vault-name n4a-keyvault \
+    --vault-name $MY_KEYVAULT \
     --name n4a-cert \
     --policy @labs/lab6/self-certificate-policy.json
     ```
@@ -92,7 +93,7 @@ By the end of the lab you will be able to:
 
 6. Click on the newly created certificate and then open up `Issuance Policy` tab for more details on the certificate. You will use this certificate with NGINX for Azure resource to listen for HTTPS traffic.
 
-### Configure NGINX for Azure to listen for HTTPS traffic
+### Configure NGINX for Azure to listen listen and terminate TLS traffic
 
 Now that you have a self signed TLS certificate for testing, you will configure NGINX for Azure resource to use them.
 
