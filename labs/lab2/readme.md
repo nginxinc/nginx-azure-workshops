@@ -23,7 +23,7 @@ By the end of the lab you will be able to:
 - Configure Nginx for Azure to Load Balance Docker containers
 - Test and validate your lab environment
 - Deploy Windows VM with Azure CLI
-- Configure Nginx for Azure to load balance these resources
+- Configure Nginx for Azure to proxy the Windows VM
 - Test your Nginx for Azure configs
 
 ## Pre-Requisites
@@ -321,7 +321,7 @@ NGINX aaS | Docker | Cafe Demo
 :-------------------------:|:-------------------------:|:-------------------------:
 ![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)  |![Nginx Cafe](media/cafe-icon.png)
 
-1. Open Azure portal within your browser and then open your resource group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration`.
+1. Open Azure portal within your browser and then open your resource group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under settings.
 
 1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/cafe-docker-upstreams.conf`.
 
@@ -376,6 +376,9 @@ NGINX aaS | Docker | Cafe Demo
             
             proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
             add_header X-Proxy-Pass cafe_nginx;  # Custom Header
+
+            # proxy_pass http://windowsvm;        # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass windowsvm;  # Custom Header
 
         }
 
@@ -476,44 +479,73 @@ Congratulations!!  You have just completed launching a simple web application wi
 
 <br/>
 
-## Deploy Windows VM with Azure CLI
+### Deploy Windows VM with Azure CLI
 
-After logging onto your Azure tenant, set the following Environment variables needed for this lab:
+Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
 
-```bash
-export MY_RESOURCEGROUP=myResourceGroup
-export REGION=CentralUS
-export MY_VM_NAME=windowsvm
-export MY_USERNAME=azureuser
-export MY_VM_IMAGE="Windows Server 20xx"
+1. In your local machine open terminal and make sure you are logged onto your Azure tenant. Set the following Environment variables:
 
-```
+    ```bash
+    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_VM_IMAGE=cognosys:iis-on-windows-server-2016:iis-on-windows-server-2016:1.2019.1009
+    ```
 
-Create the Windows VM:
+1. Create the Windows VM (This would take some time to deploy):
 
-```bash
-az vm create \
+    ```bash
+    az vm create \
+        --resource-group $MY_RESOURCEGROUP \
+        --name n4a-windowsvm \
+        --image $MY_VM_IMAGE \
+        --vnet-name n4a-vnet \
+        --subnet vm-subnet \
+        --admin-username azureuser \
+        --public-ip-sku Standard
+    ```
+
+    ```bash
+    ##Sample Output##
+    Admin Password: 
+    Confirm Admin Password: 
+    Consider upgrading security for your workloads using Azure Trusted Launch VMs. To know more about Trusted Launch, please visit https://aka.ms/TrustedLaunch.
+    {
+    "fqdns": "",
+    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Compute/virtualMachines/n4a-windowsvm",
+    "location": "centralus",
+    "macAddress": "00-0D-3A-96-C5-F1",
+    "powerState": "VM running",
+    "privateIpAddress": "172.16.2.5",
+    "publicIpAddress": "<AZURE_ASSIGNED_PUBLICIP>",
+    "resourceGroup": "s.dutta-workshop",
+    "zones": ""
+    }
+    ```
+
+    The above command would create below resources within your resource group:
+    - **n4a-windowsvm:** This is your virtual machine(vm) resource.
+    - **n4a-windowsvm_OsDisk_1_<Random_HEX_String>:** This is your OS Disk resource tied to your vm.
+    - **n4a-windowsvmVMNic:** This is your network interface resource tied to your vm.
+    - **n4a-windowsvmNSG:** This is your network security group resource tied to the network interface of your vm.
+    - **n4a-windowsvmPublicIP:** This is your public IP resource tied to your vm.
+
+    **SECURITY WARNING:** This new VM has rdp/port3389 open to the entire Internet. Take appropriate steps to secure your VM if you will be using it for more than a couple hours!
+
+1. **(Optional Step):** You can lock down your Network Security Group by allowing rdp/port3389 access only to your publicIP using below command.
+
+    ```bash
+    ##Set environment variable
+    export MY_PUBLICIP=$(curl -4 ifconfig.co)
+    ```
+
+    ```bash
+    az network nsg rule update \
     --resource-group $MY_RESOURCEGROUP \
-    --location $MY_LOCATION \
-    --tags owner=$MY_NAME \
-    --name $MY_VM_NAME \
-    --image $MY_VM_IMAGE \
-    --admin-username $MY_USERNAME \
-    --vnet-name $MY_VNET \
-    --subnet $MY_SUBNET \
-    --assign-identity \
-    --generate-ssh-keys \
-    --public-ip-sku Standard
+    --nsg-name n4a-windowsvmNSG \
+    --name rdp \
+    --source-address-prefix $MY_PUBLICIP
+    ```
 
-```
-
-```bash
-#Sample output
-
-
-```
-
-## Configure Nginx for Azure to proxy the Windows VM
+### Configure Nginx for Azure to proxy the Windows VM
 
 In this exercise, you will create your second Nginx config file, for the Nginx Server, Location, and Upstream blocks, to proxy your IIS Server running on the Windows VM.
 
@@ -523,78 +555,76 @@ NGINX aaS | Windows | ? Which Demo Pages
 :-------------------------:|:-------------------------:|:-------------------------:
 ![NGINX aaS](media/nginx-azure-icon.png)  |![Windows](media/windows-icon.png)  |![Which Demo](media/unknown-icon.png)
 
-Open the Azure Portal, your Resource Group, then Nginx for Azure, Settings, and then the NGINX Configuration panel.
+1. Open Azure portal within your browser and then open your resource group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under settings.
 
-Click on `+ New File`, to create a new Nginx config file.
+1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/windows-upstreams.conf`.
 
-Name the new file `/etc/nginx/conf.d/windows-upstreams.conf`.
+    **Important:** You must use the full Linux /folder/filename path for every Nginx config file, for it to be properly created and placed in the correct folder.  If you forget, you can delete it and must re-create it.  The Azure Portal Text Edit panels do not let you move, or drag-n-drop files or folders.  You can `rename` a file by clicking the Pencil icon, and `delete` a file by clicking the Trashcan icon at the top.
 
-**Important:** You must use the full Linux /folder/filename path for every Nginx config file, for it to be properly created and placed in the correct folder.  If you forget, you can delete it and must re-create it.  The Azure Portal Text Edit panels do not let you move, or drag-n-drop files or folders.  You can `rename` a file by clicking the Pencil icon, and `delete` a file by clicking the Trashcan icon at the top.
+1. Copy and paste the contents from the matching file present in `lab2` directory from Github, into the Configuration Edit window, shown here:
 
-Copy and paste the contents from the matching file from Github, into the Configuration Edit window, shown here:
-
-```nginx
-# Nginx 4 Azure, Windows IIS Upstreams
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-#
-# windows IIS server
-#
-upstream windowsvm {
-  zone windowsvm 256k;
-  
-  server windowsvm:80;      # IIS Server
-
-  keepalive 32;
-
-}
-
-```
-
-<< ss here >>
-
-This creates a new Nginx Upstream Block, which defines the Windows IIS backend server group that Nginx will load balance traffic to.
-
-Edit the comment characters in `/etc/nginx/conf.d/cafe.example.com.conf`, to enable the `proxy_pass` to the `windowsvm`, and disable it for the `cafe-nginx`, as follows:
-
-```nginx
-# Nginx 4 Azure - Cafe Nginx and Windows IIS HTTP
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-#
-server {
+    ```nginx
+    # Nginx 4 Azure, Windows IIS Upstreams
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    # windows IIS server
+    #
+    upstream windowsvm {
+    zone windowsvm 256k;
     
-    listen 80;      # Listening on port 80 on all IP addresses on this machine
+    server n4a-windowsvm:80;      # IIS Server
 
-    server_name cafe.example.com;   # Set hostname to match in request
-    status_zone cafe.example.com;   # Metrics zone name
-
-    access_log  /var/log/nginx/cafe.example.com.log main;
-    error_log   /var/log/nginx/cafe.example.com_error.log info;
-
-    location / {
-        #
-        # return 200 "You have reached cafe.example.com, location /\n";
-         
-        # proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
-        # add_header X-Proxy-Pass cafe_nginx;  # Custom Header
-
-        proxy_pass http://windowsvm;        # Proxy AND load balance to a list of servers
-        add_header X-Proxy-Pass windowsvm;  # Custom Header
+    keepalive 32;
 
     }
+    ```
 
-}
+    << ss here >>
 
-```
+    This creates a new Nginx Upstream Block, which defines the Windows IIS backend server group that Nginx will load balance traffic to.
 
-Click the `Submit` Button above the Editor.  Nginx will validate your configuration, and if successfull, will reload Nginx with your new configuration.  If you receive an error, you will need to fix it before you proceed.
+1. Edit the comment characters in `/etc/nginx/conf.d/cafe.example.com.conf`, to enable the `proxy_pass` to the `windowsvm`, and disable it for the `cafe-nginx`, as follows:
 
-Test access again to http://cafe.example.com.  You will now see the IIS default server page, instead of the Out of Stock page.  If you check Chrome Dev Tools, the X-Proxy-Pass header should now show `windowsvm`.
+    ```nginx
+    # Nginx 4 Azure - Cafe Nginx and Windows IIS HTTP
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    server {
+        
+        listen 80;      # Listening on port 80 on all IP addresses on this machine
 
-Notice how easy it was, to create a new backend server, and then tell Nginx to proxy_pass to a different Upstream ?  You used the same Hostname, DNS record, and Nginx Server block, but you just told Nginx to switch backends.
+        server_name cafe.example.com;   # Set hostname to match in request
+        status_zone cafe.example.com;   # Metrics zone name
 
-Edit the `cafe.example.com.conf` file again, and change the comments to enable the `proxy_pass` for `cafe_nginx`, as you will use it again in a future lab exercise.
+        access_log  /var/log/nginx/cafe.example.com.log main;
+        error_log   /var/log/nginx/cafe.example.com_error.log info;
 
-Submit your changes, and re-test to verify that http://cafe.example.com works again for Cafe Nginx.  Don't forget to change the custom header as well.
+        location / {
+            #
+            # return 200 "You have reached cafe.example.com, location /\n";
+            
+            # proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass cafe_nginx;  # Custom Header
+
+            proxy_pass http://windowsvm;        # Proxy AND load balance to a list of servers
+            add_header X-Proxy-Pass windowsvm;  # Custom Header
+
+        }
+
+    }
+    ```
+
+1. Click the `Submit` Button above the Editor.  Nginx will validate your configuration, and if successfull, will reload Nginx with your new configuration.  If you receive an error, you will need to fix it before you proceed.
+
+### Test your Nginx for Azure configs
+
+1. Test access again to http://cafe.example.com.  You will now see the IIS default server page, instead of the Out of Stock page.  If you check Chrome Dev Tools, the X-Proxy-Pass header should now show `windowsvm`.
+
+    Notice how easy it was, to create a new backend server, and then tell Nginx to proxy_pass to a different Upstream. You used the same Hostname, DNS record, and Nginx Server block, but you just told Nginx to switch backends.
+
+1. Edit the `cafe.example.com.conf` file again, and change the comments to enable the `proxy_pass` for `cafe_nginx`, as you will use it again in a future lab exercise.
+
+1. Submit your changes, and re-test to verify that http://cafe.example.com works again for Cafe Nginx.  Don't forget to change the custom header as well.
 
 **This completes Lab2.**
 
@@ -603,8 +633,9 @@ Submit your changes, and re-test to verify that http://cafe.example.com works ag
 ## References:
 
 - [NGINX As A Service for Azure](https://docs.nginx.com/nginxaas/azure/)
+  
 - [NGINX Plus Product Page](https://docs.nginx.com/nginx/)
-- [NGINX on Docker](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-docker/)
+
 - [NGINX Directives Index](https://nginx.org/en/docs/dirindex.html)
 - [NGINX Variables Index](https://nginx.org/en/docs/varindex.html)
 - [NGINX Technical Specs](https://docs.nginx.com/nginx/technical-specs/)
