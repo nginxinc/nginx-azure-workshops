@@ -189,6 +189,29 @@ az nginx deployment create \
 --identity="{type:UserAssigned,userAssignedIdentities:{/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity:{}}}"
 ```
 
+### Azure windows vm try
+
+Look into this link: https://learn.microsoft.com/en-us/azure/virtual-machines/windows/quick-create-cli
+
+```bash
+az vm create \
+    --resource-group $MY_RESOURCEGROUP \
+    --name n4a-windowsvm \
+    --image Win2022AzureEditionCore \
+    --public-ip-sku Standard \
+    --admin-username azureuser \
+    --admin-password azureuser123@ 
+
+az vm run-command invoke \
+    --resource-group $MY_RESOURCEGROUP \
+    --name n4a-windowsvm \
+    --command-id RunPowerShellScript \
+    --scripts "Install-WindowsFeature -name Web-Server -IncludeManagementTools"
+
+az vm open-port --port 80 --resource-group $MY_RESOURCEGROUP --name n4a-windowsvm
+```
+
+
 ## Things to improve
 
 1. Documentation for N4A AzureCLI still has sku pointing to `preview_Monthly_gmz7xq9ge3py`. It is not intuitive to guess what SKU name to use for standard deployment. I had to deploy N4A using Azure portal and then run `az nginx deployment show` command to look inside the deployment deployed via azure portal to figure out what is the name for Standard SKU.
