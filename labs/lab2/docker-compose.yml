@@ -2,7 +2,6 @@
 # NGINX for Azure, Mar 2024
 # Chris Akker, Shouvik Dutta, Adam Currier
 #
-version: '3.3'
 services:
   web1:
       hostname: docker-web1
