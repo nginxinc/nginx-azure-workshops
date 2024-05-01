@@ -11,7 +11,7 @@ Your completed Ubuntu and Windows VM deployment will look like this:
 <br/>
 
 NGINX aaS | Ubuntu | Docker | Windows
-:---------------------:|:---------------------:|:---------------------:
+:---------------------:|:---------------------:|:---------------------:|:---------------------:
 ![NGINX aaS](media/nginx-azure-icon.png) |![Ubuntu](media/ubuntu-icon.png) |![Docker](media/docker-icon.png) |![Docker](media/docker-icon.png)
   
 ## Learning Objectives
@@ -29,7 +29,7 @@ By the end of the lab you will be able to:
 ## Pre-Requisites
 
 - You must have Azure Networking configured for this Workshop
-- You must have access to Azure VMs
+- You must have proper access to create Azure VMs
 - You must have Azure CLI tool installed on your local system
 - You must have an SSH client software installed on your local system
 - You must have your Nginx for Azure instance deployed and running
@@ -88,16 +88,16 @@ By the end of the lab you will be able to:
 
     The above command would create below resources within your resource group:
       - **n4a-ubuntuvm:** This is your virtual machine(vm) resource.
-      - **n4a-ubuntuvm_OsDisk_1_4d41e0726:** This is your OS Disk resource tied to your vm.
+      - **n4a-ubuntuvm_OsDisk_1_<Random_HEX_String>:** This is your OS Disk resource tied to your vm.
       - **n4a-ubuntuvmVMNic:** This is your network interface resource tied to your vm.
       - **n4a-ubuntuvmNSG:** This is your network security group resource tied to the network interface of your vm.
       - **n4a-ubuntuvmPublicIP:** This is your public IP resource tied to your vm.
   
-    This command will also generate a SSH key file named `id_rsa` under `~/.ssh` folder.
+    This command will also generate a SSH key file named `id_rsa` under `~/.ssh` folder if you don't have one already.
 
-    **SECURITY Warning** This new VM has SSH/port22 open to the entire Internet, and is only using an SSH Key file for security.  Take appropriate steps to secure your VM if you will be using it for more than a couple hours!
+    **SECURITY WARNING:** This new VM has SSH/port22 open to the entire Internet, and is only using an SSH Key file for security. Take appropriate steps to secure your VM if you will be using it for more than a couple hours!
 
-1. (Optional Step) You can lock down your Network Security Group by allowing SSH/port22 access only to your publicIP using below command.
+1. **(Optional Step):** You can lock down your Network Security Group by allowing SSH/port22 access only to your publicIP using below command.
 
     ```bash
     ##Set environment variable
