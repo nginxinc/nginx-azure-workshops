@@ -321,91 +321,129 @@ NGINX aaS | Docker | Cafe Demo
 :-------------------------:|:-------------------------:|:-------------------------:
 ![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)  |![Nginx Cafe](media/cafe-icon.png)
 
-Open the Azure Portal, your Resource Group, then Nginx for Azure, Settings, and then the NGINX Configuration panel.
+1. Open Azure portal within your browser and then open your resource group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration`.
 
-Click on `+ New File`, to create a new Nginx config file.
+1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/cafe-docker-upstreams.conf`.
 
-Name the new file `/etc/nginx/conf.d/cafe-docker-upstreams.conf`.
+    **Important:** You must use the full Linux /directory/filename path for every Nginx config file, for it to be properly created and placed in the correct directory.  If you forget, you can delete it and must re-create it.  The Azure Portal Text Edit panels do not let you move, or drag-n-drop files or directories.  You can `rename` a file by clicking the Pencil icon, and `delete` a file by clicking the Trashcan icon at the top.
 
-**Important:** You must use the full Linux /folder/filename path for every Nginx config file, for it to be properly created and placed in the correct folder.  If you forget, you can delete it and must re-create it.  The Azure Portal Text Edit panels do not let you move, or drag-n-drop files or folders.  You can `rename` a file by clicking the Pencil icon, and `delete` a file by clicking the Trashcan icon at the top.
+1. Copy and paste the contents from the matching file present in `lab2` directory from Github, into the Configuration Edit window, shown here:
 
-Copy and paste the contents from the matching file from Github, into the Configuration Edit window, shown here:
+    ```nginx
+    # Nginx 4 Azure, Cafe Nginx Demo Upstreams
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    # cafe-nginx servers
+    #
+    upstream cafe_nginx {
+        zone cafe_nginx 256k;
+        
+        # from docker compose
+        server n4a-ubuntuvm:81;
+        server n4a-ubuntuvm:82;
+        server n4a-ubuntuvm:83;
 
-```nginx
-# Nginx 4 Azure, Cafe Nginx Demo Upstreams
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-#
-# cafe-nginx servers
-#
-upstream cafe_nginx {
-  zone cafe_nginx 256k;
-  
-  # from docker compose
-  server ubuntuvm:81;
-  server ubuntuvm:82;
-  server ubuntuvm:83;
+        keepalive 32;
 
-  keepalive 32;
+    }
+    ```
 
-}
+    << ss here >>
 
-```
+    This creates an Nginx Upstream Block, which defines the backend server group that Nginx will load balance traffic to.
 
-<< ss here >>
+1. Click the ` + New File` again, and create a second Nginx config file, using the same Nginx for Azure Configuration editor tool. Name the second file `/etc/nginx/conf.d/cafe.example.com.conf`.
 
-This creates an Nginx Upstream Block, which defines the backend server group that Nginx will load balance traffic to.
+1. Copy and paste the contents of the matching file present in `lab2` directory from Github, into the Configuration Edit window, shown here:
 
-Click the ` + New File` again, and create a second Nginx config file, using the same Nginx for Azure Configuration editor tool.
+    ```nginx
+    # Nginx 4 Azure - Cafe Nginx HTTP
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    server {
+        
+        listen 80;      # Listening on port 80 on all IP addresses on this machine
 
-Name the second file `/etc/nginx/conf.d/cafe.example.com.conf`.
+        server_name cafe.example.com;   # Set hostname to match in request
+        status_zone cafe.example.com;   # Metrics zone name
 
-Copy, then paste the contents of the matching file from Github, into the Configuration Edit window, shown here:
+        access_log  /var/log/nginx/cafe.example.com.log main;
+        error_log   /var/log/nginx/cafe.example.com_error.log info;
 
-```nginx
-# Nginx 4 Azure - Cafe Nginx HTTP
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-#
-server {
-    
-    listen 80;      # Listening on port 80 on all IP addresses on this machine
+        location / {
+            #
+            # return 200 "You have reached cafe.example.com, location /\n";
+            
+            proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
+            add_header X-Proxy-Pass cafe_nginx;  # Custom Header
 
-    server_name cafe.example.com;   # Set hostname to match in request
-    status_zone cafe.example.com;   # Metrics zone name
-
-    access_log  /var/log/nginx/cafe.example.com.log main;
-    error_log   /var/log/nginx/cafe.example.com_error.log info;
-
-    location / {
-        #
-        # return 200 "You have reached cafe.example.com, location /\n";
-         
-        proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
-        add_header X-Proxy-Pass cafe_nginx;  # Custom Header
+        }
 
     }
 
-}
+    ```
 
-```
+1. Now you need to include these new files into your main `nginx.conf` file within your `nginx4a` resource. Copy and paste the contents of the `nginx.conf` file present in `lab2` directory from Github, into the `nginx.conf` file using Configuration Edit window, shown here:
 
-Click the `Submit` Button above the Editor.  Nginx will validate your configuration, and if successfull, will reload Nginx with your new configuration.  If you receive an error, you will need to fix it before you proceed.
+    ```nginx
+    # Nginx 4 Azure - Default - Updated Nginx.conf
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    user nginx;
+    worker_processes auto;
+    worker_rlimit_nofile 8192;
+    pid /run/nginx/nginx.pid;
+
+    events {
+        worker_connections 4000;
+    }
+
+    error_log /var/log/nginx/error.log error;
+
+    http {
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+                      
+        access_log off;
+        server_tokens "";
+        server {
+            listen 80 default_server;
+            server_name localhost;
+            location / {
+                # Points to a directory with a basic html index file with
+                # a "Welcome to NGINX as a Service for Azure!" page
+                root /var/www;
+                index index.html;
+            }
+        }
+
+        include /etc/nginx/conf.d/*.conf;
+        # include /etc/nginx/includes/*.conf;    # shared files
+    
+    }
+    ```
+
+1. Click the `Submit` Button above the Editor.  Nginx will validate your configurations, and if successful, will reload Nginx with your new configurations.  If you receive an error, you will need to fix it before you proceed.
 
 ### Update your local system's DNS /etc/host file
 
-For easy access your new website, you will need to add the hostname `cafe.example.com` and the Nginx4Azure Public IP address, to your local system DNS hosts file for name resolution.  Your N4A Public IP address can be found in your Azure Portal, under `nginx1-ip`.  Use VI or other text editor to add the entry to `/etc/hosts`:
+1. For easy access your new website, you will need to add the hostname `cafe.example.com` and the Nginx for Azure Public IP address, to your local system DNS hosts file for name resolution.  Your Nginx for Azure Public IP address can be found in your Azure Portal, under `n4a-publicIP`.  Use vi tool or any other text editor to add an entry to `/etc/hosts` as shown below:
 
-```bash
-cat /etc/hosts
+    ```bash
+    cat /etc/hosts
 
-127.0.0.1 localhost
-...
-# Nginx for Azure testing
-20.3.16.67 cafe.example.com
-...
+    127.0.0.1 localhost
+    ...
+    # Nginx for Azure testing
+    11.22.33.44 cafe.example.com
+    ...
+    ```
 
-```
+    where
+   - `11.22.33.44` replace with your `n4a-publicIP` resource IP address.
 
-Save your /etc/hosts file, and quit VI.
+2. Once you have updated the host your /etc/hosts file, save it and quit vi tool.
 
 ### Update your Azure Network Security Group
 
@@ -436,7 +474,7 @@ Try the coffee and tea URLs, at http://cafe.example.com/coffee and /tea.
 
 You should see a 200 OK Response.  Did you see the `X-Proxy-Pass` header - set to the Upstream block name.  
 
-Did you notice the `Server` header?  This is the Nginx Server Token. 
+Did you notice the `Server` header?  This is the Nginx Server Token.
 
 **Optional** - Change the Server token to your name, and Submit your configuration.  The server_tokens directive is found in the `nginx.conf` file.  Change it from `N4A-$nginx_version`, to `N4A-$nginx_version-myname`, and click Submit.
 
