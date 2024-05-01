@@ -21,8 +21,8 @@ By the end of the lab you will be able to:
 - Deploy Ubuntu VM with Docker and Docker-Compose preinstalled using Azure CLI
 - Run Nginx demo application containers
 - Configure Nginx for Azure to Load Balance Docker containers
-- Deploy Windows VM with Azure CLI
 - Test and validate your lab environment
+- Deploy Windows VM with Azure CLI
 - Configure Nginx for Azure to load balance these resources
 - Test your Nginx for Azure configs
 
@@ -426,9 +426,9 @@ NGINX aaS | Docker | Cafe Demo
 
 1. Click the `Submit` Button above the Editor.  Nginx will validate your configurations, and if successful, will reload Nginx with your new configurations.  If you receive an error, you will need to fix it before you proceed.
 
-### Update your local system's DNS /etc/host file
+### Test your Nginx for Azure configuration
 
-1. For easy access your new website, you will need to add the hostname `cafe.example.com` and the Nginx for Azure Public IP address, to your local system DNS hosts file for name resolution.  Your Nginx for Azure Public IP address can be found in your Azure Portal, under `n4a-publicIP`.  Use vi tool or any other text editor to add an entry to `/etc/hosts` as shown below:
+1. For easy access your new website, update your local system's DNS `/etc/hosts` file. You will add the hostname `cafe.example.com` and the Nginx for Azure Public IP address, to your local system DNS hosts file for name resolution.  Your Nginx for Azure Public IP address can be found in your Azure Portal, under `n4a-publicIP`.  Use vi tool or any other text editor to add an entry to `/etc/hosts` as shown below:
 
     ```bash
     cat /etc/hosts
@@ -443,59 +443,30 @@ NGINX aaS | Docker | Cafe Demo
     where
    - `11.22.33.44` replace with your `n4a-publicIP` resource IP address.
 
-2. Once you have updated the host your /etc/hosts file, save it and quit vi tool.
+1. Once you have updated the host your /etc/hosts file, save it and quit vi tool.
 
-### Update your Azure Network Security Group
+1. Using a new Terminal, send a curl command to `http://cafe.example.com`, what do you see ?
 
-You likely have one, or more, Azure Network Security Groups that need to updated to allow port 80 HTTP traffic inbound to your Resources.  Check and verify that your Source IP is allowed access to both your VNet, and your `nginx1` instance.
+    ```bash
+    curl -I http://cafe.example.com
+    ```
 
-### Test your Nginx4Azure configuration
+    ```bash
+    ##Sample Output##
+    HTTP/1.1 200 OK
+    Date: Thu, 04 Apr 2024 21:36:30 GMT
+    Content-Type: text/html; charset=utf-8
+    Connection: keep-alive
+    Expires: Thu, 04 Apr 2024 21:36:29 GMT
+    Cache-Control: no-cache
+    X-Proxy-Pass: cafe-nginx
+    ```
 
-Using a new Terminal, send a curl command to `http://cafe.example.com`, what do you see ?
+    Try the coffee and tea URLs, at http://cafe.example.com/coffee and http://cafe.example.com/tea.
 
-```bash
-curl -I http://cafe.example.com
-```
+    You should see a 200 OK Response.  Did you see the `X-Proxy-Pass` header - set to the Upstream block name.  
 
-```bash
-#Sample output
-HTTP/1.1 200 OK
-Server: N4A-1.25.1
-Date: Thu, 04 Apr 2024 21:36:30 GMT
-Content-Type: text/html; charset=utf-8
-Connection: keep-alive
-Expires: Thu, 04 Apr 2024 21:36:29 GMT
-Cache-Control: no-cache
-X-Proxy-Pass: cafe-nginx
-
-```
-
-Try the coffee and tea URLs, at http://cafe.example.com/coffee and /tea.
-
-You should see a 200 OK Response.  Did you see the `X-Proxy-Pass` header - set to the Upstream block name.  
-
-Did you notice the `Server` header?  This is the Nginx Server Token.
-
-**Optional** - Change the Server token to your name, and Submit your configuration.  The server_tokens directive is found in the `nginx.conf` file.  Change it from `N4A-$nginx_version`, to `N4A-$nginx_version-myname`, and click Submit.
-
-Try the curl again.  See the change ?  Set it back if you like, the Server token is usually hidden for Security reasons, but you can use it as a quick identity tool temporarily.  (Which server did I hit?)
-
-```bash
-#Sample output
-HTTP/1.1 200 OK
-Server: N4A-1.25.1-cakker                # appended a name
-Date: Thu, 04 Apr 2024 21:41:04 GMT
-Content-Type: text/html; charset=utf-8
-Connection: keep-alive
-Expires: Thu, 04 Apr 2024 21:41:03 GMT
-Cache-Control: no-cache
-X-Proxy-Pass: cafe-nginx
-
-```
-
-### Test Nginx 4 Azure to Docker
-
-Try access to your website with a Browser.  Open Chrome, and nagivate to `http://cafe.example.com`.  You should see an `Out of Stock` image, with a gray metadata panel, filled with names, IP addresses, URLs, etc.  This panel comes from the Docker container, using Nginx $variables to populate the gray panel fields.  If you open Chrome Developer Tools, and look at the Response Headers, you should be able to see the Server and X-Proxy-Pass Headers set respectively.
+1. Now try access to your cafe application with a Browser. Open Chrome, and nagivate to `http://cafe.example.com`. You should see an `Out of Stock` image, with a gray metadata panel, filled with names, IP addresses, URLs, etc. This panel comes from the Docker container, using Nginx $variables to populate the gray panel fields. If you open Chrome Developer Tools, and look at the Response Headers, you should be able to see the Server and X-Proxy-Pass Headers set respectively.
 
 << out of stock ss here >>
 
@@ -504,8 +475,6 @@ Click Refresh serveral times.  You will notice the `Server Name` and `Server Ip`
 Congratulations!!  You have just completed launching a simple web application with Nginx for Azure, running on the Internet, with just a VM, Docker, and 2 config files for Nginx for Azure.  That wasn't so hard now, was it?
 
 <br/>
-
- << TODO - check and fix >>
 
 ## Deploy Windows VM with Azure CLI
 
