@@ -124,9 +124,9 @@ By the end of the lab you will be able to:
     Where:
     - `ssh` - is the local command to start an SSH session, or use another applcation of your choosing.
     - `azureuser` is the local user for Azure VM that you created.
-    -`@11.22.33.44` is the Public IP Addresses assinged to your Ubuntu VM.
+    - `@11.22.33.44` is the Public IP Addresses assinged to your Ubuntu VM.
 
-    **Note:** If you cannot connect, you likely having ssh client issues. You can make use of Azure CloudShell to create your vm which would create an `id_rsa` ssh key file within the `~/.ssh` directory of your Azure cloud shell.
+    **Note:** If you cannot connect using your local machine, you likely having ssh client issues. You can make use of Azure CloudShell to create your vm which would create an `id_rsa` ssh key file within the `~/.ssh` directory of your Azure cloud shell.
 
     ![cloudshell](media/lab2-cloudshell.png)
 
@@ -184,7 +184,7 @@ By the end of the lab you will be able to:
 
     Success!  You have an Ubuntu VM with Docker that can run various containers needed for future Lab exercises. Reminder: Don't forget to shutdown this VM when you are finished with it later, or set an Auto Shutdown policy using Azure Portal.
 
-    Leave your SSH Terminal running, you will use it in the next Exercise.
+    Leave your SSH Terminal running, you will use it in the next section.
 
 ### Deploy Nginx Demo containers
 
@@ -198,18 +198,27 @@ You will now use Docker Compose to create and deploy three Nginx `ingress-demo` 
     docker-web2 | ubuntuvm:82
     docker-web3 | ubuntuvm:83
 
-1. On the Ubuntu VM, create a new folder in the `/home/azureuser` directory, call it `cafe`.
+1. On the Ubuntu VM, create a new sub-directory in the `/home/azureuser` directory, call it `cafe`.
 
       ```bash
       cd $HOME
       mkdir cafe
+      ```
+
+1. Within the `cafe` sub-directory, you will now add `docker-compose.yml`.
+    You can do this in two ways. You can create a new `docker-compose.yml` file and copy the contents from the `lab2/docker-compose.yml` file, into this new file on the Ubuntu VM using editor of your choice (Below example uses vi tool).
+
+      ```bash
       cd cafe
       vi docker-compose.yml
       ```
 
-    << Lets replace vi command with a wget when git repo is public >>
+    Alternatively, you can get this file by running the wget command as shown below:
 
-    Copy the contents from the `lab2/docker-compose.yml` file, into the same filename on the Ubuntu VM.  Save the file and exit VI.
+    ```bash
+    cd cafe
+    wget https://raw.githubusercontent.com/nginxinc/nginx-azure-workshops/main/labs/lab2/docker-compose.yml
+    ```
 
 1. Start up the three Nginx demo containers using below command. This instructs Docker to read the compose file and start the three containers:
 
