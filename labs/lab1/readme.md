@@ -77,8 +77,8 @@ Lab1 Diagram
 
     ```bash
     ## Set environment variables
-    MY_RESOURCEGROUP=s.dutta-workshop
-    MY_PUBLICIP=$(curl -4 ifconfig.co)
+    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_PUBLICIP=$(curl -4 ifconfig.co)
     ```
 
     ```bash
@@ -255,9 +255,19 @@ Lab1 Diagram
     }
     ```
 
-5. In similar fashion create two more subnets that would be used with AKS cluster in later labs.
+5. In similar fashion create three more subnets that would be used with docker virtual machines and AKS cluster in later labs.
 
     ```bash
+    # VM Subnet
+    az network vnet subnet create \
+    --resource-group $MY_RESOURCEGROUP \
+    --name vm-subnet \
+    --vnet-name n4a-vnet \
+    --address-prefixes 172.16.2.0/24
+    ```
+
+    ```bash
+    # AKS1 Subnet
     az network vnet subnet create \
     --resource-group $MY_RESOURCEGROUP \
     --name aks1-subnet \
@@ -266,6 +276,7 @@ Lab1 Diagram
     ```
 
     ```bash
+    # AKS2 Subnet
     az network vnet subnet create \
     --resource-group $MY_RESOURCEGROUP \
     --name aks2-subnet \
@@ -343,8 +354,8 @@ Lab1 Diagram
 
     ```bash
     ## Set environment variables
-    MY_RESOURCEGROUP=s.dutta-workshop
-    MY_SUBSCRIPTIONID=$(az account show --query id -o tsv)
+    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_SUBSCRIPTIONID=$(az account show --query id -o tsv)
     ```
 
     ```bash
@@ -460,7 +471,7 @@ In this section you will create a Log Analytics resource that would collect Ngin
 
     ```bash
     ## Set environment variables
-    MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_RESOURCEGROUP=s.dutta-workshop
     ```
 
     ```bash
@@ -544,13 +555,13 @@ In this section you will create a Log Analytics resource that would collect Ngin
 
     ```bash
     ## Set environment variables
-    MY_N4A_ID=$(az nginx deployment show \
+    export MY_N4A_ID=$(az nginx deployment show \
     --resource-group $MY_RESOURCEGROUP \
     --name nginx4a \
     --query id \
     --output tsv)
 
-    MY_LOG_ANALYTICS_ID=$(az monitor log-analytics workspace show \
+    export MY_LOG_ANALYTICS_ID=$(az monitor log-analytics workspace show \
     --resource-group $MY_RESOURCEGROUP \
     --name n4a-loganalytics \
     --query id \
