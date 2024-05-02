@@ -183,7 +183,7 @@ Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastru
 1. Test if you are able to access your second AKS cluster(`n4a-aks2`).
 
    ```bash
-   # Set context to 1st cluster(n4a-aks2)
+   # Set context to 2nd cluster(n4a-aks2)
    kubectl config use-context n4a-aks2
    ```
 
@@ -230,31 +230,36 @@ Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastru
    **NOTE:**  If you do not have a license, you can request a 30-day Trial key from [here](https://www.nginx.com/free-trial-connectivity-stack-kubernetes/).  
    An email will arrive in your Inbox in a few minutes, with links to download the license files.
 
-   >However, in this Workshop, a Trial License will be provided to you, so you can pull and run the Nginx Plus Commercial version of the Ingress Controller.  This is NOT the same Ingress Controller provided by the Kubernetes Community.  (If you are unsure which Ingress Controller you are using in your other Kubernetes environments, you can find a link to the Blog from Nginx that explains the differences).
+   However, in this workshop, a Trial License will be provided to you, so you can pull and run the Nginx Plus Commercial version of the Ingress Controller.  This is NOT the same Ingress Controller provided by the Kubernetes Community.  (If you are unsure which Ingress Controller you are using in your other Kubernetes environments, you can find a link to the Blog from Nginx that explains the differences).
 
-1. Once your Workshop Instructor has provide the JWT file, follow these instructions to create a Kubernetes Secret named `regcred`, of type `docker-registry`.  You will need to create the Secret in both of your AKS clusters. 
+1. Once your Workshop Instructor has provide the JWT file, follow these instructions to create a Kubernetes Secret named `regcred`, of type `docker-registry`.  You will need to create the Secret in both of your AKS clusters.
 
-1. Copy the `nginx-repo.jwt` file provided in the newly created directory.
+1. Copy the `nginx-repo.jwt` file provided in the `lab3` directory.
 
 1. Export the contents of the JWT file to an environment variable.
 
-```bash
-export JWT=$(cat nginx-repo.jwt)
+   ```bash
+   export JWT=$(cat lab3/nginx-repo.jwt)
+   ```
 
-```
-```bash
-# Check $JWT
-echo $JWT
-
-```
+   ```bash
+   # Check $JWT
+   echo $JWT
+   ```
 
 1. Create a Kubernetes `docker-registry` Secret on your First  cluster, using the JWT token as the username and none for password (as the password is not used).  The name of the docker server is `private-registry.nginx.com`.  Replace the <docker-username> parameter with the contents of the `nginx-repo.jwt` file:
 
     ```bash
+     # Set context to 1st cluster(n4a-aks1)
     kubectl config use-context n4a-aks1
-    kubectl create secret docker-registry regcred --docker-server=private-registry.nginx.com --docker-username=$JWT --docker-password=none -n nginx-ingress
+
+    kubectl create secret docker-registry regcred \
+      --docker-server=private-registry.nginx.com \
+      --docker-username=$JWT \
+      --docker-password=none \
+      -n nginx-ingress
     ```
-    
+
    > It is important that the --docker-username=<JWT Token> contains the contents of the token and is not pointing to the token itself. Ensure that when you copy the contents of the JWT token, there are no additional characters or extra whitespaces. This can invalidate the token and cause 401 errors when trying to authenticate to the registry.
 
 1. Confirm the Secret was created successfully by running:
@@ -402,7 +407,7 @@ In this section, you will be installing NGINX Plus Ingress Controller in both AK
    - Make use of default TLS certificate
    - Enable Global Configuration for Transport Server
    
-1. Navigate back to the Workshop's `labs` directory 
+1. Navigate back to the Workshop's `labs` directory
     ```bash
     cd ../../labs
 
