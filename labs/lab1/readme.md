@@ -45,7 +45,9 @@ By the end of the lab you will be able to:
 
 1. Create a new Azure Resource Group called `<name>-workshop` , where `<name>` is your last name (or any unique value).  This would hold all the Azure resources that you would create for this workshop.
 
-    Also you need to specify a Azure location while creating the resource group. Check out the [Azure Latency Test](https://www.azurespeed.com/Azure/Latency) and select a region that provides the lowest latency.
+    Check out the available [Datacenter regions](https://azure.microsoft.com/en-us/explore/global-infrastructure/geographies/#geographies) and decide on a region that is closest to you and meets your needs.
+
+    You can make use of [Azure Latency Test](https://www.azurespeed.com/Azure/Latency) to select a region that provides the lowest latency.
 
     I am located in Chicago, Illinois so I will opt to use `Central US` as my Azure location.
 
@@ -56,7 +58,7 @@ By the end of the lab you will be able to:
    az group create --name s.dutta-workshop --location centralus
    ```
 
-1. Make sure the new Azure Resource Group has been created by running below command.
+2. Make sure the new Azure Resource Group has been created by running below command.
 
    ```bash
    az group list -o table | grep workshop
