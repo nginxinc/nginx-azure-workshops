@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-#  Ubuntu VM / Docker / Windows VM / Cafe Demo Deployment 
-=======
 # UbuntuVM/Docker / Windows VM / Cafe Demo Deployment
->>>>>>> 86266866c84670fe23c6811d527a63b16a48bab1
 
 ## Introduction
 
@@ -16,11 +12,7 @@ Your completed Ubuntu and Windows VM deployment will look like this:
 
 NGINX aaS | Ubuntu | Docker | Windows
 :---------------------:|:---------------------:|:---------------------:|:---------------------:
-<<<<<<< HEAD
 ![NGINX aaS](media/nginx-azure-icon.png) |![Ubuntu](media/ubuntu-icon.png) |![Docker](media/docker-icon.png) |![Docker](media/windows-icon.png)
-=======
-![NGINX aaS](media/nginx-azure-icon.png) |![Ubuntu](media/ubuntu-icon.png) |![Docker](media/docker-icon.png) |![Docker](media/docker-icon.png)
->>>>>>> 86266866c84670fe23c6811d527a63b16a48bab1
   
 ## Learning Objectives
 
@@ -332,13 +324,7 @@ NGINX aaS | Docker | Cafe Demo
 :-------------------------:|:-------------------------:|:-------------------------:
 ![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)  |![Nginx Cafe](media/cafe-icon.png)
 
-<<<<<<< HEAD
-<br/>
-
-Open the Azure Portal, your Resource Group, then Nginx for Azure, Settings, and then the NGINX Configuration panel.
-=======
 1. Open Azure portal within your browser and then open your resource group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under settings.
->>>>>>> 86266866c84670fe23c6811d527a63b16a48bab1
 
 1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/cafe-docker-upstreams.conf`.
 
@@ -450,12 +436,8 @@ Open the Azure Portal, your Resource Group, then Nginx for Azure, Settings, and 
 
 1. For easy access your new website, update your local system's DNS `/etc/hosts` file. You will add the hostname `cafe.example.com` and the Nginx for Azure Public IP address, to your local system DNS hosts file for name resolution.  Your Nginx for Azure Public IP address can be found in your Azure Portal, under `n4a-publicIP`.  Use vi tool or any other text editor to add an entry to `/etc/hosts` as shown below:
 
-<<<<<<< HEAD
-You likely have one, or more, Azure Network Security Groups that need to updated to allow port 80 HTTP traffic inbound to your Resources.  Check and verify that your Source IP is allowed access to both your VNet, and your `nginx4a` instance.
-=======
     ```bash
     cat /etc/hosts
->>>>>>> 86266866c84670fe23c6811d527a63b16a48bab1
 
     127.0.0.1 localhost
     ...
