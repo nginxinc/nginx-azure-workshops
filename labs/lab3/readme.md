@@ -14,6 +14,7 @@ NGINX aaS | AKS | Nginx Plus Ingress
 
 ## Learning Objectives
 
+- Understand what is Azure AKS?
 - Deploy 2 Kubernetes clusters using Azure CLI.
 - Test and verify proper operation of both AKS clusters.
 - Deploy the NGINX Plus Ingress Controller image.
@@ -43,7 +44,7 @@ Your new Lab Diagram will look similar to this:
 
 <br/>
 
-## What is Azure AKS?
+### What is Azure AKS?
 
 Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastructure. The Kubernetes resources will be fully managed by Microsoft Azure, which offloads the burden of maintaining the infrastructure, and makes sure these resources are highly available and reliable at all times.  This is often a good choice for Modern Applications running as containers, and using Kubernetes Services to control them.
 
@@ -60,7 +61,6 @@ Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastru
     export MY_NAME=s.dutta
     export K8S_VERSION=1.27
     export MY_SUBNET=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks1-subnet --vnet-name n4a-vnet --query id -o tsv)
-
     ```
 
     ```bash
@@ -77,7 +77,7 @@ Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastru
         --generate-ssh-keys
     ```
 
-   >**Note**: At the time of this writing, 1.27 is the latest kubernetes version available in Azure AKS.
+   >**Note**: At the time of this writing, 1.27 is the latest kubernetes long-term supported (LTS) version available in Azure AKS.
 
 1. **(Optional Step)**: If kubectl ultility tool is not installed in your workstation then you can install `kubectl` locally using below command:
 
@@ -92,6 +92,188 @@ Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastru
         --resource-group $MY_RESOURCEGROUP \
         --name n4a-aks1
    ```
+
+### Install NGINX Plus Ingress Controller to first clusters
+
+In this section, you will be installing NGINX Plus Ingress Controller in 1st AKS clusters using manifest files. You will be then checking and verifying the Ingress Controller is running.
+
+1. Make sure your AKS cluster is running. Check the Nodes using below command.
+
+   ```bash
+   kubectl get nodes
+   ```
+
+   ```bash
+   ##Sample Output##
+   NAME                                STATUS   ROLES   AGE     VERSION
+   aks-nodepool1-19055428-vmss000003   Ready    agent   3m52s   v1.27.9
+   aks-nodepool1-19055428-vmss000004   Ready    agent   3m12s   v1.27.9
+   aks-nodepool1-19055428-vmss000005   Ready    agent   3m37s   v1.27.9
+   ```
+
+1. Ensure that you are in the `/labs` directory of the workshop repository within your terminal.
+
+    ```bash
+    # Check your current directory
+    pwd
+    ```
+
+    ```bash
+    ##Sample Output##
+    <Parent directory where you git cloned the workshop repo>/nginx-azure-workshops/labs
+    ```
+
+1. Git Clone the Nginx Ingress Controller repo and navigate into the `/deployments` directory to make it your working directory for installing NGINX Ingress Controller:
+
+   ```bash
+   git clone https://github.com/nginxinc/kubernetes-ingress.git --branch v3.3.2
+   cd kubernetes-ingress/deployments
+   ```
+
+   >**Note**: At the time of this writing `3.3.2` is the latest NGINX Plus Ingress version that is available. Please feel free to use the latest version of NGINX Plus Ingress Controller. Look into [references](#references) for the latest Ingress images.
+
+1. Create necessary Kubernetes objects needed for Ingress Controller:
+
+   ```bash
+   # Create namespace and a service account
+   kubectl apply -f common/ns-and-sa.yaml
+
+   # Create cluster role and cluster role bindings
+   kubectl apply -f rbac/rbac.yaml
+
+   # Create default server secret with TLS certificate and a key
+   kubectl apply -f ../examples/shared-examples/default-server-secret/default-server-secret.yaml
+
+   # Create config map
+   kubectl apply -f common/nginx-config.yaml
+
+   # Create IngressClass resource
+   kubectl apply -f common/ingress-class.yaml
+
+   # Create CRDs
+   kubectl apply -f common/crds/k8s.nginx.org_virtualservers.yaml
+   kubectl apply -f common/crds/k8s.nginx.org_virtualserverroutes.yaml
+   kubectl apply -f common/crds/k8s.nginx.org_transportservers.yaml
+   kubectl apply -f common/crds/k8s.nginx.org_policies.yaml
+   
+   # Create GlobalConfiguration resource
+   kubectl apply -f common/crds/k8s.nginx.org_globalconfigurations.yaml
+   ```
+
+   ```bash
+   ##Sample Output##
+   namespace/nginx-ingress created
+   serviceaccount/nginx-ingress created
+   clusterrole.rbac.authorization.k8s.io/nginx-ingress created
+   clusterrolebinding.rbac.authorization.k8s.io/nginx-ingress created
+   secret/default-server-secret created
+   configmap/nginx-config created
+   ingressclass.networking.k8s.io/nginx created
+   customresourcedefinition.apiextensions.k8s.io/virtualservers.k8s.nginx.org created
+   customresourcedefinition.apiextensions.k8s.io/virtualserverroutes.k8s.nginx.org created
+   customresourcedefinition.apiextensions.k8s.io/transportservers.k8s.nginx.org created
+   customresourcedefinition.apiextensions.k8s.io/policies.k8s.nginx.org created
+   customresourcedefinition.apiextensions.k8s.io/globalconfigurations.k8s.nginx.org created
+   ```
+
+2. Deploy the Ingress Controller as a Deployment:
+
+   You will find the sample deployment file (`nginx-plus-ingress.yaml`) in the `deployment` sub-directory within your present working directory.  *Do not use this file, use the one provided in the `/lab3 folder`.*
+
+   You will use the Manifest provided in the /lab3 folder, which has the follow changes highlighted below:
+
+   - Change Image Pull to Nginx Private Repo with Docker Secret
+   - Enable Prometheus
+   - Add port and name for dashboard
+   - Change Dashboard Port to 9000
+   - Allow all IPs to access dashboard
+   - Make use of default TLS certificate
+   - Enable Global Configuration for Transport Server
+   
+3. Navigate back to the Workshop's `labs` directory
+    ```bash
+    cd ../../labs
+
+    ```
+  
+    Inspect the `lab3/nginx-plus-ingress.yaml` looking at these changes:
+
+     - On lines #16-19, we have enabled `Prometheus` related annotations.
+     - On Lines #22-23, the ImagePullSecret is set to the Docker Config Secret `regcred` you created previously.
+     - On line #36, the `nginx-plus-ingress:3.3.2` placeholder is changed to the Nginx Private Registry image.
+     - On lines #52-53, we have added TCP port 9000 for the Plus Dashboard.
+     - On line #97, uncomment to make use of default TLS secret
+     - On lines #98-99, we have enabled the Dashboard and set the IP access controls to the Dashboard.
+     - On line #108, we have enabled Prometheus to collect metrics from the NGINX Plus stats API.
+     - On line #111, uncomment to enable the use of Global Configurations.
+
+    Now deploy NGINX Ingress Controller as a Deployment using your updated manifest file.
+    ```bash
+    kubectl apply -f lab3/nginx-plus-ingress.yaml
+
+    ```
+    ```bash
+    #Sample output
+    deployment.apps/nginx-ingress created
+
+    ```
+
+### Check your NGINX Ingress Controller
+
+1. Verify the NGINX Plus Ingress controller is up and running correctly in the Kubernetes cluster:
+
+   ```bash
+   kubectl get pods -n nginx-ingress
+   ```
+
+   ```bash
+   ###Sample Output###
+   NAME                            READY   STATUS    RESTARTS   AGE
+   nginx-ingress-5764ddfd78-ldqcs   1/1     Running   0          17s
+   ```
+
+   **Note**: You must use the `kubectl` "`-n`", namespace switch, followed by namespace name, to see pods that are not in the default namespace.
+
+2. Instead of remembering the unique pod name, `nginx-ingress-xxxxxx-yyyyy`, we can store the Ingress Controller pod name into the `$NIC` variable to be used throughout the lab.
+
+   >**Note:** This variable is stored for the duration of the Terminal session, and so if you close the Terminal it will be lost. At any time you can refer back to this step to create the `$NIC` variable again.
+
+   ```bash
+   export NIC=$(kubectl get pods -n nginx-ingress -o jsonpath='{.items[0].metadata.name}')
+
+   ```
+
+   You can also create a bash alias, that makes this easy.
+
+   ```bash
+   alias nic='export NIC=$(kubectl get pods -n nginx-ingress -o jsonpath={.items[0].metadata.name})'
+
+   ```
+   
+   Verify the variable is set correctly.
+   ```bash
+   echo $NIC
+
+   ```
+   **Note:** If this command doesn't show the name of the pod then run the previous command again.
+
+### Test Access to the Nginx Plus Ingress Dashboard
+
+Just a quick test, is your Nginx Plus Ingress Controller running, and can you see the Dashboard?  Let's try it:
+
+1. Using Kubernetes Port-Forward, connect to the $NIC pod:
+
+   ```bash
+   kubectl port-forward $NIC -n nginx-ingress 9000:9000
+
+   ```
+
+1. Open your browser to http://localhost:9000/dashboard.html.
+
+   You should see the Nginx Plus Dashboard.  It should have the `HTTP Zone` dashboard.example.com - these are your VirtualServers / Hostnames.  If you check the `HTTP Upstreams` tab, it should have some Pods. There is not much to see for now, but you will be adding Pods/Services to your clusters, and configuring resources to Nginx Ingress in the next few steps and Labs.
+
+Type Ctrl+C to stop the Port-Forward when you are finished.
+
 
 ## Deploy 2nd Kubernetes Cluster with script in Azure Bash
 
@@ -131,107 +313,7 @@ Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastru
         --name n4a-aks2
    ```
 
-### (Optional) Managing Both Clusters using Azure CLI
-
-1. As you are managing multiple Kubernetes clusters, you can easily change between Kubectl Admin Contexts using the `kubectl config use-context` command:
-
-   ```bash
-   # Set context to 1st cluster(n4a-aks1)
-   kubectl config use-context n4a-aks1
-   ```
-
-   ```bash
-   ##Sample Output##
-   Switched to context "n4a-aks1".
-   ```
-
-1. To display all the kubernetes contexts that are present in your local `.kube` config file you can run below command.
-
-   ```bash
-   # List all kubernetes contexts
-   kubectl config get-contexts
-   ```
-
-   ```bash
-   ##Sample Output##
-   CURRENT   NAME               CLUSTER            AUTHINFO                                NAMESPACE
-            aks-shouvik-fips   aks-shouvik-fips   clusterUser_s.dutta_aks-shouvik-fips    
-   *        n4a-aks1           n4a-aks1           clusterUser_s.dutta-workshop_n4a-aks1   
-            n4a-aks2           n4a-aks2           clusterUser_s.dutta-workshop_n4a-aks2   
-            rancher-desktop    rancher-desktop    rancher-desktop                         
-   ```
-
-1. To display the current kubernetes context, run below command.
-
-   ```bash
-   # List current kubernetes context
-   kubectl config current-context
-   ```
-
-   ```bash
-   ##Sample Output##
-   n4a-aks1
-   ```
-
-1. Test if you are able to access your first AKS cluster(`n4a-aks1`).
-
-   ```bash
-   # Get Nodes in the target kubernetes cluster
-   kubectl get nodes
-   ```
-
-   ```bash
-   ##Sample Output##
-   NAME                                STATUS   ROLES   AGE   VERSION
-   aks-nodepool1-19055428-vmss000000   Ready    agent   46m   v1.27.9
-   aks-nodepool1-19055428-vmss000001   Ready    agent   46m   v1.27.9
-   aks-nodepool1-19055428-vmss000002   Ready    agent   46m   v1.27.9   
-   ```
-
-1. Test if you are able to access your second AKS cluster(`n4a-aks2`).
-
-   ```bash
-   # Set context to 2nd cluster(n4a-aks2)
-   kubectl config use-context n4a-aks2
-   ```
-
-   ```bash
-   # Get Nodes in the target kubernetes cluster
-   kubectl get nodes
-   ```
-
-   ```bash
-   ##Sample Output##
-   NAME                                STATUS   ROLES   AGE   VERSION
-   aks-nodepool1-29147198-vmss000000   Ready    agent   27m   v1.27.9
-   aks-nodepool1-29147198-vmss000001   Ready    agent   27m   v1.27.9
-   aks-nodepool1-29147198-vmss000002   Ready    agent   27m   v1.27.9
-   aks-nodepool1-29147198-vmss000003   Ready    agent   27m   v1.27.9  
-   ```
-
-1. Finally to stop a running AKS cluster use below command.
-
-   ```bash
-   export MY_RESOURCEGROUP=s.dutta
-   export MY_AKS=n4a-aks1
-
-   az aks stop \
-      --resource-group $MY_RESOURCEGROUP \
-      --name $MY_AKS
-   ```
-
-1. To start an already deployed AKS cluster use this command.
-
-   ```bash
-   export MY_RESOURCEGROUP=s.dutta
-   export MY_AKS=n4a-aks1
-
-   az aks start \
-      --resource-group $MY_RESOURCEGROUP \
-      --name $MY_AKS
-   ```
-
-## Installing NGINX Plus Ingress Controller
+## Installing NGINX Plus Ingress Controller in 1st Kubernetes Cluster
 
 ![NIC](media/nginx-ingress-icon.png)
 
@@ -755,7 +837,107 @@ This will be the logical network diagram for accessing the Nginx Ingress Dashboa
 
    If you are not familiar with the Nginx Plus Dashboard, you can find a link to more information in the References Section.
 
-**This completes the Lab.** 
+### (Optional) Managing Both Clusters using Azure CLI
+
+1. As you are managing multiple Kubernetes clusters, you can easily change between Kubectl Admin Contexts using the `kubectl config use-context` command:
+
+   ```bash
+   # Set context to 1st cluster(n4a-aks1)
+   kubectl config use-context n4a-aks1
+   ```
+
+   ```bash
+   ##Sample Output##
+   Switched to context "n4a-aks1".
+   ```
+
+1. To display all the kubernetes contexts that are present in your local `.kube` config file you can run below command.
+
+   ```bash
+   # List all kubernetes contexts
+   kubectl config get-contexts
+   ```
+
+   ```bash
+   ##Sample Output##
+   CURRENT   NAME               CLUSTER            AUTHINFO                                NAMESPACE
+            aks-shouvik-fips   aks-shouvik-fips   clusterUser_s.dutta_aks-shouvik-fips    
+   *        n4a-aks1           n4a-aks1           clusterUser_s.dutta-workshop_n4a-aks1   
+            n4a-aks2           n4a-aks2           clusterUser_s.dutta-workshop_n4a-aks2   
+            rancher-desktop    rancher-desktop    rancher-desktop                         
+   ```
+
+1. To display the current kubernetes context, run below command.
+
+   ```bash
+   # List current kubernetes context
+   kubectl config current-context
+   ```
+
+   ```bash
+   ##Sample Output##
+   n4a-aks1
+   ```
+
+1. Test if you are able to access your first AKS cluster(`n4a-aks1`).
+
+   ```bash
+   # Get Nodes in the target kubernetes cluster
+   kubectl get nodes
+   ```
+
+   ```bash
+   ##Sample Output##
+   NAME                                STATUS   ROLES   AGE   VERSION
+   aks-nodepool1-19055428-vmss000000   Ready    agent   46m   v1.27.9
+   aks-nodepool1-19055428-vmss000001   Ready    agent   46m   v1.27.9
+   aks-nodepool1-19055428-vmss000002   Ready    agent   46m   v1.27.9   
+   ```
+
+1. Test if you are able to access your second AKS cluster(`n4a-aks2`).
+
+   ```bash
+   # Set context to 2nd cluster(n4a-aks2)
+   kubectl config use-context n4a-aks2
+   ```
+
+   ```bash
+   # Get Nodes in the target kubernetes cluster
+   kubectl get nodes
+   ```
+
+   ```bash
+   ##Sample Output##
+   NAME                                STATUS   ROLES   AGE   VERSION
+   aks-nodepool1-29147198-vmss000000   Ready    agent   27m   v1.27.9
+   aks-nodepool1-29147198-vmss000001   Ready    agent   27m   v1.27.9
+   aks-nodepool1-29147198-vmss000002   Ready    agent   27m   v1.27.9
+   aks-nodepool1-29147198-vmss000003   Ready    agent   27m   v1.27.9  
+   ```
+
+1. Finally to stop a running AKS cluster use below command.
+
+   ```bash
+   export MY_RESOURCEGROUP=s.dutta
+   export MY_AKS=n4a-aks1
+
+   az aks stop \
+      --resource-group $MY_RESOURCEGROUP \
+      --name $MY_AKS
+   ```
+
+1. To start an already deployed AKS cluster use this command.
+
+   ```bash
+   export MY_RESOURCEGROUP=s.dutta
+   export MY_AKS=n4a-aks1
+
+   az aks start \
+      --resource-group $MY_RESOURCEGROUP \
+      --name $MY_AKS
+   ```
+
+**This completes the Lab.**
 
 <br/>
 
