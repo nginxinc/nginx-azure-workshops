@@ -54,7 +54,7 @@ az grafana create --name $MY_GRAFANA --resource-group $MY_RESOURCEGROUP
 
 2. In the output of the above command, take note of the endpoint that has been created for you. It should be found in a key labelled *endpoint*.
 
-![Managed Grafana](media/managed_grafana.png) 
+![Managed Grafana](media/managed-grafana.png) 
 
 Using the endpoint URL you can log into the Managed Grafana instance using your Microsoft Entra ID (that you have been using for these labs). If you forgot to grab the endpoint URL, you can retrieve it via the Azure CLI tool:
 ```bash
@@ -78,41 +78,41 @@ In the upper right of the page is a blue drop down button. We will select *Impor
 
 ![Dashboard Import](media/grafana-dashboards-new.png)
 
-In Visual Studio Code we will need to modify the template JSON to reflect the values of our resources. First let's grab the values we will need in the terminal:
+In Visual Studio Code Let's navigate to the LAb10 folder.  In it, we will open the N4A-Dashboard.json file.
+
+This template file makes use of Grafana Variables to make it easier to customize to your environment. Let's retrieve the values we will need for the dashboard in the VS terminal by running the following commands:
 
 ```bash
 export MY_RESOURCEGROUP=$(az resource list --resource-group a.currier-workshop --resource-type Nginx.NginxPlus/nginxDeployments --query "[].resourceGroup" -o tsv)
 export MY_RESOURCENAME=$(az resource list --resource-group a.currier-workshop --resource-type Nginx.NginxPlus/nginxDeployments --query "[].name" -o tsv)
-export MY_SUBSCRIPTIONID=$(az account show --query id -o tsv)
 export MY_LOCATION=$(az resource list --resource-group a.currier-workshop --resource-type Nginx.NginxPlus/nginxDeployments --query "[].location" -o tsv)
+export MY_AKSCluster1=n4a-aks1  
+export MY_AKSCluster2=n4a-aks2  
+export MY_WindowsVM=windowsvm  
+export MY_UbuntuVM=ubuntuvm 
 ```
 
 Confirm the values were set:
 ```bash
 set | grep MY
+MY_AKSCluster1=n4a-aks1
+MY_AKSCluster2=n4a-aks2
 MY_LOCATION=eastus
 MY_RESOURCEGROUP=a.currier-workshop
 MY_RESOURCENAME=nginx4a
-MY_SUBSCRIPTIONID=<INSERT SUBSCRIPTION ID>
+MY_UbuntuVM=ubuntuvm
+MY_WindowsVM=windowsvm
 ```
 
-Now that we have these 4 values we can use the Find/Replace function in Visual Studio to modify the JSON of the dashboad file. In the Lab10 folder, open the N4A-Dashboard.json file.
-![VisualStudio Replace](media/visualstudio-replace.png)
+Now that we have these 7 values we can use them in the Dashboard template.
 
-In the search field look for MY_RESOURCENAME and in the replace field use the value of that environment variable (here it is nginx4a).
-
-![Dashboard Import](media/visualstudio-replace2.png)
-
-> Note: Be careful using the replace all button, you only want to use the button next to the N4A-Dashboard.json file name. Otherwise it will replace the names in ALL of your files which we don't want to do.
-
-Repeat this step for the other three variable names MY_RESOURCEGROUP, MY_LOCATION & MY_SUBSCRIPTIONID and replace with the values you just retrieved.
-
-
-Copy the entire modified JSON code. In the grafana import window, paste the code into the import field and then click the blue load button.
+Copy the code from the N4A-Dashboard.json file. In the grafana import window, paste the code into the import field and then click the blue load button.
 
 ![Dashboard Import](media/grafana-dashboards-json.png)
 
+To get the Dashboards to load.  Replace each variable field at the top (see image) with the values you retrieved for your lab:
 
+![Dashboard Import](media/grafana-variables.png)
 
 ### Generate a workload
 
@@ -129,9 +129,11 @@ docker run --rm williamyeh/wrk -t20 -d360s -c5000 https://cafe.example.com/
 
 We now have a working dashboard displaying some key metrics of the NGINX for Azure service. As with most dashboards, you can adjust the time intervals, etc. to get a better look at the data. Feel free to explore the dashboards.  
 
-![Grafana Dashboard](media/grafana-dashboards-sample.png)
+![Grafana Dashboard](media/grafana-dashboards-n4a.png)
 
-There are many different Grafana Dashboards available, and you have the option to create and build dashboards to suite your needs. There are many metrics for TCP, HTTP, SSL, Virtual Servers, Locations, Rate Limits, and Upstreams.
+![Grafana Dashboard](media/grafana-dashboards-k8s-vm.png)
+
+There are many different metrics available to use and you have the option to create and build dashboards to suite your needs. For these pre-built ones, we added three sections. The first section highlights metrics for NGINXaaS. The next section is monitoring your Kubernetes clusters from the previous labs. The final section adds a few metrics for the Virtual Machines that you created. Feel free to review these panels and explore adding panel of your own.
 
 > If `wrk` load generation tool is still running, then you can stop it by pressing `ctrl + c`.
 
@@ -145,7 +147,7 @@ There are many different Grafana Dashboards available, and you have the option t
 
 ## References:
 
-- [NGINX For Azure](https://docs.nginx.com/nginxaas/azure/)
+- [NGINX For Azure Metrics Catalog](https://docs.nginx.com/nginxaas/azure/monitoring/metrics-catalog/)
 - [Azure Managed Grafana Docs](https://learn.microsoft.com/en-us/azure/managed-grafana/)
 - [Build a Grafana Dashboard](https://grafana.com/docs/grafana/latest/getting-started/build-first-dashboard/)
 - [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/)
