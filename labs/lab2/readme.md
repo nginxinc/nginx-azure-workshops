@@ -58,7 +58,7 @@ By the end of the lab you will be able to:
 
     ```bash
     ##Sample Output##
-    <Root directory where you git cloned the workshop repo>/nginx-azure-workshops/labs
+    <Parent directory where you git cloned the workshop repo>/nginx-azure-workshops/labs
     ```
 
 1. Create the Ubuntu VM that would be acting as your backend application server using below command:
