@@ -815,16 +815,33 @@ This will be the logical network diagram for accessing the Nginx Ingress Dashboa
 
    You have just configured `Port-based routing with NGINX for Azure`, sending traffic on port 9001 to AKS1 NIC Dashboard, and port 9002 to send traffic to AKS2 NIC Dashboard.
 
-1. Using the Azure CLI, add ports 9001-9002 to the NSG for your n4a-vnet:
+1. Using the Azure CLI, add ports `9001-9002` to the NSG (`n4a-nsg`) for your VNET (`n4a-vnet`):
 
    ```bash
-   < TODO - update NSG here >
+   ## Set environment variables
+   export MY_RESOURCEGROUP=s.dutta-workshop
+   export MY_PUBLICIP=$(curl -4 ifconfig.co)
+   ```
 
+   ```bash  
+   az network nsg rule create \
+   --resource-group $MY_RESOURCEGROUP \
+   --nsg-name n4a-nsg \
+   --name NIC_Dashboards \
+   --priority 330 \
+   --source-address-prefix $MY_PUBLICIP \
+   --source-port-range '*' \
+   --destination-address-prefix '*' \
+   --destination-port-range 9001-9002 \
+   --direction Inbound \
+   --access Allow \
+   --protocol Tcp \
+   --description "Allow traffic to NIC Dashboards"
    ```
 
    >**Security Warning!** These Nginx Ingress Dashboards are now exposed to the open Internet, with only your Network Security Group for protection.  This is probably fine for a few hours during the Workshop, but do NOT do this in Production, use appropriate Security measures to protect them (not covered in this Workshop).
 
-4. Update your local system DNS `/etc/hosts` file, to add `dashboard.example.com`, using the same public IP of your N4A instance.
+1. Update your local system DNS `/etc/hosts` file, to add `dashboard.example.com`, using the same public IP of your N4A instance.
 
    ```bash
    cat /etc/hosts
@@ -832,12 +849,14 @@ This will be the logical network diagram for accessing the Nginx Ingress Dashboa
    127.0.0.1 localhost
    ...
    # Nginx for Azure testing
-   20.3.16.67 cafe.example.com dashboard.example.com
+   11.22.33.44 cafe.example.com dashboard.example.com
    ...
-
    ```
 
-5. Use Chrome or other browser to test remote access to your NIC Dashboards.  Create a new Tab or Window for each Dashboard.
+   where
+   - `11.22.33.44` replace with your `n4a-publicIP` resource IP address.
+
+1. Use Chrome or other browser to test remote access to your NIC Dashboards.  Create a new Tab or Window for each Dashboard.
 
    http://dashboard.example.com:9001/dashboard.html   > AKS1-NIC
 
@@ -947,11 +966,11 @@ This will be the logical network diagram for accessing the Nginx Ingress Dashboa
       --name $MY_AKS
    ```
 
-**This completes the Lab.**
+**This completes Lab3.**
 
 <br/>
 
-## References: 
+## References:
 
 - [Deploy AKS cluster using Azure CLI](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli)
 - [Azure CLI command list for AKS](https://learn.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest)
@@ -963,7 +982,6 @@ This will be the logical network diagram for accessing the Nginx Ingress Dashboa
 - [Nginx Blog - Which Ingress AM I RUNNING?](https://www.nginx.com/blog/guide-to-choosing-ingress-controller-part-1-identify-requirements/)
 
 <br/>
-
 
 ### Authors
 
