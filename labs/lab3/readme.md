@@ -546,54 +546,81 @@ Just a quick test, is your Nginx Plus Ingress Controller running, and can you se
 
    Type `Ctrl+C` within your terminal to stop the Port-Forward when you are finished.
 
-### Deploy the NGINX Plus Ingress Controller Dashboard
+### Expose NGINX Plus Ingress Controller Dashboard using Virtual Server
 
-Next you are going to use the NGINX Plus Dashboard to monitor both NGINX Ingress Controller as well as your backend applications as Upstreams. This is a great Plus feature to allow you to watch and triage any potential issues with NGINX Plus Ingress controller as well as any issues with your backend applications in real time.
+In this section, you are going to expose the NGINX Plus Dashboard to monitor both NGINX Ingress Controller as well as your backend applications as Upstreams. This is a great Plus feature to allow you to watch and triage any potential issues with NGINX Plus Ingress controller as well as any issues with your backend applications in real time.
 
 You will deploy a `Service` and a `VirtualServer` resource to provide access to the NGINX Plus Dashboard for live monitoring.  NGINX Ingress [`VirtualServer`](https://docs.nginx.com/nginx-ingress-controller/configuration/virtualserver-and-virtualserverroute-resources/) is a [Custom Resource Definition (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) used by NGINX to configure NGINX Server and Location blocks for NGINX configurations.
 
-1. In the `lab3` folder, apply the `dashboard-vs.yaml` file to deploy a `Service` and a `VirtualServer` resource to provide access to the NGINX Plus Dashboard for live monitoring:
+1. Switch your context to point to first AKS cluster using below command:
 
-    ```bash
-    kubectl apply -f lab3/dashboard-vs.yaml
+   ```bash
+   # Set context to 1st cluster(n4a-aks1)
+   kubectl config use-context n4a-aks1
+   ```
 
-    ```
+   ```bash
+   ##Sample Output##
+   Switched to context "n4a-aks1". 
+   ```
 
-    ```bash
-    ###Sample output###
+1. Inspect the `lab3/dashboard-vs` manifest.  This will deploy a `Service` and a `VirtualServer` resource that will be used to expose the NGINX Plus Ingress Controller Dashboard outside the cluster, so you can see what it is doing.
+
+   ```bash
+   kubectl apply -f lab3/dashboard-vs.yaml
+   ```
+
+   ```bash
+    ##Sample Output##
     service/dashboard-svc created
     virtualserver.k8s.nginx.org/dashboard-vs created
-
     ```
 
-1. Inspect the `lab3/dashboard-vs` manifest.  This will create an `nginx-ingress` Service and a VirtualServer that will be used to expose the Nginx Ingress Controller's Plus Dashboard outside the cluster, so you can see what Nginx Ingress Controller is doing.
+1. Verify the Service and Virtual Server were created in first cluster and are Valid:
 
-```bash
-kubectl apply -f lab3/dashboard-vs.yaml
+   ```bash
+   kubectl get svc,vs -n nginx-ingress
+   ```
 
-```
+   ```bash
+   ##Sample Output##
+   NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+   service/dashboard-svc   ClusterIP   10.0.197.220   <none>        9000/TCP   4m55s
 
-1. Verify the Service and Virtual Server were created are Valid:
+   NAME                                       STATE   HOST                    IP    PORTS   AGE
+   virtualserver.k8s.nginx.org/dashboard-vs   Valid   dashboard.example.com                 4m54s
+   ```
 
-```bash
-kubectl get svc,vs -n nginx-ingress
-```
+1. Now change the context to point to second AKS cluster and apply the `dashboard-vs.yaml` file in similar fashion to expose the second cluster's NGINX Plus Ingress Controller Dashboard, using below command:
 
-```bash
-#Sample output
-NAME                             TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                                                                   AGE
-service/dashboard-svc            ClusterIP   10.0.58.119   <none>        9000/TCP                                                                  21d
+   ```bash
+   # Set context to 2nd cluster(n4a-aks2)
+   kubectl config use-context n4a-aks2
 
-NAME                                       STATE   HOST                         IP    PORTS   AGE
-virtualserver.k8s.nginx.org/dashboard-vs   Valid   dashboard.example.com                 21d
+   kubectl apply -f lab3/dashboard-vs.yaml
+   ```
 
-```
+   ```bash
+   ##Sample Output##
+   Switched to context "n4a-aks2".
+   service/dashboard-svc created
+   virtualserver.k8s.nginx.org/dashboard-vs created
+   ```
 
-### Deploy the NGINX Plus Ingress Controller Dashboard to AKS2
+1. Verify the Service and Virtual Server were created in second cluster and are Valid:
 
-1. Change your `Kube Context` to your second AKS cluster.  Deploy the same `dashboard-vs.yaml` Manifest.  Check the Services and VirtualServer are Valid.  Then Port-Forward and check access to the Dashboard using the steps as above.  You should find the exact same thing, the Nginx Ingress Plus Dashboard running, with Zones and Upstreams similar.  However, the IP addresses of the Upstreams `WILL` be different between the clusters, because each cluster assigns different IPs to the Pods.  
+   ```bash
+   kubectl get svc,vs -n nginx-ingress
+   ```
 
-1. **Optional Exercise:**  If you want to see both NIC Dashboards at the same time, you can use 2 Terminals, each with a different Kube Context and different Port-Forward commands.  In Terminal#1, try port-forward 9001:9000 for cluster1, and in Terminal#2, try port-forward 9002:9000 for cluster2.  Then open two browser windows side by side for comparison, first one at http://localhost:9001/dashboard.html, second one at http://localhost:9002/dashboard.html.
+   ```bash
+   ##Sample Output##
+   NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+   service/dashboard-svc   ClusterIP   10.0.145.255   <none>        9000/TCP   110s
+
+   NAME                                       STATE   HOST                    IP    PORTS   AGE
+   virtualserver.k8s.nginx.org/dashboard-vs   Valid   dashboard.example.com                 110s
+   ```
 
 ## Expose your Nginx Ingress Controller with NodePort
 
