@@ -48,7 +48,7 @@ Your new Lab Diagram will look similar to this:
 
 Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastructure. The Kubernetes resources will be fully managed by Microsoft Azure, which offloads the burden of maintaining the infrastructure, and makes sure these resources are highly available and reliable at all times.  This is often a good choice for Modern Applications running as containers, and using Kubernetes Services to control them.
 
-### Deploy 1st Kubernetes Cluster with Azure CLI
+### Deploy first Kubernetes Cluster with Azure CLI
 
 1. With the use of single Azure CLI command, you will deploy a production-ready AKS cluster with some additional options. (**This will take a while**).
 
@@ -93,11 +93,11 @@ Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastru
         --name n4a-aks1
    ```
 
-### Install NGINX Plus Ingress Controller to first clusters
+### Install NGINX Plus Ingress Controller to first cluster
 
 ![NIC](media/nginx-ingress-icon.png)
 
-In this section, you will be installing NGINX Plus Ingress Controller in 1st AKS clusters using manifest files. You will be then checking and verifying the Ingress Controller is running.
+In this section, you will be installing NGINX Plus Ingress Controller in first AKS cluster using manifest files. You will be then checking and verifying the Ingress Controller is running.
 
 1. Make sure your AKS cluster is running. Check the Nodes using below command.
 
@@ -271,7 +271,7 @@ In this section, you will be installing NGINX Plus Ingress Controller in 1st AKS
    deployment.apps/nginx-ingress created
    ```
 
-### Check your NGINX Ingress Controller
+### Check your NGINX Ingress Controller within first cluster
 
 1. Verify the NGINX Plus Ingress controller is up and running correctly in the Kubernetes cluster:
 
@@ -287,25 +287,19 @@ In this section, you will be installing NGINX Plus Ingress Controller in 1st AKS
 
    **Note**: You must use the `kubectl` "`-n`", namespace flag, followed by namespace name, to see pods that are not in the default namespace.
 
-2. Instead of remembering the unique pod name, `nginx-ingress-xxxxxx-yyyyy`, you can store the Ingress Controller pod name into the `$NIC` variable to be used throughout the lab.
+2. Instead of remembering the unique pod name, `nginx-ingress-xxxxxx-yyyyy`, you can store the Ingress Controller pod name into the `$AKS1_NIC` variable to be used throughout the lab.
 
-   >**Note:** This variable is stored for the duration of the Terminal session, and so if you close the Terminal it will be lost. At any time you can refer back to this step to create the `$NIC` variable again.
-
-   ```bash
-   export NIC=$(kubectl get pods -n nginx-ingress -o jsonpath='{.items[0].metadata.name}')
-
-   ```
-
-   You can also create a bash alias, that makes this easy.
+   >**Note:** This variable is stored for the duration of the Terminal session, and so if you close the Terminal it will be lost. At any time you can refer back to this step to create the `$AKS1_NIC` variable again.
 
    ```bash
-   alias nic='export NIC=$(kubectl get pods -n nginx-ingress -o jsonpath={.items[0].metadata.name})'
+   export AKS1_NIC=$(kubectl get pods -n nginx-ingress -o jsonpath='{.items[0].metadata.name}')
+
    ```
 
    Verify the variable is set correctly.
 
    ```bash
-   echo $NIC
+   echo $AKS1_NIC
    ```
 
    **Note:** If this command doesn't show the name of the pod then run the previous command again.
@@ -314,10 +308,10 @@ In this section, you will be installing NGINX Plus Ingress Controller in 1st AKS
 
 Just a quick test, is your Nginx Plus Ingress Controller running, and can you see the Dashboard?  Let's try it:
 
-1. Using Kubernetes Port-Forward, connect to the $NIC pod:
+1. Using Kubernetes Port-Forward, connect to the $AKS1_NIC pod:
 
    ```bash
-   kubectl port-forward $NIC -n nginx-ingress 9000:9000
+   kubectl port-forward $AKS1_NIC -n nginx-ingress 9000:9000
 
    ```
 
@@ -327,7 +321,7 @@ Just a quick test, is your Nginx Plus Ingress Controller running, and can you se
 
    Type `Ctrl+C` within your terminal to stop the Port-Forward when you are finished.
 
-## Deploy 2nd Kubernetes Cluster with Azure CLI
+### Deploy second Kubernetes Cluster with Azure CLI
 
 In this section, similar to how you deployed the first AKS cluster,  you will deploy a second AKS cluster named `n4a-aks2` which has 4 nodes.
 
@@ -367,123 +361,142 @@ In this section, similar to how you deployed the first AKS cluster,  you will de
         --name n4a-aks2
    ```
 
-<br/>
+### Install NGINX Plus Ingress Controller to second cluster
 
-## Deploy Nginx Plus Ingress Controller to both clusters
+![NIC](media/nginx-ingress-icon.png)
 
-In this section, you will be installing NGINX Plus Ingress Controller in both AKS clusters using manifest files. You will be then checking and verifying the Ingress Controller is running. 
+In this section, similar to how you installed NGINX Plus Ingress Controller in first AKS cluster using manifest files, you will install it on the second AKS cluster.
 
-<br/>
+1. Make sure your current context is pointing to second AKS cluster and the cluster is running. Run  below command to do the checks.
 
-1. Make sure your AKS cluster is running. Check the Nodes using below command. 
    ```bash
+   # Set context to 2nd cluster(n4a-aks2)
+   kubectl config use-context n4a-aks2
+
+   # Get Nodes in the target kubernetes cluster
    kubectl get nodes
-
    ```
+
    ```bash
-   #Sample output
+   ##Sample Output##
+   Switched to context "n4a-aks2".
    NAME                                STATUS   ROLES   AGE   VERSION
-   aks-agentpool-25373057-vmss00000k   Ready    agent   21h   v1.27.9
-   aks-agentpool-25373057-vmss00000l   Ready    agent   21h   v1.27.9
-   aks-userpool-76919110-vmss000008    Ready    agent   21h   v1.27.9
-   aks-userpool-76919110-vmss000009    Ready    agent   21h   v1.27.9
+   aks-nodepool1-29147198-vmss000000   Ready    agent   21h   v1.27.9
+   aks-nodepool1-29147198-vmss000001   Ready    agent   21h   v1.27.9
+   aks-nodepool1-29147198-vmss000002   Ready    agent   21h   v1.27.9
+   aks-nodepool1-29147198-vmss000003   Ready    agent   21h   v1.27.9
    ```
 
-1. Git Clone the Nginx Ingress Controller repo and navigate into the /deployments folder to make it your working directory:
+1. Navigate to `/kubernetes-ingress/deployments` directory within `/labs` directory
+
+    ```bash
+    cd <Parent directory where you git cloned the workshop repo>/nginx-azure-workshops/labs/kubernetes-ingress/deployments
+    ```
+
+1. Create necessary Kubernetes objects needed for Ingress Controller:
+
    ```bash
-   git clone https://github.com/nginxinc/kubernetes-ingress.git --branch v3.3.2
-   cd kubernetes-ingress/deployments
+   # Create namespace and a service account
+   kubectl apply -f common/ns-and-sa.yaml
 
+   # Create cluster role and cluster role bindings
+   kubectl apply -f rbac/rbac.yaml
+
+   # Create default server secret with TLS certificate and a key
+   kubectl apply -f ../examples/shared-examples/default-server-secret/default-server-secret.yaml
+
+   # Create config map
+   kubectl apply -f common/nginx-config.yaml
+
+   # Create IngressClass resource
+   kubectl apply -f common/ingress-class.yaml
+
+   # Create CRDs
+   kubectl apply -f common/crds/k8s.nginx.org_virtualservers.yaml
+   kubectl apply -f common/crds/k8s.nginx.org_virtualserverroutes.yaml
+   kubectl apply -f common/crds/k8s.nginx.org_transportservers.yaml
+   kubectl apply -f common/crds/k8s.nginx.org_policies.yaml
+   
+   # Create GlobalConfiguration resource
+   kubectl apply -f common/crds/k8s.nginx.org_globalconfigurations.yaml
    ```
-   >**Note**: At the time of this writing `3.3.2` is the latest NGINX Plus Ingress version that is available. Please feel free to use the latest version of NGINX Plus Ingress Controller. Look into [references](#references) for the latest Ingress images.
 
-1. Create a namespace and a service account for the Ingress Controller:
-    ```bash
-    kubectl apply -f common/ns-and-sa.yaml
+   ```bash
+   ##Sample Output##
+   namespace/nginx-ingress created
+   serviceaccount/nginx-ingress created
+   clusterrole.rbac.authorization.k8s.io/nginx-ingress created
+   clusterrolebinding.rbac.authorization.k8s.io/nginx-ingress created
+   secret/default-server-secret created
+   configmap/nginx-config created
+   ingressclass.networking.k8s.io/nginx created
+   customresourcedefinition.apiextensions.k8s.io/virtualservers.k8s.nginx.org created
+   customresourcedefinition.apiextensions.k8s.io/virtualserverroutes.k8s.nginx.org created
+   customresourcedefinition.apiextensions.k8s.io/transportservers.k8s.nginx.org created
+   customresourcedefinition.apiextensions.k8s.io/policies.k8s.nginx.org created
+   customresourcedefinition.apiextensions.k8s.io/globalconfigurations.k8s.nginx.org created
+   ```
 
-    ```
-1. Create a cluster role and cluster role binding for the service account:
-    ```bash
-    kubectl apply -f rbac/rbac.yaml
+1. Use the same JWT file that you used in first cluster to create a Kubernetes Secret named `regcred`, of type `docker-registry`.  
 
-    ```
+1. Navigate back to `/labs` directory and make sure to export the contents of the JWT file to an environment variable.
 
-1. Create Common Resources:
-     1. Create a secret with TLS certificate and a key for the default server in NGINX.
-        ```bash
-        kubectl apply -f ../examples/shared-examples/default-server-secret/default-server-secret.yaml
-
-        ```
-     2. Create a config map for customizing NGINX configuration.
-        ```bash
-        kubectl apply -f common/nginx-config.yaml
-
-        ```
-     3. Create an IngressClass resource. 
+   ```bash
+   cd <Parent directory where you git cloned the workshop repo>/nginx-azure-workshops/labs
    
-        ```bash
-        kubectl apply -f common/ingress-class.yaml
+   export JWT=$(cat lab3/nginx-repo.jwt)
+   ```
 
-        ```
+   ```bash
+   # Check $JWT
+   echo $JWT
+   ```
 
-1. Create Nginx Custom Resource Definitions
-    1. Create custom resource definitions for VirtualServer and VirtualServerRoute, TransportServer and Policy resources:
-        ```bash
-        kubectl apply -f common/crds/k8s.nginx.org_virtualservers.yaml
-        kubectl apply -f common/crds/k8s.nginx.org_virtualserverroutes.yaml
-        kubectl apply -f common/crds/k8s.nginx.org_transportservers.yaml
-        kubectl apply -f common/crds/k8s.nginx.org_policies.yaml
+1. Create a Kubernetes `docker-registry` Secret on your second cluster similar to how you did in first cluster.
 
-        ```
-   
-    2. Create a custom resource for GlobalConfiguration resource:
-        ```bash
-        kubectl apply -f common/crds/k8s.nginx.org_globalconfigurations.yaml
-
-        ```
-1. Deploy the Ingress Controller as a Deployment:
-
-   You will find the sample deployment file (`nginx-plus-ingress.yaml`) in the `deployment` sub-directory within your present working directory.  *Do not use this file, use the one provided in the `/lab3 folder`.*
-
-   You will use the Manifest provided in the /lab3 folder, which has the follow changes highlighted below:
-
-   - Change Image Pull to Nginx Private Repo with Docker Secret
-   - Enable Prometheus
-   - Add port and name for dashboard
-   - Change Dashboard Port to 9000
-   - Allow all IPs to access dashboard
-   - Make use of default TLS certificate
-   - Enable Global Configuration for Transport Server
-   
-1. Navigate back to the Workshop's `labs` directory
     ```bash
-    cd ../../labs
-
-    ```
-  
-    Inspect the `lab3/nginx-plus-ingress.yaml` looking at these changes:
-
-     - On lines #16-19, we have enabled `Prometheus` related annotations.
-     - On Lines #22-23, the ImagePullSecret is set to the Docker Config Secret `regcred` you created previously.
-     - On line #36, the `nginx-plus-ingress:3.3.2` placeholder is changed to the Nginx Private Registry image.
-     - On lines #52-53, we have added TCP port 9000 for the Plus Dashboard.
-     - On line #97, uncomment to make use of default TLS secret
-     - On lines #98-99, we have enabled the Dashboard and set the IP access controls to the Dashboard.
-     - On line #108, we have enabled Prometheus to collect metrics from the NGINX Plus stats API.
-     - On line #111, uncomment to enable the use of Global Configurations.
-
-    Now deploy NGINX Ingress Controller as a Deployment using your updated manifest file.
-    ```bash
-    kubectl apply -f lab3/nginx-plus-ingress.yaml
-
-    ```
-    ```bash
-    #Sample output
-    deployment.apps/nginx-ingress created
-
+    kubectl create secret docker-registry regcred \
+      --docker-server=private-registry.nginx.com \
+      --docker-username=$JWT \
+      --docker-password=none \
+      -n nginx-ingress
     ```
 
-### Check your NGINX Ingress Controller
+1. Confirm the Secret was created successfully by running:
+
+   ```bash
+   kubectl get secret regcred -n nginx-ingress -o yaml
+   ```
+
+   ```bash
+   ##Sample Output##
+   apiVersion: v1
+   data:
+   .dockerconfigjson: <Your JWT Token>
+   kind: Secret
+   metadata:
+   creationTimestamp: "2024-04-16T19:21:09Z"
+   name: regcred
+   namespace: nginx-ingress
+   resourceVersion: "5838852"
+   uid: 30c60523-6b89-41b3-84d8-d22ec60d30a5
+   type: kubernetes.io/dockerconfigjson
+   ```
+
+1. Once you have created the `regcred` kubernetes secret, you are ready to deploy the Ingress Controller as a Deployment within second cluster:
+
+1. Deploy NGINX Plus Ingress Controller as a Deployment using the same manifest file that you used with the first cluster.
+
+   ```bash
+   kubectl apply -f lab3/nginx-plus-ingress.yaml
+   ```
+
+   ```bash
+   ##Sample Output##
+   deployment.apps/nginx-ingress created
+   ```
+
+### Check your NGINX Ingress Controller within second cluster
 
 1. Verify the NGINX Plus Ingress controller is up and running correctly in the Kubernetes cluster:
 
@@ -492,54 +505,48 @@ In this section, you will be installing NGINX Plus Ingress Controller in both AK
    ```
 
    ```bash
-   ###Sample Output###
+   ##Sample Output##
    NAME                            READY   STATUS    RESTARTS   AGE
    nginx-ingress-5764ddfd78-ldqcs   1/1     Running   0          17s
    ```
 
-   **Note**: You must use the `kubectl` "`-n`", namespace switch, followed by namespace name, to see pods that are not in the default namespace.
+   **Note**: You must use the `kubectl` "`-n`", namespace flag, followed by namespace name, to see pods that are not in the default namespace.
 
-2. Instead of remembering the unique pod name, `nginx-ingress-xxxxxx-yyyyy`, we can store the Ingress Controller pod name into the `$NIC` variable to be used throughout the lab.
+2. Instead of remembering the unique pod name, `nginx-ingress-xxxxxx-yyyyy`, you can store the Ingress Controller pod name into the `$AKS2_NIC` variable to be used throughout the lab.
 
-   >**Note:** This variable is stored for the duration of the Terminal session, and so if you close the Terminal it will be lost. At any time you can refer back to this step to create the `$NIC` variable again.
+   >**Note:** This variable is stored for the duration of the Terminal session, and so if you close the Terminal it will be lost. At any time you can refer back to this step to create the `$AKS2_NIC` variable again.
 
    ```bash
-   export NIC=$(kubectl get pods -n nginx-ingress -o jsonpath='{.items[0].metadata.name}')
+   export AKS2_NIC=$(kubectl get pods -n nginx-ingress -o jsonpath='{.items[0].metadata.name}')
 
    ```
 
-   You can also create a bash alias, that makes this easy.
-
-   ```bash
-   alias nic='export NIC=$(kubectl get pods -n nginx-ingress -o jsonpath={.items[0].metadata.name})'
-
-   ```
-   
    Verify the variable is set correctly.
-   ```bash
-   echo $NIC
 
+   ```bash
+   echo $AKS2_NIC
    ```
+
    **Note:** If this command doesn't show the name of the pod then run the previous command again.
 
-### Test Access to the Nginx Plus Ingress Dashboard
+### Test Access to the Nginx Plus Ingress Dashboard within second cluster
 
 Just a quick test, is your Nginx Plus Ingress Controller running, and can you see the Dashboard?  Let's try it:
 
-1. Using Kubernetes Port-Forward, connect to the $NIC pod:
+1. Using Kubernetes Port-Forward, connect to the $AKS2_NIC pod:
 
    ```bash
-   kubectl port-forward $NIC -n nginx-ingress 9000:9000
+   kubectl port-forward $AKS2_NIC -n nginx-ingress 9000:9000
 
    ```
 
 1. Open your browser to http://localhost:9000/dashboard.html.
 
-   You should see the Nginx Plus Dashboard.  It should have the `HTTP Zone` dashboard.example.com - these are your VirtualServers / Hostnames.  If you check the `HTTP Upstreams` tab, it should have some Pods. There is not much to see for now, but you will be adding Pods/Services to your clusters, and configuring resources to Nginx Ingress in the next few steps and Labs.
+   You should see the Nginx Plus Dashboard. This dashboard would provide more metrics as you progress through the workshop.
 
-Type Ctrl+C to stop the Port-Forward when you are finished.
+   Type `Ctrl+C` within your terminal to stop the Port-Forward when you are finished.
 
-## Deploy the NGINX Plus Ingress Controller Dashboard
+### Deploy the NGINX Plus Ingress Controller Dashboard
 
 Next you are going to use the NGINX Plus Dashboard to monitor both NGINX Ingress Controller as well as your backend applications as Upstreams. This is a great Plus feature to allow you to watch and triage any potential issues with NGINX Plus Ingress controller as well as any issues with your backend applications in real time.
 
@@ -551,6 +558,7 @@ You will deploy a `Service` and a `VirtualServer` resource to provide access to 
     kubectl apply -f lab3/dashboard-vs.yaml
 
     ```
+
     ```bash
     ###Sample output###
     service/dashboard-svc created
@@ -569,7 +577,6 @@ kubectl apply -f lab3/dashboard-vs.yaml
 
 ```bash
 kubectl get svc,vs -n nginx-ingress
-
 ```
 
 ```bash
@@ -586,7 +593,7 @@ virtualserver.k8s.nginx.org/dashboard-vs   Valid   dashboard.example.com        
 
 1. Change your `Kube Context` to your second AKS cluster.  Deploy the same `dashboard-vs.yaml` Manifest.  Check the Services and VirtualServer are Valid.  Then Port-Forward and check access to the Dashboard using the steps as above.  You should find the exact same thing, the Nginx Ingress Plus Dashboard running, with Zones and Upstreams similar.  However, the IP addresses of the Upstreams `WILL` be different between the clusters, because each cluster assigns different IPs to the Pods.  
 
-1.  **Optional Exercise:**  If you want to see both NIC Dashboards at the same time, you can use 2 Terminals, each with a different Kube Context and different Port-Forward commands.  In Terminal#1, try port-forward 9001:9000 for cluster1, and in Terminal#2, try port-forward 9002:9000 for cluster2.  Then open two browser windows side by side for comparison, first one at http://localhost:9001/dashboard.html, second one at http://localhost:9002/dashboard.html.
+1. **Optional Exercise:**  If you want to see both NIC Dashboards at the same time, you can use 2 Terminals, each with a different Kube Context and different Port-Forward commands.  In Terminal#1, try port-forward 9001:9000 for cluster1, and in Terminal#2, try port-forward 9002:9000 for cluster2.  Then open two browser windows side by side for comparison, first one at http://localhost:9001/dashboard.html, second one at http://localhost:9002/dashboard.html.
 
 ## Expose your Nginx Ingress Controller with NodePort
 
