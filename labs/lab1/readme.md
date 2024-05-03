@@ -4,12 +4,14 @@
 
 In this lab, you will be adding and configuring the Azure components needed for this workshop.  This will require a few network resources, a Network Security Group and a Public IP to allow incoming traffic to your NGINX for Azure workshop resource. You will also deploy NGINX for Azure resource. Then you will explore the Nginx for Azure product, as a quick Overview of what it is and how to deploy it.
 
-< Lab specific Images here, in the /media sub-folder >
+<br/>
 
-NGINX aaS | Docker
-:-------------------------:|:-------------------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![Azure](media/azure-icon.png)
+NGINX aaS for Azure |
+:-------------------------:|
+![NGINX aaS](media/nginx-azure-icon.png) 
   
+<br/>
+
 ## Learning Objectives
 
 By the end of the lab you will be able to:
@@ -22,7 +24,7 @@ By the end of the lab you will be able to:
 - Create an initial Nginx configuration for testing
 - Create Log Analytics workspace to collect NGINX error and access logs from NGINX for azure
 
-## Pre-Requisites
+## Prerequisites
 
 - You must have an Azure account
 - You must have the Azure CLI software installed on your local system
@@ -33,7 +35,12 @@ By the end of the lab you will be able to:
 
 <br/>
 
-### Setup your Azure resource group for this workshop
+![lab1 diagram](media/lab1_diagram.png)
+Lab1 Diagram
+
+<br/>
+
+### Setup your Azure Resource group for this workshop
 
 1. In your local machine open terminal and make sure you have Azure Command Line Interface (CLI) installed by running below command.
 
@@ -319,7 +326,7 @@ By the end of the lab you will be able to:
     }
     ```
 
-1. Create a user assigned managed identity that would be tied to the NGINX for Azure resource. This managed identity would be used to read certificates and keys from Azure keyvault in later labs.
+1. Create a user assigned managed identity that would be tied to the NGINX for Azure resource. This managed identity would be used to read certificates and keys from Azure key vault in later labs.
 
    ```bash
    az identity create \

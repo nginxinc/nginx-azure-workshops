@@ -6,13 +6,13 @@ In this lab, you will be creating various application backend resources.  You wi
 
 Your completed Ubuntu and Windows VM deployment will look like this:
 
-< Lab specific Images here, in the /media sub-folder >
+![Lab2 diagram](media/lab2_diagram.png)
 
 <br/>
 
 NGINX aaS | Ubuntu | Docker | Windows
 :---------------------:|:---------------------:|:---------------------:|:---------------------:
-![NGINX aaS](media/nginx-azure-icon.png) |![Ubuntu](media/ubuntu-icon.png) |![Docker](media/docker-icon.png) |![Docker](media/docker-icon.png)
+![NGINX aaS](media/nginx-azure-icon.png) |![Ubuntu](media/ubuntu-icon.png) |![Docker](media/docker-icon.png) |![Docker](media/windows-icon.png)
   
 ## Learning Objectives
 
@@ -315,7 +315,10 @@ You will now use Docker Compose to create and deploy three Nginx `ingress-demo` 
 
 In this exercise, you will create your first Nginx config files, for the Nginx Server, Location, and Upstream blocks, to load balance your three Docker containers running on the Ubuntu VM.
 
-< diagram here >
+
+![Lab2 Cafe diagram](media/lab2_cafe-diagram.png)
+
+<br/>
 
 NGINX aaS | Docker | Cafe Demo
 :-------------------------:|:-------------------------:|:-------------------------:

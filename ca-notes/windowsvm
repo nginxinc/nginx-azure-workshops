@@ -1,0 +1,24 @@
+## Notes for building Windows VM
+
+vmname="n4a-windowsvm"
+
+username="azureuser"
+
+export MY_RESOURCEGROUP=cakker
+export MY_VM_IMAGE=Win2019Datacenter
+
+az vm create \
+    --resource-group $MY_RESOURCEGROUP \
+    --location westus2 \
+    --name n4a-windowsvm \
+    --image $MY_VM_IMAGE \
+    --vnet-name demo1-vnet \
+    --subnet aks \
+    --admin-username azureuser \
+    --public-ip-sku Standard
+
+Enter Admin Password, twice
+
+
+
+    # --image Win2022AzureEditionCore \

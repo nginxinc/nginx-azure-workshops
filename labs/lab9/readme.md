@@ -4,7 +4,7 @@
 
 In this lab, you will deploy an image rich application, and use Nginx Caching to cache images to improve performance and provide a better user experience.  This will offload the image delivery workload from your applications, saving resources.  You will also explore, configure, and test Rate Limits with Nginx for Azure, allowing you to control incoming request levels for different applications.
 
-< Lab specific Images here, in the /media sub-folder >
+<br/>
 
 NGINX aaS | Cache | Juiceshop | My Garage
 :-----------------:|:-----------------:|:-----------------:|:-----------------:
@@ -31,6 +31,12 @@ NGINX aaS | Cache | Juiceshop | My Garage
 - Familiarity with basic Docker concepts and commands
 - Familiarity with basic HTTP protocol
 - Familiarity with HTTP Caching parameters, directives, headers
+
+<br/>
+
+![Lab9 diagram](media/lab9_diagram.png)
+
+Lab9 Diagram
 
 <br/>
 
