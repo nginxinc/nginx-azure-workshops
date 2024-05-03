@@ -49,7 +49,7 @@ By the end of the lab you will be able to:
     export MY_RESOURCEGROUP=s.dutta-workshop
     ```
 
-2. Within your terminal, make sure you are within the workshop repositories `/labs` directory.
+1. Within your terminal, make sure you are within the workshop repositories `/labs` directory.
 
     ```bash
     # Check your current directory
@@ -61,7 +61,7 @@ By the end of the lab you will be able to:
     <Root directory where you git cloned the workshop repo>/nginx-azure-workshops/labs
     ```
 
-3. Create the Ubuntu VM that would be acting as your backend application server using below command:
+1. Create the Ubuntu VM that would be acting as your backend application server using below command:
 
     ```bash
     az vm create \
@@ -109,7 +109,7 @@ By the end of the lab you will be able to:
 
     **SECURITY WARNING:** This new VM has SSH/port22 open to the entire Internet, and is only using an SSH Key file for security. Take appropriate steps to secure your VM if you will be using it for more than a couple hours!
 
-3. **(Optional Step):** You can lock down your Network Security Group by allowing SSH/port22 access only to your publicIP using below command.
+1. **(Optional Step):** You can lock down your Network Security Group by allowing SSH/port22 access only to your publicIP using below command.
 
     ```bash
     ##Set environment variable
@@ -124,7 +124,7 @@ By the end of the lab you will be able to:
     --source-address-prefix $MY_PUBLICIP
     ```
 
-4. Verify you have SSH access to the Ubuntu VM that you deployed in previous steps. Open a Terminal, and use your public IP tied to ubuntu vm, to start a new ssh session.
+1. Verify you have SSH access to the Ubuntu VM that you deployed in previous steps. Open a Terminal, and use your public IP tied to ubuntu vm, to start a new ssh session.
 
     ```bash
     ssh azureuser@<UBUNTU_VM_PUBLICIP>
@@ -142,14 +142,14 @@ By the end of the lab you will be able to:
 
     ![cloudshell](media/lab2-cloudshell.png)
 
-5. Within the ubuntu vm, run below commands to validate docker and docker compose are installed as part of the `init.sh` script that you passed as one of the parameters to the `az vm create` command
+1. Within the ubuntu vm, run below commands to validate docker and docker compose are installed as part of the `init.sh` script that you passed as one of the parameters to the `az vm create` command
 
     ```bash
     docker version
     docker-compose version
     ```
 
-6. Test and see if Docker will run the `Hello-World` container:
+1. Test and see if Docker will run the `Hello-World` container:
 
     ```bash
     sudo docker run hello-world
@@ -185,7 +185,7 @@ By the end of the lab you will be able to:
     https://docs.docker.com/get-started/
     ```
 
-7. Checkout a few Docker things:
+1. Checkout a few Docker things:
 
     ```bash
     sudo docker images
