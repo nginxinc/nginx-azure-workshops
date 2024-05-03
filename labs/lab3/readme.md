@@ -622,9 +622,9 @@ You will deploy a `Service` and a `VirtualServer` resource to provide access to 
    virtualserver.k8s.nginx.org/dashboard-vs   Valid   dashboard.example.com                 110s
    ```
 
-## Expose your Nginx Ingress Controller with NodePort
+### Expose your Nginx Ingress Controller with NodePort
 
-1. Inspect the `lab3/nodeport-static.yaml` manifest.  This is a NodePort Service defintion that will open high-numbered ports on the Kubernetes nodes, to expose several Services that are running on the Nginx Ingress.  The NodePorts are intentionally defined as static, because you will be using these port numbers with Nginx 4 Azure, and you don't want them to change.  (Note: If you use ephemeral NodePorts, you see **HTTP 502 Errors** when they change!) We are using the following table to expose different Services on different Ports:
+1. Inspect the `lab3/nodeport-static.yaml` manifest.  This is a NodePort Service defintion that will open high-numbered ports on the Kubernetes nodes, to expose several Services that are running on the Nginx Ingress.  The NodePorts are intentionally defined as static, because you will be using these port numbers with Nginx for Azure, and you don't want them to change.  (Note: If you use ephemeral NodePorts, you see **HTTP 502 Errors** when they change!) We are using the following table to expose different Services on different Ports:
 
 Service Port | External NodePort | Name
 |:--------:|:------:|:-------:|
@@ -632,26 +632,46 @@ Service Port | External NodePort | Name
 443 | 32443 | https
 9000 | 32090 | dashboard
 
-
-1. Deploy a NodePort Service to expose the Nginx Ingress Controller outside the cluster.
+1. Deploy a NodePort Service within first cluster to expose the NGINX Plus Ingress Controller outside the cluster.
 
    ```bash
-   kubectl apply -f lab3/nodeport-static.yaml
+   # Set context to 1st cluster(n4a-aks1)
+   kubectl config use-context n4a-aks1
 
+   kubectl apply -f lab3/nodeport-static.yaml
    ```
 
-1. Verify the NodePort Service was created:
+1. Verify the NodePort Service was created within first cluster:
 
    ```bash
    kubectl get svc nginx-ingress -n nginx-ingress
-
    ```
 
    ```bash
-   #Sample output
-   NAME            TYPE       CLUSTER-IP    EXTERNAL-IP   PORT(S)                                                                   AGE
-   nginx-ingress   NodePort   10.0.169.30   <none>        80:32080/TCP,443:32443/TCP,9000:32090/TCP   2h
+   ##Sample Output##
+   NAME            TYPE       CLUSTER-IP    EXTERNAL-IP   PORT(S)                                     AGE
+   nginx-ingress   NodePort   10.0.211.17   <none>        80:32080/TCP,443:32443/TCP,9000:32090/TCP   14s
+   ```
 
+1. Similarly, deploy a NodePort Service within second cluster to expose the NGINX Plus Ingress Controller outside the cluster.
+
+   ```bash
+   # Set context to 2nd cluster(n4a-aks2)
+   kubectl config use-context n4a-aks2
+
+   kubectl apply -f lab3/nodeport-static.yaml
+   ```
+
+1. Verify the NodePort Service was created within first cluster:
+
+   ```bash
+   kubectl get svc nginx-ingress -n nginx-ingress
+   ```
+
+   ```bash
+   ##Sample Output##
+   NAME            TYPE       CLUSTER-IP    EXTERNAL-IP   PORT(S)                                     AGE
+   nginx-ingress   NodePort   10.0.14.247   <none>        80:32080/TCP,443:32443/TCP,9000:32090/TCP   11s
    ```
 
    Note there are THREE NodePorts open to the Ingress Controller - for port 80 HTTP traffic, port 443 for HTTPS traffic, and port 9000 for the Plus Dashboard.
