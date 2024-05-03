@@ -51,7 +51,7 @@ By the end of the lab you will be able to:
     export MY_RESOURCEGROUP=s.dutta-workshop
     ```
 
-    >*Make sure your Terminal is the `nginx-azure-workshops/labs` folder for all commands during this Workshop.*
+    >*Make sure your Terminal is the `nginx-azure-workshops/labs` directory for all commands during this Workshop.*
 
 1. Create the Ubuntu VM that would be acting as your backend application server using below command:
 
@@ -334,7 +334,7 @@ NGINX aaS | Docker | Cafe Demo
 :-------------------------:|:-------------------------:|:-------------------------:
 ![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)  |![Nginx Cafe](media/cafe-icon.png)
 
-1. Open Azure portal within your browser and then open your Resource Group (<yourname>-workshop). Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under Settings.
+1. Open Azure portal within your browser and then open your Resource Group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under Settings.
 
 1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/cafe-docker-upstreams.conf`.
 
@@ -656,8 +656,8 @@ NGINX aaS | Windows VM / IIS
 1. Test access again to http://cafe.example.com.  You will now see the IIS default server page, instead of the Cafe Out of Stock page.  If you check Chrome Dev Tools, the X-Proxy-Pass Header should now show `windowsvm`.
 
     ![Cafe IIS](media/lab2_cafe-windows-iis.png)
-    
-    >Notice how easy it was, to create a new backend server, and then tell Nginx to `proxy_pass to a different Upstream`. You used the same Hostname, DNS record, and Nginx Server block, but you just told Nginx to switch backends with a different `proxy_pass` directive.
+
+    >Notice how easy it was, to create a new backend server, and then tell Nginx to `proxy_pass` to a different Upstream. You used the same Hostname, DNS record, and Nginx Server block, but you just told Nginx to switch backends with a different `proxy_pass` directive.
 
 1. Edit the `cafe.example.com.conf` file again, and change the comments to disable `windowsvm`, and re-enable the `proxy_pass` for `cafe_nginx`, as you will use it again in a future lab exercise.
 

@@ -2,6 +2,7 @@
 ############################
 *.crt
 *.key
+*.jwt
 *~
 \#*
 
@@ -19,3 +20,7 @@ Thumbs.db
 # Misc Dir #
 ############
 .apc/
+
+#Kubernetes-ingress#
+####################
+kubernetes-ingress
