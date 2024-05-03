@@ -95,6 +95,8 @@ Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastru
 
 ### Install NGINX Plus Ingress Controller to first clusters
 
+![NIC](media/nginx-ingress-icon.png)
+
 In this section, you will be installing NGINX Plus Ingress Controller in 1st AKS clusters using manifest files. You will be then checking and verifying the Ingress Controller is running.
 
 1. Make sure your AKS cluster is running. Check the Nodes using below command.
@@ -176,11 +178,68 @@ In this section, you will be installing NGINX Plus Ingress Controller in 1st AKS
    customresourcedefinition.apiextensions.k8s.io/globalconfigurations.k8s.nginx.org created
    ```
 
-2. Deploy the Ingress Controller as a Deployment:
+1. To deploy NGINX Plus Ingress Controller, you must have a software subscription license – download the NGINX Plus Ingress Controller license JWT Token file (`nginx-repo.jwt`) from your account on [MyF5](https://my.f5.com/).
 
-   You will find the sample deployment file (`nginx-plus-ingress.yaml`) in the `deployment` sub-directory within your present working directory.  *Do not use this file, use the one provided in the `/lab3 folder`.*
+   **NOTE:**  If you do not have a license, you can request a 30-day Trial key from [here](https://www.nginx.com/free-trial-connectivity-stack-kubernetes/).  
+   An email will arrive in your Inbox in a few minutes, with links to download the license files.
 
-   You will use the Manifest provided in the /lab3 folder, which has the follow changes highlighted below:
+   However, for this workshop, a Trial License will be provided to you, so you can pull and run the Nginx Plus Commercial version of the Ingress Controller.  This is NOT the same Ingress Controller provided by the Kubernetes Community.  (If you are unsure which Ingress Controller you are using in your other Kubernetes environments, you can find a link to the Blog from Nginx that explains the differences).
+
+1. Once your Workshop Instructor has provide the JWT file, follow these instructions to create a Kubernetes Secret named `regcred`, of type `docker-registry`.  You will need to create the Secret in both of your AKS clusters.
+
+1. Copy the `nginx-repo.jwt` file provided in the `/labs/lab3` directory within your cloned workshop repository.
+
+1. Navigate back to `/labs` directory and export the contents of the JWT file to an environment variable.
+
+   ```bash
+   cd <Parent directory where you git cloned the workshop repo>/nginx-azure-workshops/labs
+   
+   export JWT=$(cat lab3/nginx-repo.jwt)
+   ```
+
+   ```bash
+   # Check $JWT
+   echo $JWT
+   ```
+
+1. Create a Kubernetes `docker-registry` Secret on your First  cluster, using the JWT token as the username and none for password (as the password is not used).  The name of the docker server is `private-registry.nginx.com`.  Notice how `$JWT` variable, which holds the contents of the `nginx-repo.jwt` file, is passed to  `docker-username` flag:
+
+    ```bash
+    kubectl create secret docker-registry regcred \
+      --docker-server=private-registry.nginx.com \
+      --docker-username=$JWT \
+      --docker-password=none \
+      -n nginx-ingress
+    ```
+
+   > **Note:** It is important to note that the --docker-username=<JWT Token> contains the contents of the token and is not pointing to the token itself. Ensure that when you copy the contents of the JWT token, there are no additional characters or extra whitespaces. This can invalidate the token and cause 401 errors when trying to authenticate to the registry.
+
+1. Confirm the Secret was created successfully by running:
+
+   ```bash
+   kubectl get secret regcred -n nginx-ingress -o yaml
+   ```
+
+   ```bash
+   ##Sample Output##
+   apiVersion: v1
+   data:
+   .dockerconfigjson: <Your JWT Token>
+   kind: Secret
+   metadata:
+   creationTimestamp: "2024-04-16T19:21:09Z"
+   name: regcred
+   namespace: nginx-ingress
+   resourceVersion: "5838852"
+   uid: 30c60523-6b89-41b3-84d8-d22ec60d30a5
+   type: kubernetes.io/dockerconfigjson
+   ```
+
+1. Once you have created the `regcred` kubernetes secret, you are ready to deploy the Ingress Controller as a Deployment:
+
+   You will find the sample deployment file (`nginx-plus-ingress.yaml`) in the `deployment` sub-directory within your `kubernetes-ingress` directory that was added when you ran the git clone command.  ***Do not use this file, use the updated one provided in the `/lab3 directory`.***
+
+   You will use the `nginx-plus-ingress.yaml` manifest file provided in the `/lab3` directory, which has the follow changes highlighted below:
 
    - Change Image Pull to Nginx Private Repo with Docker Secret
    - Enable Prometheus
@@ -189,34 +248,28 @@ In this section, you will be installing NGINX Plus Ingress Controller in 1st AKS
    - Allow all IPs to access dashboard
    - Make use of default TLS certificate
    - Enable Global Configuration for Transport Server
-   
-3. Navigate back to the Workshop's `labs` directory
-    ```bash
-    cd ../../labs
-
-    ```
   
-    Inspect the `lab3/nginx-plus-ingress.yaml` looking at these changes:
+1. Inspect the `lab3/nginx-plus-ingress.yaml` looking at these changes:
 
      - On lines #16-19, we have enabled `Prometheus` related annotations.
      - On Lines #22-23, the ImagePullSecret is set to the Docker Config Secret `regcred` you created previously.
-     - On line #36, the `nginx-plus-ingress:3.3.2` placeholder is changed to the Nginx Private Registry image.
+     - On line #38, the `nginx-plus-ingress:3.3.2` placeholder is changed to the Nginx Private Registry image.
      - On lines #52-53, we have added TCP port 9000 for the Plus Dashboard.
      - On line #97, uncomment to make use of default TLS secret
      - On lines #98-99, we have enabled the Dashboard and set the IP access controls to the Dashboard.
      - On line #108, we have enabled Prometheus to collect metrics from the NGINX Plus stats API.
      - On line #111, uncomment to enable the use of Global Configurations.
 
-    Now deploy NGINX Ingress Controller as a Deployment using your updated manifest file.
-    ```bash
-    kubectl apply -f lab3/nginx-plus-ingress.yaml
+1. Now deploy NGINX Ingress Controller as a Deployment using your updated manifest file.
 
-    ```
-    ```bash
-    #Sample output
-    deployment.apps/nginx-ingress created
+   ```bash
+   kubectl apply -f lab3/nginx-plus-ingress.yaml
+   ```
 
-    ```
+   ```bash
+   ##Sample Output##
+   deployment.apps/nginx-ingress created
+   ```
 
 ### Check your NGINX Ingress Controller
 
@@ -227,14 +280,14 @@ In this section, you will be installing NGINX Plus Ingress Controller in 1st AKS
    ```
 
    ```bash
-   ###Sample Output###
+   ##Sample Output##
    NAME                            READY   STATUS    RESTARTS   AGE
    nginx-ingress-5764ddfd78-ldqcs   1/1     Running   0          17s
    ```
 
-   **Note**: You must use the `kubectl` "`-n`", namespace switch, followed by namespace name, to see pods that are not in the default namespace.
+   **Note**: You must use the `kubectl` "`-n`", namespace flag, followed by namespace name, to see pods that are not in the default namespace.
 
-2. Instead of remembering the unique pod name, `nginx-ingress-xxxxxx-yyyyy`, we can store the Ingress Controller pod name into the `$NIC` variable to be used throughout the lab.
+2. Instead of remembering the unique pod name, `nginx-ingress-xxxxxx-yyyyy`, you can store the Ingress Controller pod name into the `$NIC` variable to be used throughout the lab.
 
    >**Note:** This variable is stored for the duration of the Terminal session, and so if you close the Terminal it will be lost. At any time you can refer back to this step to create the `$NIC` variable again.
 
@@ -247,17 +300,17 @@ In this section, you will be installing NGINX Plus Ingress Controller in 1st AKS
 
    ```bash
    alias nic='export NIC=$(kubectl get pods -n nginx-ingress -o jsonpath={.items[0].metadata.name})'
-
    ```
-   
+
    Verify the variable is set correctly.
+
    ```bash
    echo $NIC
-
    ```
+
    **Note:** If this command doesn't show the name of the pod then run the previous command again.
 
-### Test Access to the Nginx Plus Ingress Dashboard
+### Test Access to the Nginx Plus Ingress Dashboard within first cluster
 
 Just a quick test, is your Nginx Plus Ingress Controller running, and can you see the Dashboard?  Let's try it:
 
@@ -270,27 +323,26 @@ Just a quick test, is your Nginx Plus Ingress Controller running, and can you se
 
 1. Open your browser to http://localhost:9000/dashboard.html.
 
-   You should see the Nginx Plus Dashboard.  It should have the `HTTP Zone` dashboard.example.com - these are your VirtualServers / Hostnames.  If you check the `HTTP Upstreams` tab, it should have some Pods. There is not much to see for now, but you will be adding Pods/Services to your clusters, and configuring resources to Nginx Ingress in the next few steps and Labs.
+   You should see the Nginx Plus Dashboard. This dashboard would provide more metrics as you progress through the workshop.
 
-Type Ctrl+C to stop the Port-Forward when you are finished.
+   Type `Ctrl+C` within your terminal to stop the Port-Forward when you are finished.
 
+## Deploy 2nd Kubernetes Cluster with Azure CLI
 
-## Deploy 2nd Kubernetes Cluster with script in Azure Bash
+In this section, similar to how you deployed the first AKS cluster,  you will deploy a second AKS cluster named `n4a-aks2` which has 4 nodes.
 
-< TODO - create and test script for AKS2 >
-
-1. Open a second Terminal, log into to Azure, and repeat the Steps above for the Second AKS Cluster, this one has 4 nodes and a different name, `n4a-aks2`.
+1. Run below commands to deploy your second AKS cluster (**This will take a while**).
 
    ```bash
-    # Set Variables to match your Workshop settings
+    ## Set environment variables
     export MY_RESOURCEGROUP=s.dutta-workshop
-    export MY_AKS=n4a-aks2                 
+    export MY_AKS=n4a-aks2
     export MY_NAME=s.dutta
     export K8S_VERSION=1.27
-    export MY_SUBNET=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks2-subnet --vnet-name n4a-vnet --query id -o tsv)
-   ```
+    export MY_SUBNET=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks1-subnet --vnet-name n4a-vnet --query id -o tsv)
+    ```
 
-   ```bash
+    ```bash
     # Create Second AKS Cluster
     az aks create \
         --resource-group $MY_RESOURCEGROUP \
@@ -305,113 +357,15 @@ Type Ctrl+C to stop the Port-Forward when you are finished.
         --generate-ssh-keys
    ```
 
-1. Configure `kubectl` to connect to your Azure AKS cluster using below command.
+   >**Note**: At the time of this writing, 1.27 is the latest kubernetes long-term supported (LTS) version available in Azure AKS.
+
+2. Configure `kubectl` to connect to your Azure AKS cluster using below command.
 
    ```bash
    az aks get-credentials \
         --resource-group $MY_RESOURCEGROUP \
         --name n4a-aks2
    ```
-
-## Installing NGINX Plus Ingress Controller in 1st Kubernetes Cluster
-
-![NIC](media/nginx-ingress-icon.png)
-
-<br/>
-
-1. For NGINX Plus Ingress Controller, you must have a software subscription license – download the NGINX Plus Ingress Controller license JWT Token file (`nginx-repo.jwt`) from your account on [MyF5](https://my.f5.com/).
-
-   **NOTE:**  If you do not have a license, you can request a 30-day Trial key from [here](https://www.nginx.com/free-trial-connectivity-stack-kubernetes/).  
-   An email will arrive in your Inbox in a few minutes, with links to download the license files.
-
-   However, in this workshop, a Trial License will be provided to you, so you can pull and run the Nginx Plus Commercial version of the Ingress Controller.  This is NOT the same Ingress Controller provided by the Kubernetes Community.  (If you are unsure which Ingress Controller you are using in your other Kubernetes environments, you can find a link to the Blog from Nginx that explains the differences).
-
-1. Once your Workshop Instructor has provide the JWT file, follow these instructions to create a Kubernetes Secret named `regcred`, of type `docker-registry`.  You will need to create the Secret in both of your AKS clusters.
-
-1. Copy the `nginx-repo.jwt` file provided in the `lab3` directory.
-
-1. Export the contents of the JWT file to an environment variable.
-
-   ```bash
-   export JWT=$(cat lab3/nginx-repo.jwt)
-   ```
-
-   ```bash
-   # Check $JWT
-   echo $JWT
-   ```
-
-1. Create a Kubernetes `docker-registry` Secret on your First  cluster, using the JWT token as the username and none for password (as the password is not used).  The name of the docker server is `private-registry.nginx.com`.  Replace the <docker-username> parameter with the contents of the `nginx-repo.jwt` file:
-
-    ```bash
-     # Set context to 1st cluster(n4a-aks1)
-    kubectl config use-context n4a-aks1
-
-    kubectl create secret docker-registry regcred \
-      --docker-server=private-registry.nginx.com \
-      --docker-username=$JWT \
-      --docker-password=none \
-      -n nginx-ingress
-    ```
-
-   > It is important that the --docker-username=<JWT Token> contains the contents of the token and is not pointing to the token itself. Ensure that when you copy the contents of the JWT token, there are no additional characters or extra whitespaces. This can invalidate the token and cause 401 errors when trying to authenticate to the registry.
-
-1. Confirm the Secret was created successfully by running:
-
-```bash
-kubectl get secret regcred -n nginx-ingress -o yaml
-
-```
-```bash
-# Sample output
-apiVersion: v1
-data:
-  .dockerconfigjson: TokenHere
-  ...snipped
-kind: Secret
-metadata:
-  creationTimestamp: "2024-04-16T19:21:09Z"
-  name: regcred
-  namespace: nginx-ingress
-  resourceVersion: "5838852"
-  uid: 30c60523-6b89-41b3-84d8-d22ec60d30a5
-type: kubernetes.io/dockerconfigjson
-
-```
-
-1. Repeat the previous step in your Second AKS Cluster, n4a-aks2:  
-
-1. Create a Docker Config Secret in your Second cluster.  Replace the <docker-username> parameter with the contents of the `nginx-repo.jwt` file:
-
-    ```bash
-    kubectl config use-context n4a-aks2
-    kubectl create secret docker-registry regcred --docker-server=private-registry.nginx.com --docker-username=$JWT --docker-password=none -n nginx-ingress
-    ```
-
-1. Confirm the Secret was created successfully by running:
-
-```bash
-kubectl get secret regcred -n nginx-ingress -o yaml
-
-```
-```bash
-# Sample output
-apiVersion: v1
-data:
-  .dockerconfigjson: Token Here
-  ...snipped
-kind: Secret
-metadata:
-  creationTimestamp: "2024-04-16T23:16:07Z"
-  name: regcred
-  namespace: nginx-ingress
-  resourceVersion: "5921203"
-  uid: a3e36152-62ce-47b0-bc22-3644bcd9aa3d
-type: kubernetes.io/dockerconfigjson
-
-```
-
-1. Once you are sure you have correctly created the Secrets on both Clusters, switch Context back to `n4a-aks1`, and you can continue with the next step.
 
 <br/>
 
