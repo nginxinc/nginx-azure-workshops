@@ -7,7 +7,7 @@ In this lab, you will configure Nginx4Azure to Proxy and Load Balance several di
 
 NGINX aaS | AKS | Nginx Ingress | Redis
 :-----------------:|:-----------------:|:-----------------:|:-----------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![AKS](media/aks-icon.png) |![NIC](media/nginx-ingress-icon.png) |![NIC](media/redis-icon.png)
+![NGINX aaS](media/nginx-azure-icon.png)  |![AKS](media/aks-icon.png) |![NIC](media/nginx-ingress-icon.png) |![Redis](media/redis-icon.png)
   
 ## Learning Objectives
 
@@ -33,234 +33,341 @@ By the end of the lab you will be able to:
 
 <br/>
 
-< Lab specific Image here >
+![lab5 diagram](media/lab5_diagram.png)
 
 <br/>
 
 ### Nginx 4 Azure Proxy to AKS Clusters
 
-This exercise will create Nginx Upstream configurations for the AKS clusters.  You will add the NodePorts of the Nginx Ingress Controllers running in AKS cluster 1, and AKS Cluster 2.  These were previously deployed and configured in a previous lab.  Now the fun part, sending traffic to them!
+This exercise will create Nginx Upstream configurations for the AKS Clusters.  You will use the Nodepool node names, and you will add the port number `32080` from the NodePort of the Nginx Ingress Controllers running in AKS cluster 1, and AKS Cluster 2.  These were previously deployed and configured in a previous lab.  Now the fun part, sending traffic to them!
 
-Using the Nginx4Azure configuration tool, create a new file called `/etc/nginx/conf.d/aks1-upstreams.conf`.  Copy and Paste the contents of the provided file.  You will have to EDIT this example config file, and change the `server` entries to match your AKS Cluster1 nodepool node names.  You can find your AKS1 nodepool nodenames from the Azure Portal.  Make sure you use `:32080` for the port number, this is the static `nginx-ingress NodePort Service` for HTTP traffic that was defined earlier.
+Configure the Upstream for AKS Cluster2.
 
-```nginx
+1. Using kubectl, get the Nodepool nodes for AKS Cluster1:  (You can also find these in your Azure Portal - AKS Nodepool definitions.)
 
-# Nginx 4 Azure to NIC, AKS Nodes for Upstreams
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-#
-# AKS1 nginx ingress upstreams
-#
-upstream aks1_ingress {
-  zone aks1_ingress 256k;
+    ```bash
+    kubectl use-context n4a-aks1
+    kubectl get nodes
 
-  least_time last_byte;
-  
-  # from nginx-ingress NodePort Service / aks Node names
-  # Note: change servers to match
-  #
-  server aks-userpool-76919110-vmss000002:32080;    #aks1 node1:
-  server aks-userpool-76919110-vmss000003:32080;    #aks1 node2:
+    ```
 
-  keepalive 32;
+    ```bash
+    #Sample output
+    aks-userpool-76919110-vmss000001  #aks1 node1:
+    aks-userpool-76919110-vmss000002  #aks1 node2:
 
-   }
+    ```
 
-```
+1. Using the Nginx4Azure configuration tool, create a new file called `/etc/nginx/conf.d/aks1-upstreams.conf`.  Copy and Paste the contents of the provided file.  You will have to EDIT this example config file, and change the `server` entries to match your AKS Cluster1 Nodepool node names.  You can find your AKS1 nodepool nodenames from `kubectl get nodes` or the Azure Portal.  Make sure you use `:32080` for the port number, this is the static `nginx-ingress NodePort Service` for HTTP traffic that was defined earlier.
 
-Submit your Changes.  If you have the Server names:port correct, Nginx4Azure will validate and return a Success message.
+    ```nginx
+    # Nginx 4 Azure to NIC, AKS Nodes for Upstreams
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    # AKS1 nginx ingress upstreams
+    #
+    upstream aks1_ingress {
+    zone aks1_ingress 256k;
 
-**Important!**  If you stop then re-start your AKS cluster, or scale up/down, or add/remove VMSS worker nodes in the AKS NodePools, this Upstream list `WILL` have to be updated to match!  Any changes to the Worker nodes in the Cluster will need to be matched exactly, as it is a static configuration that must match the Worker Nodes:NodePort definition in your AKS cluster.  If you change the static nginx-ingress NodePort Service, you will have to match it here as well.
+    least_time last_byte;
+    
+    # from nginx-ingress NodePort Service / aks Node names
+    # Note: change servers to match
+    #
+    server aks-userpool-76919110-vmss000001:32080;    #aks1 node1:
+    server aks-userpool-76919110-vmss000002:32080;    #aks1 node2:
 
-Repeat the step above, but create a new file called `/etc/nginx/conf.d/aks2-upstreams.conf`, for your second, AKS2 Cluster:
+    keepalive 32;
 
-```nginx
-# Nginx 4 Azure to NIC, AKS Node for Upstreams
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-#
-# AKS2 nginx ingress upstreams
-#
-upstream aks2_ingress {
-  zone aks2_ingress 256k;
+    }
 
-  least_time last_byte;
-  
-  # from nginx-ingress NodePort Service / aks Node names
-  # Note: change servers to match
-  #
-  server aks-nodepool1-19485366-vmss00000h:32080;    #aks node1:
-  server aks-nodepool1-19485366-vmss00000i:32080;    #aks node2:
-  server aks-nodepool1-19485366-vmss00000j:32080;    #aks node3: 
+    ```
 
-  keepalive 32;
+    Submit your Nginx Configuration.  If you have the Server names:port correct, Nginx for Azure will validate and return a Success message.
 
-}
+    >**Important!**  If you stop then re-start your AKS cluster, or scale the Nodepool up/down, or add/remove nodes in the AKS NodePools, this Upstream list `WILL have to be updated to match!`  Any changes to the Worker nodes in the Cluster will need to be matched exactly, as it is a static Nginx configuration that must match the Kubernetes workers -  Nodes:NodePort definition in your AKS cluster.  If you change the static nginx-ingress NodePort Service Port number, you will have to match it here as well.
 
-```
+    *Currently, there is no auto-magic way to synchornize the Nginx for Azure upstream list with the AKS node list, but don' worry - Nginx Devs are working on that!*
 
-Note, there are 3 upstreams, matching the 3 Worker Nodes in AKS2 cluster.
+Configure the Upstream for AKS Cluster2.
 
-Submit your Changes.  If you have the Server name:port correct, Nginx4Azure will validate and return a Success message.
+1. Repeat the previous Step, using the Nginx4Azure configuration tool, create a new file called `/etc/nginx/conf.d/aks2-upstreams.conf`.  Copy and Paste the contents of the provided file.  You will have to EDIT this example config file, and change the `server` entries to match your AKS Cluster2 Nodepool node names.  You can find your AKS2 nodepool nodenames from `kubectl get nodes` or the Azure Portal.  Make sure you use `:32080` for the port number, this is the static `nginx-ingress NodePort Service` for HTTP traffic that was defined earlier.
 
-**Warning:**  If you stop and start your AKS cluster, or add/remove Nodes in the Pools, this Upstream list `WILL` have to be updated to match.  It is a static configuration that must match the Worker Nodes:NodePort definition in your AKS cluster. If you change the static nginx-ingress NodePort Service, you will have to match it here as well.  Unfortunately, there are no auto-magic way to synchronize AKS/NodePorts with N4A Upstreams... yet :-)
+1. Using kubectl, get the Nodepool nodes for AKS Cluster2: (You can also find these in your Azure Portal - AKS Nodepool definitions.)
 
-### Test Nginx 4 Azure to AKS1 Cluster Ingress Controller
+    ```bash
+    kubectl use-context n4a-aks2
+    kubectl get nodes
+
+    ```
+
+    ```bash
+    #Sample output
+    aks-nodepool1-19485366-vmss000003   #aks2 node1:
+    aks-nodepool1-19485366-vmss000004   #aks2 node2:
+    aks-nodepool1-19485366-vmss000005   #aks2 node3:
+
+    ```
+
+    ```nginx
+    # Nginx 4 Azure to NIC, AKS Node for Upstreams
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    # AKS2 nginx ingress upstreams
+    #
+    upstream aks2_ingress {
+    zone aks2_ingress 256k;
+
+    least_time last_byte;
+    
+    # from nginx-ingress NodePort Service / aks Node names
+    # Note: change servers to match
+    #
+    server aks-nodepool1-19485366-vmss000003:32080;    #aks2 node1:
+    server aks-nodepool1-19485366-vmss000004:32080;    #aks2 node2:
+    server aks-nodepool1-19485366-vmss000005:32080;    #aks2 node3: 
+
+    keepalive 32;
+
+    }
+
+    ```
+
+Note, there are 3 upstreams, matching the 3 Nodepool nodes in AKS2 cluster.
+
+Submit your Nginx Configuration.  If you have the Server name:port correct, Nginx4Azure will validate and return a Success message.
+
+**Warning:**  Same warning applies to Upstream configuration for AKS2, if you make any Nodepool changes, they must be updated to match.
+
+### Test Nginx 4 Azure to AKS1 Cluster Nginx Ingress Controller
 
 Now that you have these new Nginx Upstream blocks created, you can test them.
 
-Inspect, then modify the `# comments for proxy_pass` in the `location /` block in the `/etc/nginx/conf.d/cafe.example.com.conf` file, to disable the proxy_pass to `cafe-nginx`, and enable the proxy_pass to `aks1_ingress`, as shown:
+1. Inspect, then modify the `# comments for proxy_pass` in the `location /` block in the `/etc/nginx/conf.d/cafe.example.com.conf` file, making these changes as shown.
 
-```nginx
-...
+    - Disable the proxy_pass to `cafe-nginx`
+    - Enable the proxy_pass to `aks1_ingress`  
+    - Change the comments for the X-Proxy-Pass Header as well.
 
-    location / {
-        #
-        # return 200 "You have reached cafe.example.com, location /\n";
-         
-        # proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
-        # proxy_pass http://vm1:32779;          # Proxy to another server
-        # proxy_pass http://nginx.org;       # Proxy to another website
-        
-        proxy_pass http://aks1_ingress;       # Proxy to AKS1 Nginx Ingress Controller NodePort
-        add_header X-Proxy-Pass aks1_ingress;  # Custom Header
-        
-        # proxy_pass http://aks2_ingress;       # Proxy to AKS2 Nginx Ingress Controller NodePort
-        # proxy_pass http://aks1_nic_direct;       # Proxy to AKS Nginx Ingress Controller Direct
-        # proxy_pass http://$upstream;          # Use Split Clients config
+    ```nginx
+    ...
 
-    }
-...
+        location / {
+            #
+            # return 200 "You have reached cafe.example.com, location /\n";
+            # proxy_pass http://cafe_nginx;          # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass cafe_nginx;    # Custom Header
+            
+            proxy_pass http://aks1_ingress;          # Proxy to AKS1 Nginx Ingress Controller NodePort
+            add_header X-Proxy-Pass aks1_ingress;    # Custom Header
+            
+            # proxy_pass http://aks2_ingress;        # Proxy to AKS2 Nginx Ingress Controller NodePort
+            # add_header X-Proxy-Pass aks2_ingress;  # Custom Header
 
-```
+        }
+    ...
 
-This changes where Nginx will `proxy_pass` the requests.  Nginx will now forward and load balance requests to your AKS1 Ingress Controller, listening on port 32080 on each AKS1 Node.
+    ```
 
-Submit your change.
+    This changes where Nginx will `proxy_pass` the requests.  Nginx will now forward and load balance requests to your AKS1 Nginx Ingress Controller, listening on port 32080 on each AKS1 Node.  The X-Proxy-Pass Header will now show `aks1-ingress` instead of cafe-nginx.
 
-Test your change with curl.  Do you see the X-Proxy-Pass Header that you added, so you know which Upstream block is being used ?
+    Submit your Nginx Configuration.
 
-```bash
-HTTP/1.1 200 OK
-Server: N4A-1.25.1-cakker
-Date: Fri, 05 Apr 2024 20:08:24 GMT
-Content-Type: text/html; charset=utf-8
-Connection: keep-alive
-Expires: Fri, 05 Apr 2024 20:08:23 GMT
-Cache-Control: no-cache
-X-Proxy-Pass: aks1_ingress
+1. Test your change with curl.  Do you see the X-Proxy-Pass Header that you added, so you know which Upstream block is being used ?
 
-```
+    ```bash
+    curl -I http://cafe.example.com/coffee
+    
+    ```
+    
+    ```bash
+    #Sample output
+    HTTP/1.1 200 OK
+    Server: N4A-1.25.1-cakker
+    Date: Fri, 05 Apr 2024 20:08:24 GMT
+    Content-Type: text/html; charset=utf-8
+    Connection: keep-alive
+    Expires: Fri, 05 Apr 2024 20:08:23 GMT
+    Cache-Control: no-cache
+    X-Proxy-Pass: aks1_ingress
 
-Test your change in Upstreams with Chrome, hitting Refresh several times - what do you see ?
+    ```
 
-The Server Name and IP address should now match PODS running in your AKS1 cluster!  (they were Docker names before, remember?) But how do you verify this ?  Observe, the Server name is a K8s assigned POD name, and the Server IP address is the POD IP address, also assiged by K8s.  
+1. Test your change in proxy_pass with Chrome at http://cafe.example.com/coffee, hitting Refresh several times - what do you see ?
+    
+    Cafe Docker | Cafe AKS1
+    :-----------------:|:-----------------:
+    ![Cafe Docker](media/lab5_cafe-docker.png) | ![Cafe AKS1](media/lab5_cafe-aks1.png)
 
-Verify this with `kubectl`.  Set your Kubectl Config Context to aks1:
+1. Verify this with `kubectl`.  Set your Kubectl Config Context to aks1:
 
-```bash
-kubectl config use-context aks1
+    ```bash
+    kubectl config use-context aks1
+    kubectl get pods
 
-```
+    ```
 
-Then list the Pod names:
-```bash
-kubectl get pods
-```
+    ```bash
+    #Sample output
+    NAME                              READY   STATUS    RESTARTS   AGE
+    coffee-869854dd6-bs8t6            1/1     Running   0          3d3h
+    coffee-869854dd6-wq9lp            1/1     Running   0          3d3h
+    ...
 
-Notice the names of the coffee and tea pods.  Check the `coffee-svc` Endpoints:
+    ```
+
+Notice the Names of the `coffee` pods.  For the coffee Pod IPs, check the `coffee-svc` Endpoints:
 
 ```bash
 kubectl describe svc coffee-svc
 
 ```
 
-You should see a list of the POD IPs for the Service.
+```bash
+#Sample output
+Name:              coffee-svc
+Namespace:         default
+Labels:            <none>
+Annotations:       <none>
+Selector:          app=coffee
+Type:              ClusterIP
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                None
+IPs:               None
+Port:              http  80/TCP
+TargetPort:        80/TCP
+Endpoints:         10.244.0.10:80,10.244.0.20:80
+Session Affinity:  None
+Events:            <none>
 
-You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller, check the HTTP Upstreams, you should see the Pod IPs for both the coffee-svc and tea-svc.
+```
 
-### Test Nginx 4 Azure to AKS2 Cluster Ingress Controller
+You should see a list of the POD IPs for the Coffee Service.
+
+You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller, check the HTTP Upstreams Tab as before, you should see the Pod IPs for both the coffee-svc and tea-svc.
+
+![Cafe NIC Upstreams](media/lab5_cafe-nic-upstreams.png)
+
+### Test Nginx 4 Azure to AKS2 Cluster Nginx Ingress Controller
 
 Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
-Change the `# comments for proxy_pass` in the `location /` block in the `/etc/nginx/conf.d/cafe.example.com.conf` file, to disable the proxy_pass to aks1_ingress, and enable the proxy_pass to `aks2_ingress`, as shown:
+1. Change the `# comments for proxy_pass` in the `location /` block in the `/etc/nginx/conf.d/cafe.example.com.conf` file.
 
-```nginx
-...
+    - Disable the proxy_pass to aks1_ingress
+    - Enable the proxy_pass to `aks2_ingress`, as shown
+    - Change the X-Proxy_Pass Header
 
-    location / {
-        #
-        # return 200 "You have reached cafe.example.com, location /\n";
-         
-        # proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
-        # proxy_pass http://vm1:32779;          # Proxy to another server
-        #proxy_pass http://aks1_ingress;       # Proxy to AKS1 Nginx Ingress Controller NodePort
+    ```nginx
+    ...
 
-        proxy_pass http://aks2_ingress;       # Proxy to AKS2 Nginx Ingress Controller NodePort
-        add_header X-Proxy-Pass aks2_ingress;  # Custom Header
-        
-        # proxy_pass http://aks1_nic_direct;       # Proxy to AKS Nginx Ingress Controller Direct
-        # proxy_pass http://$upstream;          # Use Split Clients config
+        location / {
+            #
+            # return 200 "You have reached cafe.example.com, location /\n";
+            
+            # proxy_pass http://cafe_nginx;          # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass cafe_nginx;    # Custom Header
+            #proxy_pass http://aks1_ingress;         # Proxy to AKS1 Nginx Ingress Controller NodePort
+            # add_header X-Proxy-Pass aks1_ingress;  # Custom Header
 
-    }
-...
+            proxy_pass http://aks2_ingress;          # Proxy to AKS2 Nginx Ingress Controller NodePort
+            add_header X-Proxy-Pass aks2_ingress;    # Custom Header
 
-```
+        }
+    ...
 
-This again changes where Nginx will `proxy_pass` the requests.  Nginx will now forward and load balance requests to your AKS2 Ingress Controller, also listening on port 32080 on each AKS2 Node.
+    ```
 
-Submit your change.
+    This again changes where Nginx will `proxy_pass` the requests.  Nginx will now forward and load balance requests to your AKS2 Ingress Controller, also listening on port 32080 on each AKS2 Node.
 
-Test your change with curl.  Do you see the X-Proxy-Pass Header that you added, so you know which Upstream block is being used ?
+    Submit your Nginx Configuration.
 
-```bash
-HTTP/1.1 200 OK
-Server: N4A-1.25.1-cakker
-Date: Fri, 05 Apr 2024 20:08:24 GMT
-Content-Type: text/html; charset=utf-8
-Connection: keep-alive
-Expires: Fri, 05 Apr 2024 20:08:23 GMT
-Cache-Control: no-cache
-X-Proxy-Pass: aks2_ingress
+1. Test your change with curl.  Do you see the X-Proxy-Pass Header that you added, so you know which Upstream block is being used ?
 
-```
+    ```bash
+    curl -I http://cafe.example.com/coffee
+    
+    ```
 
-Test your change in Upstreams with Chrome, hitting Refresh several times - what do you see ?
+    ```bash
+    HTTP/1.1 200 OK
+    Server: N4A-1.25.1-cakker
+    Date: Fri, 05 Apr 2024 20:08:24 GMT
+    Content-Type: text/html; charset=utf-8
+    Connection: keep-alive
+    Expires: Fri, 05 Apr 2024 20:08:23 GMT
+    Cache-Control: no-cache
+    X-Proxy-Pass: aks2_ingress
+
+    ```
+
+1. Test your change in Upstreams with Chrome, hitting Refresh several times - what do you see ?
 
 The Server Name and IP address should now match PODS running in your AKS2 cluster!  (they were AKS1 names before) But how do you verify this ?  Observe again, the Server name is a K8s assigned POD name, and the Server IP address is the POD IP address, also assiged by K8s.  
 
 Verify this with `kubectl`.  Set your Kubectl Config Context to aks2:
 
 ```bash
-kubectl config use-context aks2
-
-```
-
-Then list the Pods:
-
-```bash
+kubectl config use-context n4a-aks2
 kubectl get pods
 
 ```
 
-Notice the names of the coffee and tea pods.  Check the `coffee-svc` Endpoints:
+```bash
+#Sample output
+coffee-869854dd6-fchxm   1/1     Running   0          3d3h
+coffee-869854dd6-nn5d4   1/1     Running   0          3d3h
+coffee-869854dd6-zqbbv   1/1     Running   0          3d3h
+...
+
+```
+
+Notice the Names of the coffee and and tea pods.  For Pod IPs, check the `coffee-svc` Endpoints:
 
 ```bash
 kubectl describe svc coffee-svc
 
 ```
 
-You should see a list of the POD IPs for the Service.
+```bash
+#Sample output
+Name:              coffee-svc
+Namespace:         default
+Labels:            <none>
+Annotations:       <none>
+Selector:          app=coffee
+Type:              ClusterIP
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                None
+IPs:               None
+Port:              http  80/TCP
+TargetPort:        80/TCP
+Endpoints:         172.16.4.99:80,172.16.5.101:80,172.16.5.118:80
+Session Affinity:  None
+Events:            <none>
 
-You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller, check the HTTP Upstreams, you should see the Pod IPs for both the coffee-svc and tea-svc.
+```
 
-### Summary
+You should see a list of the POD IPs for the coffee Service.
 
-During this Lab exercise, you created and tested THREE different Upstream configurations to use with Nginx.  This demonstrates how easy it is to have different platforms for your backend applications, and Nginx can easily be configured to change where it sends the Requests coming in.  You can use Azure VMs, Docker, Containers, or even AKS clusters for your apps.  You also added a customer HTTP Header, to help you track which upstream block is being used.
+**TAKE NOTE:** The Pod IPs are on a completely different IP subnet, from Docker or the first and second AKS cluster, which was configured using the Azure CNI - did you catch that distinction ?  Understanding the Backend IP/networking is critical to configuration your Nginx for Azure Upstreams properly.  You built and used different CNIs and subnets so you can see the differences:
 
+<br/>
 
+Platform | Docker | AKS1 | AKS2
+:--------------:|:--------------:|:-----------------:|:-----------------:
+Network Type | Docker Bridge | Kubenet | Azure CNI
+IP Subnet | 172.18.x.y | 172.16.10.y | 172.16.20.y
 
-### << more exercises/steps>>
+<br/>
 
-<numbered steps are here>
+You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller in AKS2 - check the HTTP Upstreams, you should see the Pod IPs for both the coffee-svc and tea-svc.
+
+### Nginx for Azure, Upstream Configuration Recap
+
+During this Lab exercise, you created and tested THREE different Upstream configurations to use with Nginx for Azure.  This demonstrates how easy it is to have different platforms for your backend applications, and Nginx can easily be configured to change where it sends the Requests with `proxy_pass`.  You can use Azure VMs, Docker, Containers, AKS Clusters, and/or Windows VMs for your apps.  You also added a custom HTTP Header, to help you track which Upstream block is being used.
 
 <br/>
 
