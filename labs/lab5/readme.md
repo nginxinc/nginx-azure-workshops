@@ -391,31 +391,32 @@ IP Subnet | 172.18.x.y | 172.16.10.y | 172.16.20.y
 
 You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller in AKS2 - check the HTTP Upstreams, you should see the Pod IPs for both the coffee-svc and tea-svc.
 
+![Cafe NIC2 Upstreams](media/lab5_cafe-nic2-upstreams.png)
+
 1.  **Loadtest Time!**  While you are in the Nginx Ingress Dashboard watching the coffee upstreams, throw some load at them:
 
-Using your local Docker Desktop, you will start and run the WRK loadtest from a container.  Try this for a 1 minute loadtest:
+    Using your local Docker Desktop, you will start and run the WRK loadtest from a container.  Try this for a 1 minute loadtest:
 
-```bash
-docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s http://cafe.example.com/coffee
+    ```bash
+    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s http://cafe.example.com/coffee
 
-```
-```bash
-#Sample output
-Running 1m test @ http://cafe.example.com/coffee
-  4 threads and 200 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency   112.42ms   38.11ms 705.15ms   81.00%
-    Req/Sec   450.43     83.36   720.00     73.49%
-  107730 requests in 1.00m, 177.09MB read
-Requests/sec:   1792.74
-Transfer/sec:      2.95MB
+    ```
+    ```bash
+    #Sample output
+    Running 1m test @ http://cafe.example.com/coffee
+    4 threads and 200 connections
+    Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency   112.42ms   38.11ms 705.15ms   81.00%
+        Req/Sec   450.43     83.36   720.00     73.49%
+    107730 requests in 1.00m, 177.09MB read
+    Requests/sec:   1792.74
+    Transfer/sec:      2.95MB
 
-```
+    ```
 
-And your Nginx Ingress Dashboard should show similar stats.  How many requests did you get in 1 minute?  Post your Results in Zoom Chat!
+1. And your Nginx Ingress Dashboard should show similar stats.  How many requests did you get in 1 minute?  Post your Results in Zoom Chat!
 
-![Cafe AKS2 loadtest](media/lab5_cafe-aks2-loadtest.png)
-
+    ![Cafe AKS2 loadtest](media/lab5_cafe-aks2-loadtest.png)
 
 ### Nginx for Azure, Upstream Configuration Recap
 
