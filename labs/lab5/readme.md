@@ -136,7 +136,7 @@ Configure the Upstream for AKS Cluster2.
 
     ```
 
-Note, there are 3 upstreams, matching the 3 Nodepool nodes in AKS2 cluster.
+Note, there are 4 upstreams, matching the 4 Nodepool nodes in AKS2 cluster.
 
 Submit your Nginx Configuration.  If you have the Server name:port correct, Nginx4Azure will validate and return a Success message.
 
