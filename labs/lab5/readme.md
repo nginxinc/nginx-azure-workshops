@@ -74,8 +74,9 @@ Configure the Upstream for AKS Cluster2.
     # from nginx-ingress NodePort Service / aks Node names
     # Note: change servers to match
     #
-    server aks-userpool-76919110-vmss000001:32080;    #aks1 node1:
-    server aks-userpool-76919110-vmss000002:32080;    #aks1 node2:
+    server aks-userpool-76919110-vmss000001:32080;    #aks1 node1
+    server aks-userpool-76919110-vmss000002:32080;    #aks1 node2
+    server aks-userpool-76919110-vmss000003:32080;    #aks1 node3
 
     keepalive 32;
 
@@ -124,9 +125,10 @@ Configure the Upstream for AKS Cluster2.
     # from nginx-ingress NodePort Service / aks Node names
     # Note: change servers to match
     #
-    server aks-nodepool1-19485366-vmss000003:32080;    #aks2 node1:
-    server aks-nodepool1-19485366-vmss000004:32080;    #aks2 node2:
-    server aks-nodepool1-19485366-vmss000005:32080;    #aks2 node3: 
+    server aks-nodepool1-19485366-vmss000003:32080;    #aks2 node1
+    server aks-nodepool1-19485366-vmss000004:32080;    #aks2 node2
+    server aks-nodepool1-19485366-vmss000005:32080;    #aks2 node3 
+    server aks-nodepool1-19485366-vmss000006:32080;    #aks2 node4
 
     keepalive 32;
 
