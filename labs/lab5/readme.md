@@ -137,7 +137,7 @@ Note, there are 3 upstreams, matching the 3 Nodepool nodes in AKS2 cluster.
 
 Submit your Nginx Configuration.  If you have the Server name:port correct, Nginx4Azure will validate and return a Success message.
 
-**Warning:**  Same warning applies to Upstream configuration for AKS2, if you make any Nodepool changes, they must be updated to match.
+**Warning:**  Same warning applies to Upstream configuration for AKS2, *if you make any Nodepool changes, Nginx must be updated to match those changes.*
 
 ### Test Nginx 4 Azure to AKS1 Cluster Nginx Ingress Controller
 
@@ -193,16 +193,16 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
 
     ```
 
-1. Test your change in proxy_pass with Chrome at http://cafe.example.com/coffee, hitting Refresh several times - what do you see ?
+1. Test your change in proxy_pass with Chrome at http://cafe.example.com/coffee, hitting Refresh several times - what do you see - Docker Containers or AKS Pods?
     
     Cafe Docker | Cafe AKS1
     :-----------------:|:-----------------:
     ![Cafe Docker](media/lab5_cafe-docker.png) | ![Cafe AKS1](media/lab5_cafe-aks1.png)
 
-1. Verify this with `kubectl`.  Set your Kubectl Config Context to aks1:
+1. Verify this with `kubectl`.  Set your Kubectl Config Context to n4a-aks1:
 
     ```bash
-    kubectl config use-context aks1
+    kubectl config use-context n4a-aks1
     kubectl get pods
 
     ```
@@ -216,38 +216,64 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
 
     ```
 
-Notice the Names of the `coffee` pods.  For the coffee Pod IPs, check the `coffee-svc` Endpoints:
+    Notice the Names of the `coffee` pods.  For the coffee Pod IPs, check the `coffee-svc` Endpoints:
 
-```bash
-kubectl describe svc coffee-svc
+    ```bash
+    kubectl describe svc coffee-svc
 
-```
+    ```
 
-```bash
-#Sample output
-Name:              coffee-svc
-Namespace:         default
-Labels:            <none>
-Annotations:       <none>
-Selector:          app=coffee
-Type:              ClusterIP
-IP Family Policy:  SingleStack
-IP Families:       IPv4
-IP:                None
-IPs:               None
-Port:              http  80/TCP
-TargetPort:        80/TCP
-Endpoints:         10.244.0.10:80,10.244.0.20:80
-Session Affinity:  None
-Events:            <none>
+    ```bash
+    #Sample output
+    Name:              coffee-svc
+    Namespace:         default
+    Labels:            <none>
+    Annotations:       <none>
+    Selector:          app=coffee
+    Type:              ClusterIP
+    IP Family Policy:  SingleStack
+    IP Families:       IPv4
+    IP:                None
+    IPs:               None
+    Port:              http  80/TCP
+    TargetPort:        80/TCP
+    Endpoints:         10.244.0.10:80,10.244.0.20:80
+    Session Affinity:  None
+    Events:            <none>
 
-```
+    ```
 
-You should see a list of the POD IPs for the Coffee Service.
+    You should see a list of the (2) POD IPs for the Coffee Service.
 
-You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller, check the HTTP Upstreams Tab as before, you should see the Pod IPs for both the coffee-svc and tea-svc.
+    You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller, check the HTTP Upstreams Tab as before, you should see the Pod IPs for both the coffee-svc and tea-svc.
 
-![Cafe NIC Upstreams](media/lab5_cafe-nic-upstreams.png)
+    ![Cafe NIC Upstreams](media/lab5_cafe-nic-upstreams.png)
+
+1.  **Loadtest Time!**  While you are in the Nginx Ingress Dashboard watching the coffee upstreams, throw some load at them using WRK HTTP Load tool.
+
+    Using your local Docker Desktop, you will start and run the WRK loadtest from a container.  Try this for a 1 minute loadtest:
+
+    ```bash
+    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s http://cafe.example.com/coffee
+
+    ```
+
+    ```bash
+    #Sample output
+    Running 1m test @ http://cafe.example.com/coffee
+    4 threads and 200 connections
+    Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    97.45ms    6.79ms 401.32ms   94.86%
+        Req/Sec   515.15     23.08     0.94k    92.31%
+    123138 requests in 1.00m, 202.21MB read
+    Requests/sec:   2048.84
+    Transfer/sec:      3.36MB
+
+    ```
+
+And your Nginx Ingress Dashboard should show similar stats. How many requests did you get in 1 minute?  Post your AKS1 Loadtest Results in Zoom Chat!
+
+![Cafe AKS1 loadtest](media/lab5_cafe-aks1-loadtest.png)
 
 ### Test Nginx 4 Azure to AKS2 Cluster Nginx Ingress Controller
 
@@ -304,66 +330,92 @@ Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
 1. Test your change in Upstreams with Chrome, hitting Refresh several times - what do you see ?
 
-The Server Name and IP address should now match PODS running in your AKS2 cluster!  (they were AKS1 names before) But how do you verify this ?  Observe again, the Server name is a K8s assigned POD name, and the Server IP address is the POD IP address, also assiged by K8s.  
+    The Server Name and IP address should now match PODS running in your AKS2 cluster!  (they were AKS1 names before) But how do you verify this ?  Observe again, the Server name is a Kubernetes assigned POD name, and the Server IP address is the POD IP address, also assiged by Kubernetes.  
 
-Verify this with `kubectl`.  Set your Kubectl Config Context to aks2:
+    Verify this with `kubectl`.  Set your Kubectl Config Context to aks2:
 
-```bash
-kubectl config use-context n4a-aks2
-kubectl get pods
+    ```bash
+    kubectl config use-context n4a-aks2
+    kubectl get pods
 
-```
+    ```
 
-```bash
-#Sample output
-coffee-869854dd6-fchxm   1/1     Running   0          3d3h
-coffee-869854dd6-nn5d4   1/1     Running   0          3d3h
-coffee-869854dd6-zqbbv   1/1     Running   0          3d3h
-...
+    ```bash
+    #Sample output
+    coffee-869854dd6-fchxm   1/1     Running   0          3d3h
+    coffee-869854dd6-nn5d4   1/1     Running   0          3d3h
+    coffee-869854dd6-zqbbv   1/1     Running   0          3d3h
+    ...
 
-```
+    ```
 
-Notice the Names of the coffee and and tea pods.  For Pod IPs, check the `coffee-svc` Endpoints:
+    Notice the Names of the coffee and and tea pods.  For Pod IPs, check the `coffee-svc` Endpoints:
 
-```bash
-kubectl describe svc coffee-svc
+    ```bash
+    kubectl describe svc coffee-svc
 
-```
+    ```
 
-```bash
-#Sample output
-Name:              coffee-svc
-Namespace:         default
-Labels:            <none>
-Annotations:       <none>
-Selector:          app=coffee
-Type:              ClusterIP
-IP Family Policy:  SingleStack
-IP Families:       IPv4
-IP:                None
-IPs:               None
-Port:              http  80/TCP
-TargetPort:        80/TCP
-Endpoints:         172.16.4.99:80,172.16.5.101:80,172.16.5.118:80
-Session Affinity:  None
-Events:            <none>
+    ```bash
+    #Sample output
+    Name:              coffee-svc
+    Namespace:         default
+    Labels:            <none>
+    Annotations:       <none>
+    Selector:          app=coffee
+    Type:              ClusterIP
+    IP Family Policy:  SingleStack
+    IP Families:       IPv4
+    IP:                None
+    IPs:               None
+    Port:              http  80/TCP
+    TargetPort:        80/TCP
+    Endpoints:         172.16.4.99:80,172.16.5.101:80,172.16.5.118:80
+    Session Affinity:  None
+    Events:            <none>
 
-```
+    ```
 
-You should see a list of the POD IPs for the coffee Service.
+    You should see a list of the (3) POD IPs for the coffee Service.
 
-**TAKE NOTE:** The Pod IPs are on a completely different IP subnet, from Docker or the first and second AKS cluster, which was configured using the Azure CNI - did you catch that distinction ?  Understanding the Backend IP/networking is critical to configuration your Nginx for Azure Upstreams properly.  You built and used different CNIs and subnets so you can see the differences:
+**TAKE NOTE:** The Pod IPs are on a completely different IP subnet, from Docker or the first and second AKS cluster, which was configured using the Azure CNI - did you catch that distinction ?  Understanding the Backend IP/networking is critical to configuring your Nginx for Azure Upstreams properly.  You built and used different CNIs and subnets so you can see the differences.  Nginx for Azure can work with `any` of these different backend applications and networks, as long as there is in an IP Path to the Upstreams.  (Yes, if you add the appropriate routing with VNet Gateways, you can use Upstreams in other Regions/Clusters/VMs.)
 
 <br/>
 
 Platform | Docker | AKS1 | AKS2
 :--------------:|:--------------:|:-----------------:|:-----------------:
-Network Type | Docker Bridge | Kubenet | Azure CNI
+Network Type | Docker | Kubenet | Azure CNI
 IP Subnet | 172.18.x.y | 172.16.10.y | 172.16.20.y
 
 <br/>
 
 You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller in AKS2 - check the HTTP Upstreams, you should see the Pod IPs for both the coffee-svc and tea-svc.
+
+1.  **Loadtest Time!**  While you are in the Nginx Ingress Dashboard watching the coffee upstreams, throw some load at them:
+
+Using your local Docker Desktop, you will start and run the WRK loadtest from a container.  Try this for a 1 minute loadtest:
+
+```bash
+docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s http://cafe.example.com/coffee
+
+```
+```bash
+#Sample output
+Running 1m test @ http://cafe.example.com/coffee
+  4 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   112.42ms   38.11ms 705.15ms   81.00%
+    Req/Sec   450.43     83.36   720.00     73.49%
+  107730 requests in 1.00m, 177.09MB read
+Requests/sec:   1792.74
+Transfer/sec:      2.95MB
+
+```
+
+And your Nginx Ingress Dashboard should show similar stats.  How many requests did you get in 1 minute?  Post your Results in Zoom Chat!
+
+![Cafe AKS2 loadtest](media/lab5_cafe-aks2-loadtest.png)
+
 
 ### Nginx for Azure, Upstream Configuration Recap
 
@@ -373,21 +425,25 @@ During this Lab exercise, you created and tested THREE different Upstream config
 
 ## Nginx for Azure Split Clients for Blue/Green, A/B, Canary Testing
 
+Now you will be introduced to a very popular Nginx feature - `HTTP Split Clients`.  This is an Nginx module that can split traffic to multiple Upstreams or Servers, based on a hash of the Request.   This Split Clients tool is very handy for the testing of new versions of code, most likely part of QA testing phases of CI/CD pipeline progressions.  
+
 This concept of using `Live Traffic`, to test a new version or release of an application has several names, like Blue/Green, or A/B, or Canary testing.  We will use the term Blue/Green for this exercise, and show you how to control 0-100% of your incoming requests, and route/split them to different Upstreams with Nginx for Azure.  You will use the Nginx `http_split_clients` feature, to support these common application software Dev/Test/Pre-Prod/Prod patterns.  
 
-You will start with the Nginx Cafe Demo, and your Docker VMs, as the current running Version of your application.  As your team is working towards all applications being developed and tested, and hosted in Kubernetes, you could use a process to make that migration easier!
+As your team is diligently working towards all applications being developed and tested in Kubernetes, you could really use a process to make the migration from old Legacy Docker VMs to Kubernetes MicroServices easier.  Wouldn't it be nice if you could test and migrate Live Traffic with NO DOWNTIME???  `(Service Outages and Tickets are a DRAG...ugh!)`
+
+You will start with the Nginx Cafe Demo, and your Docker VMs, as the current running Version of your application.  
 
 Also using Cafe Demo, you decide that AKS Cluster1 is your Pre-Production test environment, where final QA checks of software releases are `signed-off` before being rolled out into Production.  
 - As the software QA tests in your pipeline continue to pass, you will incrementally `increase the split ratio to AKS1`, and eventually migrate ALL 100% of your Live Traffic to the AKS1 Cluster - `with NO DOWNTIME, lost packets, connections, or user disruption.`  No WAY - it can't be that EASY?
-- Just as importantly, if you do encounter any serious application bugs or even infrastructure problems, you can just as quickly `roll-back` to 100% to the Docker VMs.  *You will be an NGINXpert HERO.*
+- Just as importantly, if you do encounter any serious application bugs or even infrastructure problems, you can just as quickly `roll-back` to 100% to the Docker VMs.  *You just might be an NGINXpert HERO.*
 
-Your first CI/CD test case, is taking just 1% of your Live incoming traffic, and send it to AKS Cluster 1, where you likely have enabled debug level logging and monitoring of your containers, so you can see how the new Version is running.  (You do run these types of pre-release tests, right?)
+Your first CI/CD test case, is taking just 1% of your Live incoming traffic, and send it to AKS Cluster 1, where you likely have enabled debug level logging and monitoring of your containers, so you can see how the new Version of Nginx Cafe is running.  (You do run these types of pre-release tests, correct?)
 
 To accomplist the Split Client functionality with Nginx, you only need 3 things.  
 - The `split_clients directive`
 - A Map block to configure the incoming request object of interest (a cookie name, cookie value, Header, or URL, etc)
 - The destination Upstream Blocks, with percentages declared for the split ratios, with a new `$upstream` variable
--- As you want 99% for Docker, and 1% for AKS1, that is the configuration you will start with
+-- As you want 1% traffic for AKS1, leaving 99% for Docker, that is the configuration you will start with
 -- The other ratios are provided, but commented out, you will use them as more of the QA tests pass
 
 1. Inspect the `/lab5/split-clients.conf` file.  This is the Map Block you will use, configured to look at the `$request_id` Nginx variable.  As you should already know, the $request_id is a unique 64-bit number assigned to every incoming request by Nginx.  So you are telling Nginx to look at `every single request` when performing the Split hash algorithm.  You can use any Nginx Request $variable that you choose, and combinations of $variables is supported as well.  You can find more details on the http_split_clients module in the References section.
@@ -403,7 +459,7 @@ split_clients $request_id $upstream {
 
    # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
    #0.1% aks1_ingress;
-   1.0% aks1_ingress;
+   1.0% aks1_ingress;    # Starting with 1% Live Traffic
    #5.0% aks1_ingress;
    #30% aks1_ingress; 
    #50% aks1_ingress;
@@ -428,12 +484,12 @@ split_clients $request_id $upstream {
         #
         # return 200 "You have reached cafe.example.com, location /\n";
 
-        proxy_pass http://$upstream;          # Use Split Clients config
+        proxy_pass http://$upstream;            # Use Split Clients config
 
-        add_header X-Proxy-Pass $upstream;    # Custom Header
+        add_header X-Proxy-Pass $upstream;      # Custom Header
          
-        #proxy_pass http://cafe_nginx;        # Proxy AND load balance to Docker VM
-        #add_header X-Proxy-Pass cafe_nginx;  # Custom Header
+        #proxy_pass http://cafe_nginx;          # Proxy AND load balance to Docker VM
+        #add_header X-Proxy-Pass cafe_nginx;    # Custom Header
 
         #proxy_pass http://aks1_ingress;        # Proxy AND load balance to AKS1 Nginx Ingress
         #add_header X-Proxy-Pass aks1_ingress;  # Custom Header
@@ -451,18 +507,26 @@ Submit your Nginx Configuration.
 
 1. Test with Chrome, hit Refresh several times, and Inspect the page, look at your custom Header.  It should say `cafe_nginx` or `aks1_ingress` depending on which Upstream was chosen by Split Client.
 
-Unfortunately, Refreshing about 100 times, and trying to catch the 1% send to AKS1 will be difficult with a browser.  So you will use an HTTP Loadtest tool called `WRK`, which runs as a local Docker container, sending HTTP requests to your Nginx for Azure's Cafe Demo.
+Unfortunately, Refreshing about 100 times, and trying to catch the 1% sent to AKS1 will be difficult with a browser.  So you will use an HTTP Loadtest tool called `WRK`, which runs as a local Docker container, sending HTTP requests to your Nginx for Azure's Cafe Demo.
 
 1. Open a separate Terminal, and start the WRK load tool.  Use the example here, but change the IP address to your Nginx for Azure Public IP:
 
 ```bash
-docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d15m -H 'Host: cafe.example.com' --timeout 2s http://20.3.16.67/coffee
+docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d20m -H 'Host: cafe.example.com' --timeout 2s http://20.3.16.67/coffee
 
 ```
 
-This will open 200 Connections, and run for 15 minutes while we try different Split Ratios.  The Host Header `cafe.example.com` is required, to match your Server Block in your N4A configuration.
+This will open 200 Connections, and run for 20 minutes while we try different Split Ratios.  The Host Header `cafe.example.com` is required, to match your Server Block in your Nginx for Azure configuration.
 
-1. Scale your `nginx-ingress` deployment Replicas=1, so there is only one NIC running.  Then open your AKS1 NIC Dashboard (the one you bookmarded earlier), the HTTP Upstreams Tab, coffee upstreams.  These are the Pods running the latest version of your Application.  You should see about 1% of your Requests trickling into the AKS1 Ingress Controller, and it is load balancing those requests to a couple Pods.  If you can check your Azure Monitor, you would find the 99% going to the cafe_nginx upstreams, the three Docker containers running on Ubuntu.
+1. Open your AKS1 NIC Dashboard (the one you bookmarked earlier), the HTTP Upstreams Tab, coffee upstreams.  These are the Pods running the latest version of your Nginx Cafe Application.  You should see about 1% of your Requests trickling into the AKS1 Ingress Controller, and it is load balancing those requests to a couple coffee Pods.  In the NIC Dashboard, you should see about 20-30 Requests/sec for AKS1 coffee. 
+
+You can check your Azure Monitor, you would find about 99% going to the cafe_nginx upstreams, the three Docker containers running on Ubuntu VM.
+
+1. Using the Nginx for Azure - Monitoring - Metrics menu, open Azure Monitoring.  In the top middle of the graph, under Metric Namespace, Select `nginx upstream statistics`.  Then Select `plus.http.upstream.peers.request.count`.  Then Click the `Add filter` button, Property `upstream`, `=` with Values of `cafe-nginx` and `aks1-ingress` and `aks2-ingress` checked.  Click the `Apply splitting` button, and select `upstream.` In the upper right corner, change the Graph Time to `Last 30 minutes with 1 minute display`.  Now you can watch the Request count stats for these 2 upstream blocks, the same two you enabled in the Split Clients config.
+
+  It will take a few minutes for Azure Logging to show these values, and it Aggregates the values to the minute.  Leave this Azure Monitor graph open in a separate Window, you will watch it while we change the Ratios!
+
+![Cafe - AKS1 split 1%](media/lab5_cafe-aks1-split1.png)
 
 *Great news* - the QA Lead has signed off on the 1% test and your code, and you are `good to go` for the next test.  Turn down your logging level, as now you will try `30% Live traffic to AKS1`, you are confident and bold, *make it or break it* is your motto.  
 
@@ -479,7 +543,7 @@ split_clients $request_id $upstream {
    #0.1% aks1_ingress;
    #1.0% aks1_ingress;
    #5.0% aks1_ingress;
-   30% aks1_ingress; 
+   30% aks1_ingress;      # Next test, 30% Live Traffic
    #50% aks1_ingress;
    #80% aks1_ingress;
    #95% aks1_ingress;
@@ -495,9 +559,13 @@ split_clients $request_id $upstream {
 
 Submit your Nginx Configuration, while watching the AKS1 NIC Dashboard.  In a few seconds, traffic stats should jump now to 30%!  Hang on to your debugger ...
 
-After a couple hours of 30%, all the logs are clean, the dev and test tools are happy, there are NO support tickets, and all is looky peachy.
+Checking the Nginx for Azure Monitor Window that you left open, you should see something like this:
 
-1. Next up is the 50% test.  You know what to do.  Modify your `split-clients.conf` file, setting AKS1 Ingress to 50% Live traffic.  Watch the NIC Dashboard, and your Monitoring tools closely.
+![Cafe - AKS1 split 1%](media/lab5_cafe-aks1-split30.png)
+
+After a couple hours of 30%, all the logs are clean, the dev and test tools are happy, there are NO support tickets, and all is looking peachy.
+
+1. Next up is the 50% test.  You know what to do.  Modify your `split-clients.conf` file, setting AKS1 Ingress to `50% Live Traffic`.  Watch the NIC Dashboard, and your Monitoring tools closely.
 
 ```nginx
 # Nginx 4 Azure to AKS1/2 NICs and/or UbuntuVMs for Upstreams
@@ -511,7 +579,7 @@ split_clients $request_id $upstream {
    #1.0% aks1_ingress;
    #5.0% aks1_ingress;
    #30% aks1_ingress; 
-   50% aks1_ingress;
+   50% aks1_ingress;     # Next test, 50% Live Traffic
    #80% aks1_ingress;
    #95% aks1_ingress;
    #99% aks1_ingress;
@@ -525,15 +593,26 @@ split_clients $request_id $upstream {
 
 ```
 
-Submit your 50% configuration and cross your fingers.  HERO or ZERO, what will it be today?  If the WRK load test has stopped, start it again.
+Submit your 50% Split configuration and cross your fingers.  HERO or ZERO, what will it be today?  If the WRK load test has stopped, start it again.
 
->Now that you get the concept and the configuration steps, you can see how EASY it is with Nginx Split Clients to route traffic to different backend applications, including different versions of apps - it's as easy as creating a new Upstream block, and determining the Split Ratio.  And consider this not so subtle point - you did not have to create ONE ticket, change a DNS record, change a firewall rules, update cloudXYZ device - nothing!  All you did was tell Nginx to split existing traffic, accelerating your app development velocity into Warp Drive.
+Looking pretty good, traffic is even, no logging errors, tickets, no whining and complaining and texting from Mgmt. Nginx is making you a Rock Star!
 
->>The Director of Development has heard about your success with Nginx for Azure Split Clients, and now also wants a small percentage of Live Traffic for the next App version, running in AKS Cluster2.  Oh NO!!  - Success usually does mean more work.  But lucky for you, Split clients can work with many Upstreams.  So after several beers and intense discussions, your QA team decides on the following Split:
+![Cafe - AKS1 split 50%](media/lab5_cafe-aks1-split50.png)
+50% Split
 
+
+![Cafe - AKS1 split 99%](media/lab5_cafe-aks1-split99.png)
+99% Split
+
+
+>Now that you get the concept and the configuration steps, you can see how EASY it is with Nginx Split Clients to route traffic to different backend applications, including different versions of apps - it's as easy as creating a new Upstream block, and determining the Split Ratio.  And consider this not so subtle point - you did not have to create ONE ticket, change a DNS record, change any firewall rules, update cloudXYZ device - nothing!  All you did was tell Nginx to Split existing Live traffic, accelerating your app development velocity into Warp Drive.
+
+>>The Director of Development has heard about your success with Nginx for Azure Split Clients, and now also wants a small percentage of Live Traffic for the next App version, `running in AKS Cluster2`.  Oh NO!! - Success usually does mean more work.  But lucky for you, Split clients can work with many Upstreams.  So after several beers and intense discussions, your QA team decides on the following Split:
+
+- AKS2 will get 1% traffic - for the Dev Director's request
 - AKS1 will get 80% traffic - for new version
 - Docker VM will get 19% traffic - for legacy/current version
-- AKS2 will get 1% traffic - for the Dev Director's request
+
 
 1. Once again, modify the `split-clients.conf` file, with the percentages needed.  Open your Dashboards and Monitoring so you can watch in real time.  You tell the Director, here it comes:
 
@@ -550,7 +629,7 @@ split_clients $request_id $upstream {
    #5.0% aks1_ingress;
    #30% aks1_ingress; 
    #50% aks1_ingress;
-   80% aks1_ingress;
+   80% aks1_ingress;       # For new version
    #95% aks1_ingress;
    #99% aks1_ingress;
    #* aks1_ingress;
@@ -565,7 +644,13 @@ split_clients $request_id $upstream {
 
 Submit your Nginx Configuration.
 
-Voila!!  You are now splitting Live traffic to THREE separate backend platforms, simulating multiple versions of your application code.  To be far, in this lab exercise we used the same Cafe Demo image, but you get the idea.  Just as quick and easy, you can fire up another Upstream target, and add it to the Splits configuration.
+Check your Nginx Ingress Dashboards, do you see traffic on both, making use of the (5) coffee upstream pods?  What about Azure Monitor ... 
+
+![Cafe - 3 way split](media/lab5_cafe-3way-split.png)
+
+Cafe Nginx - Split 3 ways: DockerVM, AKS1, AKS2
+
+**TADA!!**  You are now splitting Live traffic to THREE separate backend platforms, simulating multiple versions of Cafe Nginx / your application code.  To be far, in this lab exercise we used the same Cafe Demo image, but you get the idea.  Just as quick and easy, you can fire up another Upstream target, and add it to the Splits configuration.
 
 **NOTE:** Several words of caution with Split Clients.  
 - The ratios must add up to 100%, or Nginx will not apply the configuration.  
@@ -580,7 +665,7 @@ Voila!!  You are now splitting Live traffic to THREE separate backend platforms,
 
 But don't be surprised - in a few days he will ask again to send traffic to AKS2, and you can begin the Split migration process, this time from AKS1 to AKS2.  Now you've reached the Ultimate Kubernetes Application Solution, `Mutli Cluster Load Balancing, Active/Active, with Dynamic Split Ratios.`  No one else can do this for your team this easily, it's just Nginx!  
 
-Cherry on top - not only can you do Split Client `outside` the Cluster with Nginx for Azure, Nginx Ingress Controller can also do Split Clients `inside` the cluster, ratios between different Services.  You can find that example in Lab10 in the Nginx Plus Ingress Workshop :-)
+>Cherry on top - not only can you do Split Client `outside` the Cluster with Nginx for Azure, but Nginx Ingress Controller can also do Split Clients `inside` the cluster, ratios between different Services.  You can find that example in `Lab10 in the Nginx Plus Ingress Workshop` :-)
 
 ### Nginx HTTP Split Clients Solutions
 
@@ -595,6 +680,11 @@ Using the HTTP Split Clients module from Nginx can provide multiple traffic mana
 - - QA and Troubleshooting, using Live Traffic if needed
 - - ^^ With NO downtime or reloads
 - API Gateway testing/upgrades/migrations
+
+## Optional - Nginx for Azure to Nginx Ingress Headless Service
+
+< place holder >
+
 
 ## Wrap Up
 
