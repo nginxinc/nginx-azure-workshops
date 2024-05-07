@@ -171,7 +171,7 @@ The Cafe application that you will deploy looks like the following diagram below
 
 <br/>
 
-## Deploy Redis In Memory Caching in AKS Cluster 2 (`n4a-aks2`)
+## Deploy Redis In Memory Caching in AKS Cluster 2 (n4a-aks2)
 
 Azure | Redis
 :--------------:|:--------------:
