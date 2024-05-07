@@ -47,7 +47,7 @@ Configure the Upstream for AKS Cluster2.
 1. Using kubectl, get the Nodepool nodes for AKS Cluster1:  (You can also find these in your Azure Portal - AKS Nodepool definitions.)
 
     ```bash
-    kubectl use-context n4a-aks1
+    kubectl config use-context n4a-aks1
     kubectl get nodes
 
     ```
@@ -97,7 +97,7 @@ Configure the Upstream for AKS Cluster2.
 1. Using kubectl, get the Nodepool nodes for AKS Cluster2: (You can also find these in your Azure Portal - AKS Nodepool definitions.)
 
     ```bash
-    kubectl use-context n4a-aks2
+    kubectl config use-context n4a-aks2
     kubectl get nodes
 
     ```
