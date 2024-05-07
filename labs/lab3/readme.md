@@ -1,4 +1,4 @@
-#  AKS / Nginx Ingress Controller Deployment 
+# AKS / Nginx Ingress Controller Deployment
 
 ## Introduction
 
