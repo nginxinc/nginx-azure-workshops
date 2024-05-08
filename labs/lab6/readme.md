@@ -189,7 +189,7 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 
 1. From the left pane, click on `NGINX certificates` under `Settings` and then click on the `+ Add certificate` button to add your self signed certificate that you created in previous section.
 
-    ![NGINX Certificates](media/n4a_cert_screen.png)
+    ![NGINX Certificates](media/lab6_n4a_cert_screen.png)
 
 1. Within the `Add Certificate` pane, fill in below details:
     - **Preferred name:** Any unique name for the certificate (eg. n4a-cert)
@@ -250,7 +250,7 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 1. Using your terminal, try to run the below curl command
 
     ```bash
-    curl https://cafe.example.com
+    curl -I https://cafe.example.com
     ```
 
     ```bash
@@ -266,25 +266,34 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 1. Try again now with a `-k` flag added to curl
 
     ```bash
-    curl -k https://cafe.example.com
+    curl -k -I https://cafe.example.com
     ```
 
-    << Copy sample output once cafe upstream has been added >>
+    ```bash
+    ##Sample Output##
+    HTTP/1.1 200 OK
+    Date: Wed, 08 May 2024 15:51:24 GMT
+    Content-Type: text/html; charset=utf-8
+    Connection: keep-alive
+    Expires: Wed, 08 May 2024 15:51:23 GMT
+    Cache-Control: no-cache
+    X-Proxy-Pass: cafe_nginx
+    ```
 
 1. Now try it with a browser, go to https://cafe.example.com. YIKES - what's this?? Most modern browsers will display an **Error or Security Warning**:
 
-    ![Browser Cert Invalid](media/browser_cert_invalid.png)
+    ![Browser Cert Invalid](media/lab6_browser_cert_invalid.png)
 
 1. You can use browser's built-in certificate viewer to look at the details of the TLS certificate that was sent from NGINX to your browser. In address bar, click on the `Not Secure` icon, then click on `Certificate is not valid`. This will display the certificate. You can verify looking at the `Comman Name` field that this is the same certificate that you provided to NGINX for Azure resource.
 
-    ![Browser Cert Details](media/browser_cert_details.png)
+    ![Browser Cert Details](media/lab6_browser_cert_details.png)
 
 1. Within the browser, close the Certificate Viewer, click on the `Advanced` button, and then click on `Proceed to cafe.example.com (unsafe)` link, to bypass the warning and continue.
    > CAUTION:  Ignoring Browser Warnings is **Dangerous**, only Ignore these warnings if you are 100% sure it is safe to proceed!!
 
 1. After you safely Proceed, you should see the cafe.example.com output as below
 
-    << Add output screenshot once cafe upstream has been added >>
+    ![Browser success](media/lab6_browser_success.png)
 
 <br/>
 
