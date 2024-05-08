@@ -32,8 +32,9 @@ By the end of the lab you will be able to:
 
     ```bash
     ## Set environment variable
-    MY_RESOURCEGROUP=s.dutta-workshop
-    MY_KEYVAULT=n4a-keyvault-s.dutta
+    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_INITIALS=sdutta
+    export MY_KEYVAULT=n4a-keyvault-$MY_INITIALS
     ```
 
     Once the environment variables are all set, run below command to create the key vault resource
@@ -45,10 +46,72 @@ By the end of the lab you will be able to:
     --enable-rbac-authorization false
     ```
 
-2. The above command should provide a json output. If you look at its content then it should have a `provisioningState` key with `Succeeded` as it value. This field is an easy way to validate the command successfully provisioned the resource.
+    ```bash
+    ##Sample Output##
+    {
+    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.KeyVault/vaults/n4a-keyvault-sdutta",
+    "location": "centralus",
+    "name": "n4a-keyvault-sdutta",
+    "properties": {
+        "accessPolicies": [
+        {
+            "applicationId": null,
+            "objectId": "xxxx-xxxx-xxxx-xxxx-xxxx",
+            "permissions": {
+            "certificates": [
+                "all"
+            ],
+            "keys": [
+                "all"
+            ],
+            "secrets": [
+                "all"
+            ],
+            "storage": [
+                "all"
+            ]
+            },
+            "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx"
+        }
+        ],
+        "createMode": null,
+        "enablePurgeProtection": null,
+        "enableRbacAuthorization": false,
+        "enableSoftDelete": true,
+        "enabledForDeployment": false,
+        "enabledForDiskEncryption": null,
+        "enabledForTemplateDeployment": null,
+        "hsmPoolResourceId": null,
+        "networkAcls": null,
+        "privateEndpointConnections": null,
+        "provisioningState": "Succeeded",
+        "publicNetworkAccess": "Enabled",
+        "sku": {
+        "family": "A",
+        "name": "standard"
+        },
+        "softDeleteRetentionInDays": 90,
+        "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
+        "vaultUri": "https://n4a-keyvault-sdutta.vault.azure.net/"
+    },
+    "resourceGroup": "s.dutta-workshop",
+    "systemData": {
+        "createdAt": "2024-05-08T12:51:45.338000+00:00",
+        "createdBy": "<YOUR EMAIL ID>",
+        "createdByType": "User",
+        "lastModifiedAt": "2024-05-08T12:51:45.338000+00:00",
+        "lastModifiedBy": "<YOUR EMAIL ID>",
+        "lastModifiedByType": "User"
+    },
+    "tags": {},
+    "type": "Microsoft.KeyVault/vaults"
+    }
+    ```
 
-3. Next you would provide permissions to access this keyvault to the user assigned managed identity that you created while creating NGINX for Azure resource.
-4. Copy the `PrincipalID` of the user identity into an environment variable using below command.
+    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
+
+2. Next you would provide permissions to access this keyvault to the user assigned managed identity that you created while creating NGINX for Azure resource.
+3. Copy the `PrincipalID` of the user identity into an environment variable using below command.
 
     ```bash
     ## Set environment variable
@@ -59,7 +122,7 @@ By the end of the lab you will be able to:
     --output tsv)
     ```
 
-5. Now assign GET secrets and GET certificates permission to this user assigned managed identity for your keyvault using below command.
+4. Now assign GET secrets and GET certificates permission to this user assigned managed identity for your keyvault using below command.
 
     ```bash
     az keyvault set-policy \
@@ -69,29 +132,54 @@ By the end of the lab you will be able to:
     --object-id $MY_PRINCIPALID
     ```
 
+    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully set the policy.
+
 ### Create a self-signed TLS certificate
 
 1. In this section, you will create a self-signed certificate using the Azure CLI.
 
-   **NOTE:** It should be clearly understood, that Self-signed certificates are exactly what the name suggest - they are created and signed by you or someone else. **They are not signed by any official Certificate Authority**, so they are not recommended for any use other than testing in lab exercises within this workshop. Most Modern Internet Browsers will display Security Warnings when they receive a Self-Signed certificate from a webserver. In some environments, the Browser may actually block access completely. So use Self-signed certificates with **CAUTION**.
+   >**NOTE:** It should be clearly understood, that Self-signed certificates are exactly what the name suggest - they are created and signed by you or someone else. **They are not signed by any official Certificate Authority**, so they are not recommended for any use other than testing in lab exercises within this workshop. Most Modern Internet Browsers will display Security Warnings when they receive a Self-Signed certificate from a webserver. In some environments, the Browser may actually block access completely. So use Self-signed certificates with **CAUTION**.
 
 2. Create a self-signed certificate by running the below command.
+
+    > Make sure your Terminal is the `nginx-azure-workshops/labs` directory before running the below command.
 
     ```bash
     az keyvault certificate create \
     --vault-name $MY_KEYVAULT \
     --name n4a-cert \
-    --policy @labs/lab6/self-certificate-policy.json
+    --policy @lab6/self-certificate-policy.json
     ```
 
-3. The above command should provide a json output. If you look at its content then it should have a `status` key with `completed` as it value. This field is an easy way to validate the command successfully created the certificate.
+    ```bash
+    ##Sample Output##
+    {
+    "cancellationRequested": false,
+    "csr": "<Your Certificate Signing Request Data>",
+    "error": null,
+    "id": "https://n4a-keyvault-sdutta.vault.azure.net/certificates/n4a-cert/pending",
+    "issuerParameters": {
+        "certificateTransparency": null,
+        "certificateType": null,
+        "name": "Self"
+    },
+    "name": "n4a-cert",
+    "requestId": "9e3abe3b0977420cba1733c326fe26e5",
+    "status": "completed",
+    "statusDetails": null,
+    "target": "https://n4a-keyvault-sdutta.vault.azure.net/certificates/n4a-cert"
+    }
+    ```
 
-4. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault` key vault resource.
+    > **NOTE:** Within the output json you should have a `"status": "completed"` field which validates the command successfully created the certificate.
 
-5. Within the keyvault resources window, click on `Certificates` from the left pane. You should see a self-signed certificate named `n4a-cert` within the certificates pane.
-    ![KeyVault Screen](media/keyvault_screen.png)
+3. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault-$MY_INITIALS` key-vault resource.
 
-6. Click on the newly created certificate and then open up `Issuance Policy` tab for more details on the certificate. You will use this certificate with NGINX for Azure resource to listen for HTTPS traffic.
+4. Within the keyvault resources window, click on `Certificates` under `Objects` from the left pane. You should see a self-signed certificate named `n4a-cert` within the certificates pane.
+    ![KeyVault Screen](media/lab6_keyvault_screen.png)
+
+5. Click on the newly created certificate and then open up `Issuance Policy` tab for more details on the certificate. You will use this certificate with NGINX for Azure resource to listen for HTTPS traffic.
+    ![Certificate Issuance](media/lab6_certificate_issuance.png)
 
 ### Configure NGINX for Azure to listen listen and terminate TLS traffic
 
