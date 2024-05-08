@@ -4,8 +4,6 @@
 
 In this lab, you will create a new key-vault resource that would be storing self-signed certificates. You will then configure Nginx for Azure to listen for https traffic and then terminate TLS before proxying and load balancing back to the backend system.
 
-< Lab specific Images here, in the /media sub-folder >
-
 NGINX aaS | Docker
 :-------------------------:|:-------------------------:
 ![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)
