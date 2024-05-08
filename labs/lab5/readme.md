@@ -1,9 +1,8 @@
-#  NGINX Load Balancing / Reverse Proxy 
+# NGINX Load Balancing / Reverse Proxy
 
 ## Introduction
 
 In this lab, you will configure Nginx4Azure to Proxy and Load Balance several different backend systems, including Nginx Ingress Controllers in AKS, and a Windows VM.  You will create and configure the needed Nginx config files, and then verify access to these systems.  The Docker containers, VMs, or AKS Pods are running simple websites that represent web applications.  You will also configure and load balance traffic to a Redis in-memory cache running in the AKS cluster. The AKS Clusters and Nginx Ingress Controllers provide access to these various K8s workloads.
-
 
 NGINX aaS | AKS | Nginx Ingress | Redis
 :-----------------:|:-----------------:|:-----------------:|:-----------------:
@@ -49,13 +48,13 @@ Configure the Upstream for AKS Cluster2.
     ```bash
     kubectl config use-context n4a-aks1
     kubectl get nodes
-
     ```
 
     ```bash
-    #Sample output
-    aks-userpool-76919110-vmss000001  #aks1 node1:
-    aks-userpool-76919110-vmss000002  #aks1 node2:
+    ##Sample Output##
+    aks-userpool-76919110-vmss000001  #aks1 node1
+    aks-userpool-76919110-vmss000002  #aks1 node2
+    aks-userpool-76919110-vmss000003  #aks1 node3
 
     ```
 
@@ -75,8 +74,9 @@ Configure the Upstream for AKS Cluster2.
     # from nginx-ingress NodePort Service / aks Node names
     # Note: change servers to match
     #
-    server aks-userpool-76919110-vmss000001:32080;    #aks1 node1:
-    server aks-userpool-76919110-vmss000002:32080;    #aks1 node2:
+    server aks-userpool-76919110-vmss000001:32080;    #aks1 node1
+    server aks-userpool-76919110-vmss000002:32080;    #aks1 node2
+    server aks-userpool-76919110-vmss000003:32080;    #aks1 node3
 
     keepalive 32;
 
@@ -103,10 +103,11 @@ Configure the Upstream for AKS Cluster2.
     ```
 
     ```bash
-    #Sample output
-    aks-nodepool1-19485366-vmss000003   #aks2 node1:
-    aks-nodepool1-19485366-vmss000004   #aks2 node2:
-    aks-nodepool1-19485366-vmss000005   #aks2 node3:
+    ##Sample Output##
+    aks-nodepool1-19485366-vmss000003   #aks2 node1
+    aks-nodepool1-19485366-vmss000004   #aks2 node2
+    aks-nodepool1-19485366-vmss000005   #aks2 node3
+    aks-nodepool1-19485366-vmss000006   #aks2 node4
 
     ```
 
@@ -124,9 +125,10 @@ Configure the Upstream for AKS Cluster2.
     # from nginx-ingress NodePort Service / aks Node names
     # Note: change servers to match
     #
-    server aks-nodepool1-19485366-vmss000003:32080;    #aks2 node1:
-    server aks-nodepool1-19485366-vmss000004:32080;    #aks2 node2:
-    server aks-nodepool1-19485366-vmss000005:32080;    #aks2 node3: 
+    server aks-nodepool1-19485366-vmss000003:32080;    #aks2 node1
+    server aks-nodepool1-19485366-vmss000004:32080;    #aks2 node2
+    server aks-nodepool1-19485366-vmss000005:32080;    #aks2 node3 
+    server aks-nodepool1-19485366-vmss000006:32080;    #aks2 node4
 
     keepalive 32;
 
@@ -134,7 +136,7 @@ Configure the Upstream for AKS Cluster2.
 
     ```
 
-Note, there are 3 upstreams, matching the 3 Nodepool nodes in AKS2 cluster.
+Note, there are 4 upstreams, matching the 4 Nodepool nodes in AKS2 cluster.
 
 Submit your Nginx Configuration.  If you have the Server name:port correct, Nginx4Azure will validate and return a Success message.
 
@@ -180,9 +182,9 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
     curl -I http://cafe.example.com/coffee
     
     ```
-    
+
     ```bash
-    #Sample output
+    ##Sample Output##
     HTTP/1.1 200 OK
     Server: N4A-1.25.1-cakker
     Date: Fri, 05 Apr 2024 20:08:24 GMT
@@ -209,7 +211,7 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
     ```
 
     ```bash
-    #Sample output
+    ##Sample Output##
     NAME                              READY   STATUS    RESTARTS   AGE
     coffee-869854dd6-bs8t6            1/1     Running   0          3d3h
     coffee-869854dd6-wq9lp            1/1     Running   0          3d3h
@@ -225,7 +227,7 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
     ```
 
     ```bash
-    #Sample output
+    ##Sample Output##
     Name:              coffee-svc
     Namespace:         default
     Labels:            <none>
@@ -260,7 +262,7 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
     ```
 
     ```bash
-    #Sample output
+    ##Sample Output##
     Running 1m test @ http://cafe.example.com/coffee
     4 threads and 200 connections
     Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -341,8 +343,10 @@ Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
     ```
 
+Then list the Pods:
+
     ```bash
-    #Sample output
+    ##Sample Output##
     coffee-869854dd6-fchxm   1/1     Running   0          3d3h
     coffee-869854dd6-nn5d4   1/1     Running   0          3d3h
     coffee-869854dd6-zqbbv   1/1     Running   0          3d3h
@@ -358,7 +362,7 @@ Repeat the last procedure, to test access to the AKS2 Cluster and pods.
     ```
 
     ```bash
-    #Sample output
+    ##Sample Output##
     Name:              coffee-svc
     Namespace:         default
     Labels:            <none>
@@ -402,8 +406,9 @@ You can also see this list, using the Nginx Plus Dashboard for the Ingress Contr
     docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s http://cafe.example.com/coffee
 
     ```
+
     ```bash
-    #Sample output
+    ##Sample Output##
     Running 1m test @ http://cafe.example.com/coffee
     4 threads and 200 connections
     Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -802,7 +807,7 @@ In this exerices, you will use Nginx for Azure to expose the `Redis Leader Servi
     ```
 
     ```bash
-    #Sample output
+    ##Sample Output##
     {
     "access": "Allow",
     "description": "Allow Redis traffic",
@@ -894,7 +899,7 @@ redis-benchmark -h redis.example.com -c 50 -n 10000 -q --csv
 ```
 
 ```bash
-#Sample output
+##Sample Output##
 "test","rps","avg_latency_ms","min_latency_ms","p50_latency_ms","p95_latency_ms","p99_latency_ms","max_latency_ms"
 "PING_INLINE","1882.53","26.406","20.720","24.847","29.263","81.599","268.287"
 "PING_MBULK","1875.47","26.478","20.880","24.799","29.359","91.647","176.255"
@@ -997,7 +1002,7 @@ kubectl get svc -n nginx-ingress
 ```
 
 ```bash
-#Sample output
+##Sample Output##
 NAME                     TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                                                                   AGE
 dashboard-svc            ClusterIP   10.0.58.119   <none>        9000/TCP                                                                  24d
 nginx-ingress            NodePort    10.0.169.30   <none>        80:32080/TCP,443:32443/TCP,6379:32379/TCP,6380:32380/TCP,9000:32090/TCP   24d
@@ -1013,7 +1018,7 @@ kubectl describe svc nginx-ingress-headless -n nginx-ingress
 ```
 
 ```bash
-#Sample output
+##Sample Output##
 Name:              nginx-ingress-headless
 Namespace:         nginx-ingress
 Labels:            <none>
@@ -1043,7 +1048,7 @@ kubectl describe pod $NIC -n nginx-ingress |grep IP
 ```
 
 ```bash
-#Sample output
+##Sample Output##
 IP:               172.16.4.240
 IPs:
   IP:           172.16.4.240
@@ -1060,7 +1065,7 @@ kubectl describe svc kube-dns -n kube-system
 ```
 
 ```bash
-#Sample output
+##Sample Output##
 Name:              kube-dns
 Namespace:         kube-system
 Labels:            addonmanager.kubernetes.io/mode=Reconcile
@@ -1178,7 +1183,7 @@ kubectl get pods -n nginx-ingress
 ```
 
 ```bash
-#Sample output
+##Sample Output##
 NAME                             READY   STATUS    RESTARTS   AGE
 nginx-ingress-69b95fb8ff-n8mn8   1/1     Running   0          16s
 nginx-ingress-69b95fb8ff-ntdwz   1/1     Running   0          2d17h
@@ -1194,7 +1199,7 @@ kubectl describe svc nginx-ingress-headless -n nginx-ingress
 ```
 
 ```bash
-#Sample output
+##Sample Output##
 Name:              nginx-ingress-headless
 Namespace:         nginx-ingress
 Labels:            <none>
