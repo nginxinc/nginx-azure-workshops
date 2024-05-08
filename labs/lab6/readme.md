@@ -195,15 +195,20 @@ Now that you have a self signed TLS certificate for testing, you will configure 
     - **Preferred name:** Any unique name for the certificate (eg. n4a-cert)
     - **Certificate path:** Logical path where the certificate would recide. (eg. /etc/nginx/cert/n4a-cert.cert)
     - **Key path:** Logical path where the key would recide. (eg. /etc/nginx/cert/n4a-cert.key)
-    - **Key vault:** Select your key vault (eg. n4a-keyvault)
-    - **Certificate name:** Select a certificate (eg. n4a-cert)
+        ![add certificate1](media/lab6_add_certificate1.png)
+    - Click on the `Select Certificate` button and then fill in below certificate details. Once done click `Select`
+      - **Key vault:** Select your key vault (eg. n4a-keyvault-sdutta)
+      - **Certificate name:** Select a certificate (eg. n4a-cert)
+
+        ![add certificate2](media/lab6_add_certificate2.png)
   
-    Once all the fields have been filled, click on `Save` to save the certificate within NGINX for Azure.
-    ![add certificate](media/add_certificate.png)
+1. Once all the fields have been filled, click on `Add Certificate` to save the certificate within NGINX for Azure.
+
+    ![add certificate save](media/lab6_add_certificate_save.png)
 
 1. You should see your certificate in a `Succeeded` status if the values that you entered in previous step was all correct.
 
-    ![add certificate success](media/add_certificate_sucess.png)
+    ![add certificate success](media/lab6_add_certificate_sucess.png)
 
 1. Now you will modify your `cafe.example.com.conf` file that you created in `lab2` to set up cafe.example.com as a HTTPS server. First you will add the `ssl` parameter to the `listen` directive in the `server` block. You will then specify the server certificate and private key file within the configuration to point to the certificate that you added in previous steps.
 
@@ -219,8 +224,8 @@ Now that you have a self signed TLS certificate for testing, you will configure 
         server_name cafe.example.com;   # Set hostname to match in request
         status_zone cafe.example.com;   # Metrics zone name
 
-        ssl_certificate /etc/nginx/certs/n4a-cert.cert;
-        ssl_certificate_key /etc/nginx/certs/n4a-cert.key;
+        ssl_certificate /etc/nginx/cert/n4a-cert.cert;
+        ssl_certificate_key /etc/nginx/cert/n4a-cert.key;
 
         snip...
     } 
