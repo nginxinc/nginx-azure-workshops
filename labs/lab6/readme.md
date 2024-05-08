@@ -4,8 +4,6 @@
 
 In this lab, you will create a new key-vault resource that would be storing self-signed certificates. You will then configure Nginx for Azure to listen for https traffic and then terminate TLS before proxying and load balancing back to the backend system.
 
-< Lab specific Images here, in the /media sub-folder >
-
 NGINX aaS | Docker
 :-------------------------:|:-------------------------:
 ![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)
@@ -32,8 +30,9 @@ By the end of the lab you will be able to:
 
     ```bash
     ## Set environment variable
-    MY_RESOURCEGROUP=s.dutta-workshop
-    MY_KEYVAULT=n4a-keyvault-s.dutta
+    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_INITIALS=sdutta
+    export MY_KEYVAULT=n4a-keyvault-$MY_INITIALS
     ```
 
     Once the environment variables are all set, run below command to create the key vault resource
@@ -45,10 +44,72 @@ By the end of the lab you will be able to:
     --enable-rbac-authorization false
     ```
 
-2. The above command should provide a json output. If you look at its content then it should have a `provisioningState` key with `Succeeded` as it value. This field is an easy way to validate the command successfully provisioned the resource.
+    ```bash
+    ##Sample Output##
+    {
+    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.KeyVault/vaults/n4a-keyvault-sdutta",
+    "location": "centralus",
+    "name": "n4a-keyvault-sdutta",
+    "properties": {
+        "accessPolicies": [
+        {
+            "applicationId": null,
+            "objectId": "xxxx-xxxx-xxxx-xxxx-xxxx",
+            "permissions": {
+            "certificates": [
+                "all"
+            ],
+            "keys": [
+                "all"
+            ],
+            "secrets": [
+                "all"
+            ],
+            "storage": [
+                "all"
+            ]
+            },
+            "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx"
+        }
+        ],
+        "createMode": null,
+        "enablePurgeProtection": null,
+        "enableRbacAuthorization": false,
+        "enableSoftDelete": true,
+        "enabledForDeployment": false,
+        "enabledForDiskEncryption": null,
+        "enabledForTemplateDeployment": null,
+        "hsmPoolResourceId": null,
+        "networkAcls": null,
+        "privateEndpointConnections": null,
+        "provisioningState": "Succeeded",
+        "publicNetworkAccess": "Enabled",
+        "sku": {
+        "family": "A",
+        "name": "standard"
+        },
+        "softDeleteRetentionInDays": 90,
+        "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
+        "vaultUri": "https://n4a-keyvault-sdutta.vault.azure.net/"
+    },
+    "resourceGroup": "s.dutta-workshop",
+    "systemData": {
+        "createdAt": "2024-05-08T12:51:45.338000+00:00",
+        "createdBy": "<YOUR EMAIL ID>",
+        "createdByType": "User",
+        "lastModifiedAt": "2024-05-08T12:51:45.338000+00:00",
+        "lastModifiedBy": "<YOUR EMAIL ID>",
+        "lastModifiedByType": "User"
+    },
+    "tags": {},
+    "type": "Microsoft.KeyVault/vaults"
+    }
+    ```
 
-3. Next you would provide permissions to access this keyvault to the user assigned managed identity that you created while creating NGINX for Azure resource.
-4. Copy the `PrincipalID` of the user identity into an environment variable using below command.
+    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
+
+2. Next you would provide permissions to access this keyvault to the user assigned managed identity that you created while creating NGINX for Azure resource.
+3. Copy the `PrincipalID` of the user identity into an environment variable using below command.
 
     ```bash
     ## Set environment variable
@@ -59,7 +120,7 @@ By the end of the lab you will be able to:
     --output tsv)
     ```
 
-5. Now assign GET secrets and GET certificates permission to this user assigned managed identity for your keyvault using below command.
+4. Now assign GET secrets and GET certificates permission to this user assigned managed identity for your keyvault using below command.
 
     ```bash
     az keyvault set-policy \
@@ -69,29 +130,56 @@ By the end of the lab you will be able to:
     --object-id $MY_PRINCIPALID
     ```
 
+    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully set the policy.
+
 ### Create a self-signed TLS certificate
 
 1. In this section, you will create a self-signed certificate using the Azure CLI.
 
-   **NOTE:** It should be clearly understood, that Self-signed certificates are exactly what the name suggest - they are created and signed by you or someone else. **They are not signed by any official Certificate Authority**, so they are not recommended for any use other than testing in lab exercises within this workshop. Most Modern Internet Browsers will display Security Warnings when they receive a Self-Signed certificate from a webserver. In some environments, the Browser may actually block access completely. So use Self-signed certificates with **CAUTION**.
+   >**NOTE:** It should be clearly understood, that Self-signed certificates are exactly what the name suggest - they are created and signed by you or someone else. **They are not signed by any official Certificate Authority**, so they are not recommended for any use other than testing in lab exercises within this workshop. Most Modern Internet Browsers will display Security Warnings when they receive a Self-Signed certificate from a webserver. In some environments, the Browser may actually block access completely. So use Self-signed certificates with **CAUTION**.
 
 2. Create a self-signed certificate by running the below command.
+
+    > **NOTE:** Make sure your Terminal is the `nginx-azure-workshops/labs` directory before running the below command.
 
     ```bash
     az keyvault certificate create \
     --vault-name $MY_KEYVAULT \
     --name n4a-cert \
-    --policy @labs/lab6/self-certificate-policy.json
+    --policy @lab6/self-certificate-policy.json
     ```
 
-3. The above command should provide a json output. If you look at its content then it should have a `status` key with `completed` as it value. This field is an easy way to validate the command successfully created the certificate.
+    ```bash
+    ##Sample Output##
+    {
+    "cancellationRequested": false,
+    "csr": "<Your Certificate Signing Request Data>",
+    "error": null,
+    "id": "https://n4a-keyvault-sdutta.vault.azure.net/certificates/n4a-cert/pending",
+    "issuerParameters": {
+        "certificateTransparency": null,
+        "certificateType": null,
+        "name": "Self"
+    },
+    "name": "n4a-cert",
+    "requestId": "9e3abe3b0977420cba1733c326fe26e5",
+    "status": "completed",
+    "statusDetails": null,
+    "target": "https://n4a-keyvault-sdutta.vault.azure.net/certificates/n4a-cert"
+    }
+    ```
 
-4. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault` key vault resource.
+    > **NOTE:** Within the output json you should have a `"status": "completed"` field which validates the command successfully created the certificate.
 
-5. Within the keyvault resources window, click on `Certificates` from the left pane. You should see a self-signed certificate named `n4a-cert` within the certificates pane.
-    ![KeyVault Screen](media/keyvault_screen.png)
+3. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault-$MY_INITIALS` key-vault resource.
 
-6. Click on the newly created certificate and then open up `Issuance Policy` tab for more details on the certificate. You will use this certificate with NGINX for Azure resource to listen for HTTPS traffic.
+4. Within the keyvault resources window, click on `Certificates` under `Objects` from the left pane. You should see a self-signed certificate named `n4a-cert` within the certificates pane.
+
+    ![KeyVault Screen](media/lab6_keyvault_screen.png)
+
+5. Click on the newly created certificate and then open up `Issuance Policy` tab for more details on the certificate. You will use this certificate with NGINX for Azure resource to listen for HTTPS traffic.
+
+    ![Certificate Issuance](media/lab6_certificate_issuance.png)
 
 ### Configure NGINX for Azure to listen listen and terminate TLS traffic
 
@@ -101,21 +189,28 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 
 1. From the left pane, click on `NGINX certificates` under `Settings` and then click on the `+ Add certificate` button to add your self signed certificate that you created in previous section.
 
-    ![NGINX Certificates](media/n4a_cert_screen.png)
+    ![NGINX Certificates](media/lab6_n4a_cert_screen.png)
 
 1. Within the `Add Certificate` pane, fill in below details:
     - **Preferred name:** Any unique name for the certificate (eg. n4a-cert)
     - **Certificate path:** Logical path where the certificate would recide. (eg. /etc/nginx/cert/n4a-cert.cert)
     - **Key path:** Logical path where the key would recide. (eg. /etc/nginx/cert/n4a-cert.key)
-    - **Key vault:** Select your key vault (eg. n4a-keyvault)
-    - **Certificate name:** Select a certificate (eg. n4a-cert)
+
+        ![add certificate1](media/lab6_add_certificate1.png)
+
+    - Click on the `Select Certificate` button and then fill in below certificate details. Once done click `Select`
+      - **Key vault:** Select your key vault (eg. n4a-keyvault-sdutta)
+      - **Certificate name:** Select a certificate (eg. n4a-cert)
+
+        ![add certificate2](media/lab6_add_certificate2.png)
   
-    Once all the fields have been filled, click on `Save` to save the certificate within NGINX for Azure.
-    ![add certificate](media/add_certificate.png)
+1. Once all the fields have been filled, click on `Add Certificate` to save the certificate within NGINX for Azure.
+
+    ![add certificate save](media/lab6_add_certificate_save.png)
 
 1. You should see your certificate in a `Succeeded` status if the values that you entered in previous step was all correct.
 
-    ![add certificate success](media/add_certificate_sucess.png)
+    ![add certificate success](media/lab6_add_certificate_sucess.png)
 
 1. Now you will modify your `cafe.example.com.conf` file that you created in `lab2` to set up cafe.example.com as a HTTPS server. First you will add the `ssl` parameter to the `listen` directive in the `server` block. You will then specify the server certificate and private key file within the configuration to point to the certificate that you added in previous steps.
 
@@ -131,8 +226,8 @@ Now that you have a self signed TLS certificate for testing, you will configure 
         server_name cafe.example.com;   # Set hostname to match in request
         status_zone cafe.example.com;   # Metrics zone name
 
-        ssl_certificate /etc/nginx/certs/n4a-cert.cert;
-        ssl_certificate_key /etc/nginx/certs/n4a-cert.key;
+        ssl_certificate /etc/nginx/cert/n4a-cert.cert;
+        ssl_certificate_key /etc/nginx/cert/n4a-cert.key;
 
         snip...
     } 
@@ -157,7 +252,7 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 1. Using your terminal, try to run the below curl command
 
     ```bash
-    curl https://cafe.example.com
+    curl -I https://cafe.example.com
     ```
 
     ```bash
@@ -173,25 +268,34 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 1. Try again now with a `-k` flag added to curl
 
     ```bash
-    curl -k https://cafe.example.com
+    curl -k -I https://cafe.example.com
     ```
 
-    << Copy sample output once cafe upstream has been added >>
+    ```bash
+    ##Sample Output##
+    HTTP/1.1 200 OK
+    Date: Wed, 08 May 2024 15:51:24 GMT
+    Content-Type: text/html; charset=utf-8
+    Connection: keep-alive
+    Expires: Wed, 08 May 2024 15:51:23 GMT
+    Cache-Control: no-cache
+    X-Proxy-Pass: cafe_nginx
+    ```
 
 1. Now try it with a browser, go to https://cafe.example.com. YIKES - what's this?? Most modern browsers will display an **Error or Security Warning**:
 
-    ![Browser Cert Invalid](media/browser_cert_invalid.png)
+    ![Browser Cert Invalid](media/lab6_browser_cert_invalid.png)
 
 1. You can use browser's built-in certificate viewer to look at the details of the TLS certificate that was sent from NGINX to your browser. In address bar, click on the `Not Secure` icon, then click on `Certificate is not valid`. This will display the certificate. You can verify looking at the `Comman Name` field that this is the same certificate that you provided to NGINX for Azure resource.
 
-    ![Browser Cert Details](media/browser_cert_details.png)
+    ![Browser Cert Details](media/lab6_browser_cert_details.png)
 
 1. Within the browser, close the Certificate Viewer, click on the `Advanced` button, and then click on `Proceed to cafe.example.com (unsafe)` link, to bypass the warning and continue.
    > CAUTION:  Ignoring Browser Warnings is **Dangerous**, only Ignore these warnings if you are 100% sure it is safe to proceed!!
 
 1. After you safely Proceed, you should see the cafe.example.com output as below
 
-    << Add output screenshot once cafe upstream has been added >>
+    ![Browser success](media/lab6_browser_success.png)
 
 <br/>
 
