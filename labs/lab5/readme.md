@@ -41,7 +41,7 @@ By the end of the lab you will be able to:
 
 This exercise will create Nginx Upstream configurations for the AKS Clusters.  You will use the Nodepool node names, and you will add the port number `32080` from the NodePort of the Nginx Ingress Controllers running in AKS cluster 1, and AKS Cluster 2.  These were previously deployed and configured in a previous lab.  Now the fun part, sending traffic to them!
 
-Configure the Upstream for AKS Cluster2.
+Configure the Upstream for AKS Cluster1.
 
 1. Using kubectl, get the Nodepool nodes for AKS Cluster1:  (You can also find these in your Azure Portal - AKS Nodepool definitions.)
 
@@ -67,18 +67,18 @@ Configure the Upstream for AKS Cluster2.
     # AKS1 nginx ingress upstreams
     #
     upstream aks1_ingress {
-    zone aks1_ingress 256k;
+      zone aks1_ingress 256k;
 
-    least_time last_byte;
+      least_time last_byte;
     
-    # from nginx-ingress NodePort Service / aks Node names
-    # Note: change servers to match
-    #
-    server aks-userpool-76919110-vmss000001:32080;    #aks1 node1
-    server aks-userpool-76919110-vmss000002:32080;    #aks1 node2
-    server aks-userpool-76919110-vmss000003:32080;    #aks1 node3
+      # from nginx-ingress NodePort Service / aks Node names
+      # Note: change servers to match
+      #
+      server aks-userpool-76919110-vmss000001:32080;    #aks1 node1
+      server aks-userpool-76919110-vmss000002:32080;    #aks1 node2
+      server aks-userpool-76919110-vmss000003:32080;    #aks1 node3
 
-    keepalive 32;
+      keepalive 32;
 
     }
 
@@ -118,19 +118,19 @@ Configure the Upstream for AKS Cluster2.
     # AKS2 nginx ingress upstreams
     #
     upstream aks2_ingress {
-    zone aks2_ingress 256k;
+      zone aks2_ingress 256k;
 
-    least_time last_byte;
+      least_time last_byte;
     
-    # from nginx-ingress NodePort Service / aks Node names
-    # Note: change servers to match
-    #
-    server aks-nodepool1-19485366-vmss000003:32080;    #aks2 node1
-    server aks-nodepool1-19485366-vmss000004:32080;    #aks2 node2
-    server aks-nodepool1-19485366-vmss000005:32080;    #aks2 node3 
-    server aks-nodepool1-19485366-vmss000006:32080;    #aks2 node4
+      # from nginx-ingress NodePort Service / aks Node names
+      # Note: change servers to match
+      #
+      server aks-nodepool1-19485366-vmss000003:32080;    #aks2 node1
+      server aks-nodepool1-19485366-vmss000004:32080;    #aks2 node2
+      server aks-nodepool1-19485366-vmss000005:32080;    #aks2 node3 
+      server aks-nodepool1-19485366-vmss000006:32080;    #aks2 node4
 
-    keepalive 32;
+      keepalive 32;
 
     }
 
@@ -141,6 +141,81 @@ Note, there are 4 upstreams, matching the 4 Nodepool nodes in AKS2 cluster.
 Submit your Nginx Configuration.  If you have the Server name:port correct, Nginx4Azure will validate and return a Success message.
 
 **Warning:**  Same warning applies to Upstream configuration for AKS2, *if you make any Nodepool changes, Nginx must be updated to match those changes.*
+
+### Update Nginx Config and add HTTP/1.1 Keepalive
+
+In order for Nginx 4 Azure and Nginx Ingress to work correctly, the HTTP Host Headers, and perhaps other headers, will need to be passed.  This is done by changing the HTTP Version to 1.1, so the Host Header can be included.
+
+1. Inspect the `lab5/includes/keepalive.conf`.  This is where the HTTP Protocol and Headers are set, for proxied traffic.  This is a common requirement, so it is Shared among all the different Nginx configurations.
+
+    Using the Nginx for Azure console, create a new file, `/etc/nginx/includes/keepalive.conf`.  Use the example provided, just copy/paste.
+
+    ```nginx
+    # Nginx 4 Azure - Mar 2024
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    # Default is HTTP/1.0 to upstreams, keepalives is only enabled for HTTP/1.1
+    proxy_http_version 1.1;
+
+    # Set the Connection header to empty 
+    proxy_set_header Connection "";
+
+    # Host request header field, or the server name matching a request
+    proxy_set_header Host $host;
+
+    ```
+
+    Submit your Nginx Configuration.
+
+1. Inspect the `lab5/nginx.conf` file.  Uncomment the `include` directive near the bottom, as shown:
+
+```nginx
+# Nginx 4 Azure - Default - Updated Nginx.conf
+# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+#
+user nginx;
+worker_processes auto;
+worker_rlimit_nofile 8192;
+pid /run/nginx/nginx.pid;
+
+events {
+    worker_connections 4000;
+}
+
+error_log /var/log/nginx/error.log error;
+
+http {
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+                      
+    access_log off;
+    server_tokens "";
+    server {
+        listen 80 default_server;
+        server_name localhost;
+        location / {
+            # Points to a directory with a basic html index file with
+            # a "Welcome to NGINX as a Service for Azure!" page
+            root /var/www;
+            index index.html;
+        }
+    }
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/includes/*.conf;    # shared files
+   
+}
+
+# stream {
+    
+#     include /etc/nginx/stream/*.conf;          # Stream TCP nginx files
+
+# }
+
+```
+
+Submit your Nginx Configuration.
 
 ### Test Nginx 4 Azure to AKS1 Cluster Nginx Ingress Controller
 
@@ -172,7 +247,7 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
 
     ```
 
-    This changes where Nginx will `proxy_pass` the requests.  Nginx will now forward and load balance requests to your AKS1 Nginx Ingress Controller, listening on port 32080 on each AKS1 Node.  The X-Proxy-Pass Header will now show `aks1-ingress` instead of cafe-nginx.
+    This changes where Nginx will `proxy_pass` the requests.  Nginx will now proxy and load balance requests to your AKS1 Nginx Ingress Controller, listening on port 32080 on each AKS1 Node.  The X-Proxy-Pass Header will now show `aks1-ingress` instead of cafe-nginx.
 
     Submit your Nginx Configuration.
 
@@ -196,7 +271,7 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
 
     ```
 
-1. Test your change in proxy_pass with Chrome at http://cafe.example.com/coffee, hitting Refresh several times - what do you see - Docker Containers or AKS Pods?
+1. Test your change in proxy_pass with Chrome at http://cafe.example.com/coffee, hitting Refresh several times - what do you see - Docker Containers or AKS1 Pods?
     
     Cafe Docker | Cafe AKS1
     :-----------------:|:-----------------:
