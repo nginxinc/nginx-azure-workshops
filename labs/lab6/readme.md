@@ -140,7 +140,7 @@ By the end of the lab you will be able to:
 
 2. Create a self-signed certificate by running the below command.
 
-    > Make sure your Terminal is the `nginx-azure-workshops/labs` directory before running the below command.
+    > **NOTE:** Make sure your Terminal is the `nginx-azure-workshops/labs` directory before running the below command.
 
     ```bash
     az keyvault certificate create \
@@ -174,9 +174,11 @@ By the end of the lab you will be able to:
 3. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault-$MY_INITIALS` key-vault resource.
 
 4. Within the keyvault resources window, click on `Certificates` under `Objects` from the left pane. You should see a self-signed certificate named `n4a-cert` within the certificates pane.
+
     ![KeyVault Screen](media/lab6_keyvault_screen.png)
 
 5. Click on the newly created certificate and then open up `Issuance Policy` tab for more details on the certificate. You will use this certificate with NGINX for Azure resource to listen for HTTPS traffic.
+
     ![Certificate Issuance](media/lab6_certificate_issuance.png)
 
 ### Configure NGINX for Azure to listen listen and terminate TLS traffic
@@ -193,7 +195,9 @@ Now that you have a self signed TLS certificate for testing, you will configure 
     - **Preferred name:** Any unique name for the certificate (eg. n4a-cert)
     - **Certificate path:** Logical path where the certificate would recide. (eg. /etc/nginx/cert/n4a-cert.cert)
     - **Key path:** Logical path where the key would recide. (eg. /etc/nginx/cert/n4a-cert.key)
+
         ![add certificate1](media/lab6_add_certificate1.png)
+
     - Click on the `Select Certificate` button and then fill in below certificate details. Once done click `Select`
       - **Key vault:** Select your key vault (eg. n4a-keyvault-sdutta)
       - **Certificate name:** Select a certificate (eg. n4a-cert)
