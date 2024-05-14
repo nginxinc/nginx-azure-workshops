@@ -333,7 +333,8 @@ In this section, similar to how you deployed the first AKS cluster,  you will de
     export MY_AKS=n4a-aks2
     export MY_NAME=s.dutta
     export K8S_VERSION=1.27
-    export MY_SUBNET=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks1-subnet --vnet-name n4a-vnet --query id -o tsv)
+    export MY_SUBNET=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks2-subnet --vnet-name n4a-vnet --query id -o tsv)
+    
     ```
 
     ```bash
@@ -662,7 +663,7 @@ You will deploy a `Service` and a `VirtualServer` resource to provide access to 
    kubectl apply -f lab3/nodeport-static.yaml
    ```
 
-1. Verify the NodePort Service was created within first cluster:
+1. Verify the NodePort Service was created within second cluster:
 
    ```bash
    kubectl get svc nginx-ingress -n nginx-ingress
@@ -683,6 +684,8 @@ You will deploy a `Service` and a `VirtualServer` resource to provide access to 
 Being able to see your NGINX Plus Ingress Dashboards remotely will be a big help in observing your traffic metrics and patterns within each AKS cluster.  It will require only two Nginx for Azure configuration items for each cluster - a new Nginx Server block and a new Upstream block.
 
 This will be the logical network diagram for accessing the Nginx Ingress Dashboards.
+
+So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 80/443?  Yes, it will, but separating this type of monitoring traffic from production traffic is generally considered a Best Practice.  It also shows you that Nginx for Azure is able to use any port for Port Based routing, it is not limited to just ports 80 and 443 like some cloud load balancers.
 
 ![Lab3 NIC Dashboards Diagrom](media/lab3_nic-dashboards-diagram.png)
 
