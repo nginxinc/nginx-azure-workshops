@@ -2,9 +2,9 @@
 
 ## Introduction
 
-In this lab, you will build ( x,y,x ).
+In this Workshop, you will build ( x,y,x ).
 
-< Lab specific Images here, in the /media sub-folder >
+![N4A Workshop](media/n4a-workshop-diagram-r7.png)
 
 NGINX aaS | Docker
 :-------------------------:|:-------------------------:
