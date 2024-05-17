@@ -1,3 +1,6 @@
+# Nginx 4 Azure, AKS2 NIC NodePort for Redis
+# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+#
 apiVersion: v1
 kind: Service
 metadata:

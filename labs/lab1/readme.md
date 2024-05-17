@@ -4,25 +4,27 @@
 
 In this lab, you will be adding and configuring the Azure components needed for this workshop.  This will require a few network resources, a Network Security Group and a Public IP to allow incoming traffic to your NGINX for Azure workshop resource. You will also deploy NGINX for Azure resource. Then you will explore the Nginx for Azure product, as a quick Overview of what it is and how to deploy it.
 
-< Lab specific Images here, in the /media sub-folder >
+<br/>
 
-NGINX aaS | Docker
-:-------------------------:|:-------------------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![Azure](media/azure-icon.png)
+NGINX aaS for Azure |
+:-------------------------:|
+![NGINX aaS](media/nginx-azure-icon.png) 
   
+<br/>
+
 ## Learning Objectives
 
 By the end of the lab you will be able to:
 
-- Setup your Azure resource group for this workshop
+- Setup your Azure Resource Group for this workshop
 - Setup your Azure Virtual Network, Subnets and Network Security Group for inbound traffic
-- Create Public IP and user assigned managed identity to access NGINX for Azure
+- Create a Public IP and user assigned managed identity to access NGINX for Azure
 - Deploy an Nginx for Azure resource
 - Explore Nginx for Azure
 - Create an initial Nginx configuration for testing
-- Create Log Analytics workspace to collect NGINX error and access logs from NGINX for azure
+- Create Log Analytics workspace to collect NGINX error and access logs from Nginx for Azure
 
-## Pre-Requisites
+## Prerequisites
 
 - You must have an Azure account
 - You must have the Azure CLI software installed on your local system
@@ -33,7 +35,12 @@ By the end of the lab you will be able to:
 
 <br/>
 
-### Setup your Azure resource group for this workshop
+![lab1 diagram](media/lab1_diagram.png)
+Lab1 Diagram
+
+<br/>
+
+### Setup your Azure Resource group for this workshop
 
 1. In your local machine open terminal and make sure you have Azure Command Line Interface (CLI) installed by running below command.
 
@@ -45,7 +52,9 @@ By the end of the lab you will be able to:
 
 1. Create a new Azure Resource Group called `<name>-workshop` , where `<name>` is your last name (or any unique value).  This would hold all the Azure resources that you would create for this workshop.
 
-    Also you need to specify a Azure location while creating the resource group. Check out the [Azure Latency Test](https://www.azurespeed.com/Azure/Latency) and select a region that provides the lowest latency.
+    Check out the available [Datacenter regions](https://azure.microsoft.com/en-us/explore/global-infrastructure/geographies/#geographies) and decide on a region that is closest to you and meets your needs.
+
+    You can make use of [Azure Latency Test](https://www.azurespeed.com/Azure/Latency) to select a region that provides the lowest latency.
 
     I am located in Chicago, Illinois so I will opt to use `Central US` as my Azure location.
 
@@ -56,22 +65,36 @@ By the end of the lab you will be able to:
    az group create --name s.dutta-workshop --location centralus
    ```
 
-1. Make sure the new Azure Resource Group has been created by running below command.
+2. Make sure the new Azure Resource Group has been created by running below command.
 
    ```bash
    az group list -o table | grep workshop
    ```
 
+<br/>
+
 ### Setup your Azure Virtual Network, Subnets and Network Security Group
 
-<< Place Holder for a Network Diagram explaining network components being created in this section >>
+![lab1 Networks](media/lab1_azure-network.png)
+Lab1 Vnet/Subnets
+
+You will create an Azure Vnet for this Workshop.  Inside of this Vnet are 4 different subnets, representing various backend networks for Azure resources like Nginx for Azure, VMs, and Kubernetes clusters.
+
+Name | Subnet | Assignment
+:---:|:----:|:---:
+n4a-subnet | 172.16.1.0/24 | Nginx for Azure
+vm-subnet | 172.16.2.0/24 | Virtual Machines
+aks1-subnet | 172.16.10.0/23 | AKS Cluster #1
+aks2-subnet | 172.16.20.0/23 | AKS Cluster #2
+
+<br/>
 
 1. Create a virtual network (vnet) named `n4a-vnet` using below command.
 
     ```bash
     ## Set environment variables
-    MY_RESOURCEGROUP=s.dutta-workshop
-    MY_PUBLICIP=$(curl -4 ifconfig.co)
+    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_PUBLICIP=$(curl -4 ifconfig.co)
     ```
 
     ```bash
@@ -107,7 +130,7 @@ By the end of the lab you will be able to:
 
     > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
 
-2. Create a network security group(NSG) named `n4a-nsg` using below command.
+2. Create a network security group (NSG) named `n4a-nsg` using below command.
 
     ```bash
     az network nsg create \
@@ -248,9 +271,19 @@ By the end of the lab you will be able to:
     }
     ```
 
-5. In similar fashion create two more subnets that would be used with AKS cluster in later labs.
+5. In similar fashion create three more subnets that would be used with docker virtual machines and AKS clusters in later labs.
 
     ```bash
+    # VM Subnet
+    az network vnet subnet create \
+    --resource-group $MY_RESOURCEGROUP \
+    --name vm-subnet \
+    --vnet-name n4a-vnet \
+    --address-prefixes 172.16.2.0/24
+    ```
+
+    ```bash
+    # AKS1 Subnet
     az network vnet subnet create \
     --resource-group $MY_RESOURCEGROUP \
     --name aks1-subnet \
@@ -259,12 +292,20 @@ By the end of the lab you will be able to:
     ```
 
     ```bash
+    # AKS2 Subnet
     az network vnet subnet create \
     --resource-group $MY_RESOURCEGROUP \
     --name aks2-subnet \
     --vnet-name n4a-vnet \
     --address-prefixes 172.16.20.0/23
     ```
+
+Your completed Vnet/Subnets should look similar to this:
+
+![lab1 Azure Subnets](media/lab1_azure-subnets.png)
+Lab1 Vnet/Subnets
+
+<br/>
 
 ### Create Public IP and user assigned managed identity to access NGINX for Azure
 
@@ -306,7 +347,7 @@ By the end of the lab you will be able to:
     }
     ```
 
-1. Create a user assigned managed identity that would be tied to the NGINX for Azure resource. This managed identity would be used to read certificates and keys from Azure keyvault in later labs.
+1. Create a user assigned managed identity that would be tied to the NGINX for Azure resource. This managed identity would be used to read certificates and keys from Azure key vault in later labs.
 
    ```bash
    az identity create \
@@ -330,14 +371,18 @@ By the end of the lab you will be able to:
     }
    ```
 
-### Deploy an Nginx for Azure resource
+<br/>
 
-1. Once all the previous Azure resources have been created, you will then create the NGINX for Azure resource using below commands (This would take couple of minutes to finish)
+## Deploy an Nginx for Azure Resource
+
+<br/>
+
+1. Once all the previous Azure resources have been created, you will then create the NGINX for Azure resource using below commands (This will take couple of minutes to finish):
 
     ```bash
     ## Set environment variables
-    MY_RESOURCEGROUP=s.dutta-workshop
-    MY_SUBSCRIPTIONID=$(az account show --query id -o tsv)
+    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_SUBSCRIPTIONID=$(az account show --query id -o tsv)
     ```
 
     ```bash
@@ -409,21 +454,25 @@ By the end of the lab you will be able to:
 
     > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
 
+<br/>
+
 ### Explore Nginx for Azure
+
+<br/>
 
 NGINX as a Service for Azure is a service offering that is tightly integrated into Microsoft Azure public cloud and its ecosystem, making applications fast, efficient, and reliable with full lifecycle management of advanced NGINX traffic services. NGINXaaS for Azure is available in the Azure Marketplace.
 
-NGINXaaS for Azure is powered by NGINX Plus, which extends NGINX Open Source with advanced functionality and provides customers with a complete application delivery solution. Initial use cases covered by NGINXaaS include L7 HTTP load balancing and reverse proxy which can be managed through various Azure management tools. NGINXaaS allows you to provision distinct deployments as per your business or technical requirements.
+NGINXaaS for Azure is powered by NGINX Plus, which extends NGINX Open Source with advanced functionality and provides customers with a complete application delivery solution. Initial use cases covered by NGINXaaS include L4 TCP and L7 HTTP load balancing and reverse proxy which can be managed through various Azure management tools. NGINXaaS allows you to provision distinct deployments as per your business or technical requirements.
 
 In this section you will be looking at NGINX for Azure resource that you created within Azure portal.
 
 1. Open Azure portal within your browser and then open your resource group.
    ![Portal ResourceGroup home](media/portal_rg_home.png)
 
-2. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. You can see useful information like Status, NGINX for Azure resource's public IP, which nginx version is running, which vnet/subnet it is tied to etc.
+2. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. You can see useful information like Status, NGINX for Azure resource's public IP, which Nginx version is running, which vnet/subnet it is using, etc.
    ![Portal N4A home](media/portal_n4a_home.png)
 
-3. From the left pane click on `NGINX Configuration`. As you are opening this resource for first time and you donot have any configuration present, Azure would prompt you to "Get started with a Configuration example". Click on `Populate now` button to start with a sample configuration example.
+3. From the left pane click on `NGINX Configuration`. As you are opening this resource for first time and you do not have any configuration present, Azure will prompt you to "Get started with a Configuration example". Click on `Populate now` button to start with a sample configuration example.
    ![nginx conf populate](media/nginx_conf_populate.png)
 
 4. Once you click on the `Populate now` button you will see the configuration editor section has been populated with `nginx.conf` and an `index.html` page. Click on the `Submit` button to deploy this sample config files to the NGINX for Azure resource.
@@ -434,10 +483,12 @@ In this section you will be looking at NGINX for Azure resource that you created
 
 6. Navigate back to Overview section and copy the public IP address of NGINX for Azure resource.
 
-7. In a new browser window, paste the public IP into address bar. You will notice the sample index page gets rendered into your browser.
+7. In a new browser window, paste the public IP into the address bar. You will notice the sample index page gets rendered into your browser.
    ![n4a Index Page](media/n4a_index_page.png)
 
 8. This completes the validation of all the resources that you created using Azure CLI. In the upcoming labs you would be modifying the configuration files and exploring various features of NGINX for Azure resources.
+
+<br/>
 
 ### Create Log Analytics workspace to collect NGINX error and Access logs from NGINX for azure
 
@@ -453,7 +504,7 @@ In this section you will create a Log Analytics resource that would collect Ngin
 
     ```bash
     ## Set environment variables
-    MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_RESOURCEGROUP=s.dutta-workshop
     ```
 
     ```bash
@@ -537,13 +588,13 @@ In this section you will create a Log Analytics resource that would collect Ngin
 
     ```bash
     ## Set environment variables
-    MY_N4A_ID=$(az nginx deployment show \
+    export MY_N4A_ID=$(az nginx deployment show \
     --resource-group $MY_RESOURCEGROUP \
     --name nginx4a \
     --query id \
     --output tsv)
 
-    MY_LOG_ANALYTICS_ID=$(az monitor log-analytics workspace show \
+    export MY_LOG_ANALYTICS_ID=$(az monitor log-analytics workspace show \
     --resource-group $MY_RESOURCEGROUP \
     --name n4a-loganalytics \
     --query id \
@@ -581,7 +632,7 @@ In this section you will create a Log Analytics resource that would collect Ngin
     }
     ```
 
-6. In upcoming lab, you will explore and learn more about NGINX logs and make use of these resources that you built in this section.
+6. In upcoming labs, you will explore and learn more about NGINX logs and make use of these resources that you built in this section.
 
 <br/>
 
