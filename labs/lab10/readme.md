@@ -27,7 +27,7 @@ By the end of the lab you will be able to:
 - Create a Grafana managed instance in Azure
 - Create a Dashboard to monitor metrics in NGINXaaS for Azure
 - Test the Grafana Server
-- View Grafana Dashboard
+- View the Grafana Dashboard
 
 ## Pre-Requisites
 
@@ -58,7 +58,7 @@ az grafana create --name $MY_GRAFANA --resource-group $MY_RESOURCEGROUP
 
 Using the endpoint URL you can log into the Managed Grafana instance using your Microsoft Entra ID (that you have been using for these labs). If you forgot to grab the endpoint URL, you can retrieve it via the Azure CLI tool:
 ```bash
-az grafana show --name $MY_GRAFANA= --resource-group $MY_RESOURCEGROUP --query "properties.endpoint" --output tsv   
+az grafana show --name $MY_GRAFANA --resource-group $MY_RESOURCEGROUP --query "properties.endpoint" --output tsv   
 ```
 
 Open a web browser and go to the endpoint address listed. You should see an Entra ID login which may or may not have your credentials pre-populated:
@@ -78,7 +78,7 @@ In the upper right of the page is a blue drop down button. We will select *Impor
 
 ![Dashboard Import](media/grafana-dashboards-new.png)
 
-In Visual Studio Code Let's navigate to the LAb10 folder.  In it, we will open the N4A-Dashboard.json file.
+In Visual Studio Code, navigate to the Lab10 folder. Open the N4A-Dashboard.json file and inspect it.
 
 This template file makes use of Grafana Variables to make it easier to customize to your environment. Let's retrieve the values we will need for the dashboard in the VS terminal by running the following commands:
 
@@ -110,16 +110,16 @@ Copy the code from the N4A-Dashboard.json file. In the grafana import window, pa
 
 ![Dashboard Import](media/grafana-dashboards-json.png)
 
-To get the Dashboards to load.  Replace each variable field at the top (see image) with the values you retrieved for your lab:
+To get the Dashboards to load. Replace each variable field at the top (see image) with the values you retrieved for your lab:
 
 ![Dashboard Import](media/grafana-variables.png)
 
 ### Generate a workload
 
-1. Start the WRK load generation tool. This will provide some traffic to the NGINXaaS for Azure instance, so the statistics will be increasing.
+1. Start the WRK load generation tool. This will provide some traffic to the NGINXaaS for Azure instance, so that the statistics will be increasing.
 
 ```bash
-docker run --rm williamyeh/wrk -t20 -d360s -c5000 https://cafe.example.com/ 
+docker run --rm williamyeh/wrk -t20 -d600s -c1000 https://cafe.example.com/ 
 ```
 
 <br/>
@@ -127,15 +127,21 @@ docker run --rm williamyeh/wrk -t20 -d360s -c5000 https://cafe.example.com/
 
 ### Grafana
 
-We now have a working dashboard displaying some key metrics of the NGINX for Azure service. As with most dashboards, you can adjust the time intervals, etc. to get a better look at the data. Feel free to explore the dashboards.  
+We now have a working dashboard displaying some key metrics of the NGINX for Azure service. As with most dashboards, you can adjust the time intervals, etc. to get a better look at the data. Feel free to explore each of the data panels.  
 
 ![Grafana Dashboard](media/grafana-dashboards-n4a.png)
 
 ![Grafana Dashboard](media/grafana-dashboards-k8s-vm.png)
 
-There are many different metrics available to use and you have the option to create and build dashboards to suite your needs. For these pre-built ones, we added three sections. The first section highlights metrics for NGINXaaS. The next section is monitoring your Kubernetes clusters from the previous labs. The final section adds a few metrics for the Virtual Machines that you created. Feel free to review these panels and explore adding panel of your own.
+There are many different metrics available to use and you have the option to create and build dashboards to suit your needs. For these pre-built ones, we added three sections. The first section highlights metrics for NGINXaaS. These are taken directly from the NGINXaaS Metrics page that you can find linked below. The next section is monitoring your Kubernetes clusters that you built in the previous labs. The final section adds a few metrics for the Virtual Machines that were previously created. Feel free to review each of these panels and explore adding panels of your own.
 
-> If `wrk` load generation tool is still running, then you can stop it by pressing `ctrl + c`.
+To delete the Managed Grafana instance, you can do so via the CLI using this command:
+
+```bash
+az grafana delete --name $MY_GRAFANA --resource-group $MY_RESOURCEGROUP --yes
+```
+
+> If the `wrk` load generation tool is still running, then you can stop it by pressing `ctrl + c`.
 
 
 
@@ -167,3 +173,5 @@ There are many different metrics available to use and you have the option to cre
 
 
 Navigate to ([Main Menu](../readme.md))
+
+

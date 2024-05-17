@@ -19,3 +19,5 @@ Thumbs.db
 # Misc Dir #
 ############
 .apc/
+ac-notes
+ama-metrics-settings-configmap-backup.yaml
