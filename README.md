@@ -3,66 +3,48 @@
 [![Community Support](https://badgen.net/badge/support/community/cyan?icon=awesome)](https://github.com/nginxinc/template-repository/blob/main/SUPPORT.md)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](https://github.com/nginxinc/template-repository/main/CODE_OF_CONDUCT.md)
 
-# NGINX Template Repository
-
-## What is included on this template?
-
-This template includes all the scaffolding you need to get started on an OSS repository that meets the required NGINX criteria:
-
-- [Apache License 2.0](https://github.com/nginxinc/template-repository/blob/main/LICENSE) (required for all NGINX OSS projects)
-- [`.gitignore`](https://github.com/nginxinc/template-repository/blob/main/.gitignore) with some minimal sensible defaults
-- [Issue](https://github.com/nginxinc/template-repository/blob/main/.github/ISSUE_TEMPLATE) and [PR](https://github.com/nginxinc/template-repository/blob/main/pull_request_template.md) templates
-- [Contributing](https://github.com/nginxinc/template-repository/blob/main/CONTRIBUTING.md) guidelines
-- [Support](https://github.com/nginxinc/template-repository/blob/main/SUPPORT.md) guidelines for either community and/or commercial support
-- [Security](https://github.com/nginxinc/template-repository/blob/main/SECURITY.md) guidelines for reporting major vulnerabilities
-- [Code of Conduct](https://github.com/nginxinc/template-repository/blob/main/CODE_OF_CONDUCT.md)
-- Open Source Security Foundation (OSSF) Scorecard [(implemented via a GitHub Action)](https://github.com/nginxinc/template-repository/blob/main/.github/workflows/ossf_scorecard.yml)
-- [README](https://github.com/nginxinc/template-repository/blob/main/README.md) placeholder. How you structure the README is up to you (although the template provides placeholder sections), but you will need to include:
-  - A [repostatus](https://www.repostatus.org/) badge
-  - An OSSF Scorecard badge. (Optional -- Some projects will by their nature have low scores. In such a case you might want to remove this badge!)
-  - A community and/or commercial support badge. Include the latter -- and replace the commented out badge/URL placeholder with the relevant support URL -- if this repository contains a commercially supported project. You can find a commented out example below the community badge in this README.
-  - A contributor covenant/code of conduct badge. (Optional -- If you already have multiple badges and want to reduce clutter, simply including the actual code of conduct is enough!)
-  - An explicit link back to the [Apache License 2.0](https://github.com/nginxinc/template-repository/blob/main/LICENSE)
-  - An up to date copyright notice
-- [Changelog](https://github.com/nginxinc/template-repository/blob/main/CHANGELOG.md) placeholder. (Optional -- A changelog is recommended, but it is not required and can diverge in format from the placeholder here included.)
-- [Codeowners](https://github.com/nginxinc/template-repository/blob/main/.github/CODEOWNERS) placeholder. (Optional -- Codeowners is a useful feature, but not all repositories require them.)
-
-**Note:** If you created a public repository before this template became available (or you didn't know about it's existence), please include any missing files found here in your repository. There is no need if you have a private repository, but we still recommend you include all of the above scaffolding should the repository ever become public.
-
-## How do I use this template?
-
-**DO NOT FORK** -- this template is meant to be used from the **[`Use this template`](https://github.com/nginxinc/template-repository/generate)** feature.
-
-1. Click on **[`Use this template`](https://github.com/nginxinc/template-repository/generate)**
-2. Give a name to your project
-3. Wait until the first run of CI finishes (GitHub Actions will process the template and commit to your new repo)
-4. Clone your new project and tweak any of the placeholders if necessary. Pay special attention to the README!
-5. Happy coding!
-
-**NOTE**: **WAIT** until the first CI run on GitHub Actions finishes before cloning your new project.
-
----
-
-<!--  DELETE THE LINES ABOVE THIS AND WRITE YOUR PROJECT README BELOW -- PLACEHOLDER SECTIONS HAVE BEEN INCLUDED FOR YOUR CONVENIENCE -->
+# NGINXaaS for Azure Workshop
 
 [![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/nginxinc/nginx-azure-workshops/badge)](https://securityscorecards.dev/viewer/?uri=github.com/nginxinc/nginx-azure-workshops)
-[![Community Support](https://badgen.net/badge/support/community/cyan?icon=awesome)](https://github.com/nginxinc/nginx-azure-workshops/blob/main/SUPPORT.md) <!-- [![Commercial Support](https://badgen.net/badge/support/commercial/cyan?icon=awesome)](<Insert URL>) -->
+[![Community Support](https://badgen.net/badge/support/community/cyan?icon=awesome)](https://github.com/nginxinc/nginx-azure-workshops/blob/main/SUPPORT.md) [![Commercial Support](https://badgen.net/badge/support/commercial/cyan?icon=awesome)](http://support.f5.com)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](https://github.com/nginxinc/nginx-azure-workshops/main/CODE_OF_CONDUCT.md)
 
 # nginx_azure_workshops
 
+**This is an Advanced, 300 Level Workshop.**
+
+You must have previous experience with the following technologies and concepts.
+
+- Nginx Webserver and Reverse Proxy
+- Nginx Ingress Controller
+- Kubernetes; nodes, pods, deployments, services, ingress, nodeport
+- Azure; subscriptions, networking, VMs, AKS Clusters
+- Various Desktop tools; Visual Studio, Linux, Terminal, Chrome
+- TCP, HTTP/S, DNS, Redis protocols
+
 ## Requirements
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam elit turpis, varius et arcu elementum, viverra rhoncus sem. Aliquam nec sodales magna, et egestas enim. Mauris lobortis ultrices euismod. Pellentesque in arcu lacus. Mauris cursus laoreet nulla, ac vehicula est. Vestibulum eu mauris quis lorem consectetur aliquam ac nec quam. Vestibulum commodo pharetra mi, at bibendum neque faucibus ut. Mauris et tortor sed sem consectetur eleifend ut non magna. Praesent feugiat placerat nibh, varius viverra orci bibendum sed. Vestibulum dapibus ex ut pulvinar facilisis. Quisque sodales enim et augue tempor mattis. Suspendisse finibus congue felis, ac blandit ligula. Praesent condimentum ultrices odio quis semper. Nunc ultrices, nibh quis mattis pellentesque, elit nulla bibendum felis, quis dapibus erat turpis ac urna.
+See [Lab0 Readme](/labs/lab0/readme.md) for the Prerequisites for taking this Workshop and completing the Lab Exercises.
+
+The student must have completed the previous TWO Workshops, prior to taking this workshop. (Or have equivalent knowledge)
+
+- Nginx Basics Workshop - 101 (https://github.com/nginxinc/nginx-basics-workshops/tree/master/labs)
+- Nginx Plus Ingress Workshop - 201 (https://github.com/nginxinc/nginx-ingress-workshops/tree/main/Plus/labs)
 
 ## Getting Started
 
-Duis sit amet sapien vel velit ornare vulputate. Nulla rutrum euismod risus ac efficitur. Curabitur in sagittis elit, a semper leo. Suspendisse malesuada aliquam velit, eu suscipit lorem vehicula at. Proin turpis lacus, semper in placerat in, accumsan non ipsum. Cras euismod, elit eget pretium laoreet, tortor nulla finibus tortor, nec hendrerit elit turpis ut eros. Quisque congue nisi id mauris molestie, eu condimentum dolor rutrum. Nullam eleifend elit ac lobortis tristique. Pellentesque nec tellus non mauris aliquet commodo a eu elit. Ut at feugiat metus, at tristique mauris. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
+Review the Github Repo content for the Nginx Basics and Nginx Plus Ingress Workshops.  If you have taken these workshops, and understand the content, you can successfully complete the Lab exercises in this Nginx for Azure Workshop.  It is HIGHLY recommended you you complete the 101 and 201 Workshops prior.  
+
+It is HIGHLY recommended that you complete Azure Training from http://learn.microsoft.com, so you are familiar with Azure Portal, menus, and various resources and components.
+
+It will take approximately 4 hours to complete the Nginx for Azure Workshop.
 
 ## How to Use
 
-Maecenas at vehicula justo. Suspendisse posuere elementum elit vel posuere. Etiam quis pulvinar massa. Integer tempor semper risus, vitae maximus eros ullamcorper vitae. In egestas, ex vitae gravida sodales, ipsum dolor varius est, et cursus lorem dui a mi. Morbi faucibus ut nisi id faucibus. Sed quis ullamcorper ex. In et dolor id nunc interdum suscipit.
+The content and lab exercises are presented in a sequence as you build and add additional features and functionality as you progress.  It is essential that the Lab Exercises are completed in the order provided.  This content provided is for example only, is not for production workloads.  The user of this information assumes all risks.
+
+Click HERE to begin the Lab Exercises.
 
 ## Contributing
 

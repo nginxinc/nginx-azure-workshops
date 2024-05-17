@@ -1,196 +1,57 @@
-#  Nginx for Azure Workshop Outline / Summary
-
-## Lab 0 - Prequesites - Subscription / Resources
-## Lab 1 - Azure VNet and Subnet and Network Security Group
-## Lab 2 - Nginx for Azure Overview and Deployment
-## Lab 3 - UbuntuVM, Docker, and Cafe or Garage Demo Deployment
-## Lab 4 - AKS / ACR / Nginx Ingress Controller / Cafe / Garage Demo
-## Lab 5 - Nginx Load Balancing / Reverse Proxy
-## Lab 6 - Azure Key Vault / TLS Essentials
-## Lab 7 - Azure Montoring / Logging Analytics
-## Lab 8 - Nginx Garage or Azure Petshop
-## Lab 9 - Nginx Split Clients
-## Lab 10 - Nginx Caching & Rate Limits / Juiceshop
-## Lab 11 - Optional Exercises / Grafana 4 Azure
-## Summary and Wrap-up
+![NGINX for Azure Workshop](media/n4aworkshop-banner.png)
 
 <br/>
 
-### Lab 0 - Prequesites - Subscription / Resources
-
-- Overview
-In this Lab, the requirements for both the student and the Azure environment will be detailed.  It is imperative that you have the appropriate computer, tools, and Azure access to successfully complete the workshop.  The lab exercises must be done sequentially to build the environment as described.
-
-- Learning Objectives
-Verify you have the proper computer requirements - hardware and software.
-- Hardware:  Laptop, Admin rights, Internet connection
-- Software:  Visual Studio, Terminal, Chrome, Docker, AKS and AZ CLI.
-Verify you have proper computer skills.
-- Computer skills:  Linux CLI, files, SSH/Terminal, Docker/Compose, Azure Portal, HTTP/S, Load Balancing concepts
-- Optional: TLS, DNS, FIPS, HTTP caching, Prometheus, Grafana
-Verify you have the proper access to Azure resources.
-- Azure subscription, list of Azure Roles/permissions here
-
-- Nginx for Azure Workshop has minimum REQUIRED Nginx Skills
-Students must be familiar with Nginx basic operation, configurations, and concepts for HTTP traffic.
--- The Nginx Basics Workshop is HIGHLY recommended, students should have taken this workshop prior.
--- The Nginx Plus Ingress Controller workshop is also HIGHLY, students should have taken this workshop prior.
+# NGINXaaS for Azure Workshop
 
 <br/>
 
-### Lab 1 - Azure VNet and Subnet and Network Security Group
-
-- Overview
-In this lab, you will be adding and configuring the Azure Networking components needed for this workshop.  This will require only a few network resources, and a Network Security Group to allow incoming traffic to your Azure resources.
-
-- Learning Objectives
-Setup your Azure Vnet
-Setup your Azure Subnets
-Setuo your Azure Network Security group for inbound traffic
+## Welcome!
 
 <br/>
 
-### Lab 2 - Nginx for Azure Overview and Deployment
-
-- Overview
-In this lab, you will deploy and config a new Nginx for Azure instance.
-
-- Learning Objectives
-Deploy Nginx for Azure
-Enable Log Analytics
-Test basic HTTP traffic
-Create inital Nginx configurations to test with
+> ><strong>Welcome to the NGINX as a Service for Azure Workshop!</strong>
 
 <br/>
 
-### Lab 3 - UbuntuVM, Docker, and Cafe or Garage Demo Deployment
+This Workshop will introduce **`NGINXaaS for Azure`** with hands-on practice through lab exercises.
 
-## Overview
-In this lab, you will deploy an Ubuntu VM, install Docker and Docker Compose, and configure it for a Legacy web application. You will configure Nginx for Azure to Load balance this application.
+You will learn how to configure NGINX for Azure, deploy it with various Azure Resources. You will use many NGINX Plus features, for routing traffic, terminate TLS, split traffic, and caching.  You will build a sample Enterprise environment with apps and services in Linux and Windows VMs, use Docker, and multiple Kubernetes clusters.  You will terminate TLS, route HTTP/S traffic, load balance running VMs, containers, pods and Nginx Ingress Controllers.  You will configure Advanced Nginx Plus features like Dynamic Split Clients, for Blue/Green testing, using live traffic.  You will expose both Web and TCP applications on the Internet.  You will explore the integrations of Nginx with the Azure Cloud Resources like Key Vault, Monitoring, Analytics, and Grafana.
 
-## Learning Objectives
+The Hands-on Lab Exercises are designed to build upon each other, adding additional services and features as you progress through them, completing the labs in sequential order is required.  You will follow along as an instructor guides you through these exercises.
 
-- Deploy Ubuntu VM with Azure CLI
-- Install Docker and Docker Compose
-- Run Nginx demo application containers
-- Test and validate your lab environment
-- Configure Nginx for Azure to load balance the Docker Containers on the UbuntuVM
-- Test your Nginx for Azure configs
+![Developer Seated](media/developer-seated.svg)
 
-<br/>
+By the end of this Workshop, you will have a working, operational NGINX for Azure deployment, routing and load balancing traffic to and from VMs, Docker containers, and Nginx Ingress Controllers in Kubernetes with application pods and services. You will learn the necessary skills to deploy and operate N4A for your own Modern Applications running in Azure Cloud.  Thank You for taking the time to attend this NGINX Workshop!
 
-### Lab 4 - AKS / Nginx Ingress / Redis / Cafe or Garage Demo Deployment
+![Robot](media/robot.svg)
 
-- Overview
-In this lab, you will deploy 2 AKS clusters, with Nginx Ingress Controllers, a Redis cluster, and a Modern Web Application.
+## About NGINX as a Service for Azure
 
-- Learning Objectives
-Deploy 2 AKS clusters using the Azure AZ CLI.
-Pull and Push the Nginx Plus Ingress Controller image to Azure Container Registry, and deploy to the Clusters.
-Deploy and test a Redis In-Memory Cache to the AKS cluster.
-Configure Nginx Ingress for Redis Leader traffic.
-Test access to Redis Leader and Follower services.
-Deploy a modern web application in the cluster.
-Configure Nginx Ingress Controller to route traffic to the application.
+NGINX for Azure is an Enterprise-Ready solution for directing traffic to/from Azure Resources.  NGINX for Azure is available in most Azure Regions, in the Azure Marketplace.  NGINX for Azure is built from the same source code you know and trust from NGINX Plus.  You can find the full Nginx for Azure support and technical specifications on the https://www.f5.com/products/nginx/f5-nginxaas-for-azure website.  
 
 <br/>
 
-### Lab 5 - Nginx Load Balancing / Reverse Proxy
-
-- Overview
-In this lab, you will configure Nginx for Azure to Load Balance various workloads running in Azure.  After successful configuration and adding Best Practice Nginx parameters, you will Load Test these applications, and test multiple load balancing and request routing parameters to suit different use cases.
-
--- Learning Objectives
-
-- Configure Nginx for Azure, to load balance traffic to both AKS Nginx Ingress Controllers.
-- Expose the NIC Plus Dashboards externally for Live Monitoring
-- Configure Nginx for Azure, to Proxy to Windows Server VM
-- Run Load tests on the Legacy and Modern web applications.
-- Configure HTTP Split Clients, and route traffic to 2 or 3 backend upstreams.
-- Configure Nginx for Azure to load balance directly to Nginx Ingress Controllers without NodePort.
-- Configure Nginx for Azure and Nginx Ingress for Redis Caching
+![NGINX Azure](media/nginx-azure-icon.png)
 
 <br/>
 
-### Lab 6 - Azure Key Vault / TLS Essentials
+Combining the speed and performance of NGINX with the trust and security behind F5 Networks, NGINX for Azure is synonymous with high‑performing, scalable, and secure modern apps in production.
 
-- Overview
-In this lab, you use Azure Key Vault for TLS certificates and keys.  You will configure Nginx for Azure to use these Azure resources to terminate TLS.
+https://docs.nginx.com/nginxaas/azure/
 
-- Learning Objectives
-Create a sample Azure Key Vault
-Create a TLS cert/key
-Configure and test Nginx for Azure to use the Azure Keys
-Update the previous Nginx configurations to use TLS for apps
-Update NSGs for TLS inbound traffic
+https://docs.nginx.com/nginxaas/azure/faq/
 
 <br/>
 
-### Lab 7 - Azure Montoring / Logging Analytics
+### Authors
+- Chris Akker - Solutions Architect - Community and Alliances @ F5, Inc.
+- Shouvik Dutta - Solutions Architect - Community and Alliances @ F5, Inc.
+- Jason Williams - Principle Product Management Engineer @ F5, Inc.
 
-- Overview
-Enable and configure Azure Monitoring for Nginx for Azure.  Create custom Azure Dashboards for your applications.  Gain experience using Azure Logs and logging tools.
+-------------
 
-- Learning Objectives
-Enable, configure, and test Azure Monitoring for Nginx for Azure.
-Create a couple custom dashboards for your load balanced applications.
-Explore the Azure logging and Analytics tools available.
+This completes the Introduction.
+<br/> 
 
-<br/>
-
-### Lab 8 - Nginx Garage or Azure Petshop
-
-- Overview
-In this lab, you will deploy a modern application in your AKS cluster.  You will expose it with Nginx Ingress Controller and Nginx for Azure.
-
-- Learning Objectives
-Deploy the modern app in AKS
-Test and Verify the app is working correctly
-Expose this application outside the cluster with Nginx Ingress Controller
-Configure Nginx for Azure for this new application
-
-<br/>
-
-### Lab 9 - Nginx and AzureAD / Entra Integration
-
-- Overview
-In this lab, you will create and configure an Azure Active Directory integration that will provide User based authentication to your web application.  You will then create and test the Nginx for Azure AD configuration that will enforce this user authentication requirement.
-
-- Learning Objectives
-Create and configure Azure AD Security settings.
-Create and configure Nginx for Azure to provide user authentication to your web application.
-Test and validate AzureAD is working as expected.
-Explore AzureAD related logging.
-
-<br/>
-
-### Lab 10 - Nginx Caching / Garage / Juiceshop
-
-- Overview
-In this lab, you will deploy an image rich application, and use Nginx Caching to cache images to improve performance.
-
-- Learning Objectives
-Deploy JuiceShop in AKS cluster.
-Expose JuiceShop with Nginx Ingress Controller
-Configure Nginx for Azure for load balancing JuiceShop.
-Add Nginx Caching to improve delivery of images.
-
-<br/>
-
-### Lab 11 - Optional Exercises
-
-Optional - Grafana with Azure
-- Overview
-In this lab, you will explore the Nginx and Grafana for Azure integration.
-
-- Learning Objectives
-Deploy Grafana for Azure.
-Configure the Datasource
-Explore a sample Grafana Dashboard for Nginx for Azure
-
-
-<br/>
-
-### Summary and Wrap-up
-
-- Summary and Wrap-up comments here
+Click on ([LabGuide](LabGuide.md)) to begin the workshop.
