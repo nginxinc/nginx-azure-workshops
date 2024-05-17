@@ -5,13 +5,13 @@
 ## Lab 2 - Nginx for Azure Overview and Deployment
 ## Lab 3 - Ubuntu VM / Docker / Windows VM / Cafe Demo
 ## Lab 4 - AKS / Nginx Ingress Controller / Cafe Demo / Redis
-## Lab 5 - Nginx Load Balancing / Split Clients
+## Lab 5 - Nginx Load Balancing / Blue-Green / Split Clients
 ## Lab 6 - Azure Key Vault / TLS Essentials
 ## Lab 7 - Azure Monitoring / Logging Analytics
 ## Lab 8 - Nginx Garage Demo
-## Lab 9 - Nginx Caching & Rate Limits / Juiceshop
+## Lab 9 - Nginx Caching / Rate Limits / Juiceshop
 ## Lab 10 - Nginx with Grafana for Azure
-## Lab 11 - Optional Exercises
+## Lab Optional - Optional Exercises
 ## Summary and Wrap-up
 
 <br/>
@@ -95,7 +95,7 @@ Configure Nginx Ingress Controller to route traffic to the application.
 
 <br/>
 
-### Lab 5 - Nginx Load Balancing / Split Clients
+### Lab 5 - Nginx Load Balancing / Blue-Green / Split Clients
 
 - Overview
 In this lab, you will configure Nginx for Azure to Load Balance various workloads running in Azure.  After successful configuration and adding Best Practice Nginx parameters, you will Load Test these applications, and test multiple load balancing and request routing parameters to suit different use cases.
@@ -151,7 +151,7 @@ Configure Nginx for Azure for this new application
 
 <br/>
 
-### Lab 9 - Nginx Caching & Rate Limits / Juiceshop
+### Lab 9 - Nginx Caching / Rate Limits / Juiceshop
 
 - Overview
 In this lab, you will deploy an image rich application, and use Nginx Caching to cache images to improve performance.
@@ -176,7 +176,7 @@ Explore a sample Grafana Dashboard for Nginx for Azure
 
 <br/>
 
-### Lab 11 - Optional Exercises
+### Lab Optional - Optional Exercises
 
 Optional - Nginx for Azure XYZ
 - Overview
