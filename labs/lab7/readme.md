@@ -12,7 +12,7 @@ NGINX aaS | Docker
 
 By the end of the lab you will be able to:
 
-- Create and enable basic log format within NGINX for Azure resource
+- Enable basic log format within NGINX for Azure resource
 
 - Create enhance log format with additional logging metrics
 
@@ -30,12 +30,12 @@ By the end of the lab you will be able to:
 
 <br/>
 
-### Create and enable basic log format
+### Enable basic log format
 
-1. Within Azure portal, open your resource group and then open your NGINX for Azure resource (nginx4a). From the left pane click on `NGINX Configuration`. This should open the configuration editor section. Open `nginx.conf` file.
-    ![NGINX Config](media/nginx_conf_editor.png)
+1. Within Azure portal, open your resource group and then open your NGINX for Azure resource (nginx4a). From the left pane click on `Settings > NGINX Configuration`. This should open the configuration editor section. Open `nginx.conf` file.
+    ![NGINX Config](media/lab7_nginx_conf_editor.png)
 
-1. Add below default basic log format inside the `http` block within the `nginx.conf` file as shown in the below screenshot. Click on `Submit` to save the config file.
+2. You will notice in previous labs, you have added the default basic log format inside the `http` block within the `nginx.conf` file as highlighted in above screenshot. You will make use of this log format initially to capture some useful metrics within NGINX logs.
 
     ```nginx
     log_format main '$remote_addr - $remote_user [$time_local] "$request" '
@@ -43,21 +43,21 @@ By the end of the lab you will be able to:
                     '"$http_user_agent" "$http_x_forwarded_for"';
     ```
 
-    ![main logformat add](media/main_logformat_add.png)
-
-1. Update the `access_log` directive to enable logging. Within this directive, you will pass the full path of the log file (eg. `/var/log/nginx/access.log`) and also the `main` log format that you created in previous step. Click on `Submit` to apply the changes.
+3. Update the `access_log` directive to enable logging. Within this directive, you will pass the full path of the log file (eg. `/var/log/nginx/access.log`) and also the `main` log format that you created in previous step. Click on `Submit` to apply the changes.
 
     ```nginx
     access_log  /var/log/nginx/access.log  main;
     ```
 
-    ![Access log update](media/main_access_log_update.png)
+    ![Access log update](media/lab7_main_access_log_update.png)
 
-1. In subsequent sections you will test out the logs inside log analytics workspace.
+4. In subsequent sections you will test out the logs inside log analytics workspace.
 
 ### Create enhance log format with additional logging metrics
 
-1. Within the NGINX for Azure resource (nginx4a), open the `NGINX Configuration` pane.
+In this section you will create an extended log format which you will use with `cafe.example.com` server's access log.
+
+1. Within the NGINX for Azure resource (nginx4a), open the `Settings > NGINX Configuration` pane.
 
 1. Within the `nginx.conf` file add a new extended log format named `main_ext` as shown in the below screenshot. Click on `Submit` to save the config file
 
@@ -83,7 +83,7 @@ By the end of the lab you will be able to:
                             'upstream_response_length="$upstream_response_length", ';
     ```
 
-    ![Extended log format add](media/main_ext_logformat_add.png)
+    ![Extended log format add](media/lab7_main_ext_logformat_add.png)
 
 1. Once the extended log format has been created, open `cafe.example.com.conf` file and update the `access_log` to make use of the extended log format as shown in the below screenshot. Click on `Submit` to apply the changes.
 
