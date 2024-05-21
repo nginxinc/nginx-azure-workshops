@@ -85,8 +85,8 @@ It will take approximately 4 hours to complete the Nginx for Azure Workshop.
 
 The content and lab exercises are presented in a sequence as you build and add additional Nginx and Azure features and functionality as you progress.  It is essential that the Lab Exercises are completed in the order provided.  This content provided is for example only, is not for production workloads.  The user of this information assumes all risks.
 
-- Click [LabGuide](labs/Readme.md) to begin the Lab Exercises.
-- Click [Lab0 Readme](labs/lab0/Readme.md) to review the Lab0 Prerequisites - "Know before you Go".
+- Click [LabGuide](labs/readme.md) to begin the Lab Exercises.
+- Click [Lab0 Readme](labs/lab0/readme.md) to review the Lab0 Prerequisites - "Know before you Go".
 
 <br/>
 
