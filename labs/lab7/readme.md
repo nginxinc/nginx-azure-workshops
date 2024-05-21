@@ -18,6 +18,8 @@ By the end of the lab you will be able to:
 
 - Test access logs within log analytics workspace
 
+- Explore Azure Monitoring for NGINX for Azure
+
 ## Pre-Requisites
 
 - Within your NGINX for Azure resource, you must have enabled sending metrics to Azure monitor.
@@ -158,6 +160,40 @@ In this section you will create an extended log format which you will use with `
 
     ![cafe query save](media/lab7_cafe_query_save.png)
 
+### Explore Azure Monitoring for NGINX for Azure
+
+1. Generate some steady traffic using your local Docker Desktop. Start and run the `WRK` load generation tool from a container using below command to generate traffic:
+
+    ```bash
+    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d30m --timeout 2s http://cafe.example.com/coffee
+    ```
+
+    The above command would run for 30 minutes and send request to `http://cafe.example.com/coffee` using 4 threads and 200 connections.
+
+1. Within Azure portal, open your NGINX for Azure resource (nginx4a). From the left pane click on `Monitoring > Metrics`. This should open a new Chart pane.
+
+    ![default chart](media/lab7_default_chart.png)
+
+1. For the first chart, within `Metric Namespace` drop-down, select `NGINX requests and response statistics`. For the `metrics` drop-down, select `plus.http.request.count`. For the `Aggregation` drop-down, select `Avg`.
+
+   Click on the `Apply Splitting` button. Within the `Values` drop-down, select `server_zone`. From top right change the `Time range` to `Last 30 minutes`. This should generate a chart similar to below screenshot.
+
+    ![server zone request chart](media/lab7_server_request_chart.png)
+
+1. You will now save this chart in a new custom dashboard. Within the chart pane, click on `Save to dashboard > Pin to dashboard`.
+
+    Within the `Pin to dashboard` pane, select the `Create new` tab to create your new custom dashboard. Provide a name  for your custom dashboard. Once done click on `Create and pin` button to finish dashboard creation.
+
+    ![Create Dashboard](media/lab7_create_dashboard.png)
+
+1. To view your newly created dashboard, within Azure portal, navigate to `Dashboard` resource.
+
+    By default, this should open the default `My Dashboard` private dashboard. From the top drop-down select your custom dashboard name (`Nginx4a Dashboard`in the screenshot). This should open your custom dashboard which includes the pinned server request chart.
+
+    ![show dashboard](media/lab7_show_dashboard.png)
+
+1. Please look into the [References](#references) section to check the metric catalog and explore various other metrics available with NGINX for Azure. You can also pin multiple metrics to a single dashboard that you created in the previous steps.
+
 <br/>
 
 **This completes Lab7.**
@@ -168,8 +204,7 @@ In this section you will create an extended log format which you will use with `
   
 - [Kusto Query Language](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/tutorials/learn-common-operators)
 
-- [NGINX Directives Index](https://nginx.org/en/docs/dirindex.html)
-- [NGINX Variables Index](https://nginx.org/en/docs/varindex.html)
+- [NGINX Metrics catalog](https://docs.nginx.com/nginxaas/azure/monitoring/metrics-catalog/)
 
 - [NGINX - Join Community Slack](https://community.nginx.org/joinslack)
 
