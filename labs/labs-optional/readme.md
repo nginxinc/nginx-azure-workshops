@@ -1,4 +1,4 @@
-#  Optional Exercises / Grafana 
+# Optional Exercises / Grafana
 
 ## Introduction
 

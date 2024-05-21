@@ -77,4 +77,4 @@ Verify you have the proper computer requirements - hardware and software.
 
 -------------
 
-Get Started! - Navigate to [LabGuide](../LabGuide.md)
+Get Started! - Navigate to [LabGuide](../Readme.md)
