@@ -1282,4 +1282,4 @@ As you have seen, using Nginx for Azure is quite easy to create various backend 
 
 -------------
 
-Navigate to ([Lab6](../lab6/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab6](../lab6/readme.md) | [LabGuide](../readme.md))

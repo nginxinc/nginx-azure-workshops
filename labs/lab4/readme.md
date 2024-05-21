@@ -439,4 +439,4 @@ You will use these new Redis NodePorts for your Nginx for Azure upstreams in the
 
 -------------
 
-Navigate to ([Lab5](../lab5/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab5](../lab5/readme.md) | [LabGuide](../readme.md))

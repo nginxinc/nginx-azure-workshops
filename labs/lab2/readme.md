@@ -690,4 +690,4 @@ NGINX aaS | Windows VM / IIS
 
 -------------
 
-Navigate to ([Lab3](../lab3/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab3](../lab3/readme.md) | [LabGuide](../readme.md))
