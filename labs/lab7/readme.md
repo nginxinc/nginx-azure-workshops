@@ -33,9 +33,10 @@ By the end of the lab you will be able to:
 ### Enable basic log format
 
 1. Within Azure portal, open your resource group and then open your NGINX for Azure resource (nginx4a). From the left pane click on `Settings > NGINX Configuration`. This should open the configuration editor section. Open `nginx.conf` file.
+
     ![NGINX Config](media/lab7_nginx_conf_editor.png)
 
-2. You will notice in previous labs, you have added the default basic log format inside the `http` block within the `nginx.conf` file as highlighted in above screenshot. You will make use of this log format initially to capture some useful metrics within NGINX logs.
+1. You will notice in previous labs, you have added the default basic log format inside the `http` block within the `nginx.conf` file as highlighted in above screenshot. You will make use of this log format initially to capture some useful metrics within NGINX logs.
 
     ```nginx
     log_format main '$remote_addr - $remote_user [$time_local] "$request" '
@@ -43,7 +44,7 @@ By the end of the lab you will be able to:
                     '"$http_user_agent" "$http_x_forwarded_for"';
     ```
 
-3. Update the `access_log` directive to enable logging. Within this directive, you will pass the full path of the log file (eg. `/var/log/nginx/access.log`) and also the `main` log format that you created in previous step. Click on `Submit` to apply the changes.
+1. Update the `access_log` directive to enable logging. Within this directive, you will pass the full path of the log file (eg. `/var/log/nginx/access.log`) and also the `main` log format that you created in previous step. Click on `Submit` to apply the changes.
 
     ```nginx
     access_log  /var/log/nginx/access.log  main;
@@ -51,7 +52,7 @@ By the end of the lab you will be able to:
 
     ![Access log update](media/lab7_main_access_log_update.png)
 
-4. In subsequent sections you will test out the logs inside log analytics workspace.
+1. In subsequent sections you will test out the logs inside log analytics workspace.
 
 ### Create enhance log format with additional logging metrics
 
@@ -91,7 +92,7 @@ In this section you will create an extended log format which you will use with `
     access_log  /var/log/nginx/cafe.example.com.log main_ext;
     ```
 
-    ![cafe access log format update](media/cafe_access_log_update.png)
+    ![cafe access log format update](media/lab7_cafe_access_log_update.png)
 
 1. In subsequent sections you will test out the extended log format within inside log analytics workspace.
 
@@ -99,13 +100,37 @@ In this section you will create an extended log format which you will use with `
 
 1. To test out access logs, generate some traffic on your `cafe.example.com` server.
 
-1. Open your browser and send some request to [http://cafe.example.com](http://cafe.example.com) so that you can look into the access logs.
+1. You can generate some traffic using your local Docker Desktop. Start and run the `WRK` load generation tool from a container using below command to generate traffic:
 
-1. Within Azure portal, open your NGINX for Azure resource (nginx4a). From the left pane click on `Logs`. This should open a new Qeury pane. Select `Resource type` from drop down and then type in `nginx` in the searchbox. This should show all the sample queries related to NGINX for Azure. Under `Show NGINXaaS access logs` click on `Run` button
+   First save your NGINX for Azure resource public IP in a environment variable.
+
+    ```bash
+    ## Set environment variables
+    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_N4A_IP=$(az network public-ip show \
+    --resource-group $MY_RESOURCEGROUP \
+    --name n4a-publicIP \
+    --query ipAddress \
+    --output tsv)    
+    ```
+
+    Make request to the default server block which is using the `main` log format for access logging by running below command.
+
+    ```bash
+    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s http://$MY_N4A_IP
+    ```
+
+    Make request to the `cafe.example.com` server block which is using the `main_ext` log format for access logging by running below command.
+
+    ```bash
+    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s -H 'Host: cafe.example.com'  http://$MY_N4A_IP/coffee
+    ```
+
+1. Within Azure portal, open your NGINX for Azure resource (nginx4a). From the left pane click on `Monitoring > Logs`. This should open a new Qeury pane. Select `Resource type` from drop down and then type in `nginx` in the search box. This should show all the sample queries related to NGINX for Azure. Under `Show NGINXaaS access logs` click on `Run` button
 
     ![nginx4a logs](media/nginx4a_logs.png)
 
-
+1.
 
 ### Understanding Kusto Query Language (KQL) to pull out and print all access and error logs from log analytics workspace
 
