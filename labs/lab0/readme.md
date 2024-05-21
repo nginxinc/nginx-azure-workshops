@@ -2,50 +2,52 @@
 
 ## Introduction
 
-In this lab, you will build ( x,y,x ).
+In this Workshop, you will build a working Lab environment in Azure, and use Nginx for Azure to control traffic to these Azure Resources.  The architecture you will build will look like this diagram:
 
-< Lab specific Images here, in the /media sub-folder >
-
-NGINX aaS | Docker
-:-------------------------:|:-------------------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)
+![N4A Workshop](media/n4a-workshop-diagram-r7.png)
   
-## Learning Objectives
+In order to build this environment, your computer hardware, software, and applications must be properly installed and fuctional.  This is the list of Prerequisite needed to successfully complete this Workshop as a Student.
 
-By the end of the lab you will be able to:
-
-- Introduction to `xx`
-- Build an `yyy` Nginx configuration
-- Test access to your lab enviroment with Curl and Chrome
-- Investigate `zzz`
-
-
-## Pre-Requisites
-
-- You must have `aaaa` installed and running
-- You must have `bbbbb` installed
-- See `Lab0` for instructions on setting up your system for this Workshop
-- Familiarity with basic Linux commands and commandline tools
-- Familiarity with basic Docker concepts and commands
-- Familiarity with basic HTTP protocol
+>It is `highly recommended` for Students attending this Workshop to be proficient with NGINX and Azure and have some experience with Kubernetes and Docker administration, networking tools, and Load Balancing concepts.  An `Azure Subscription` and Admin level access to Azure Portal is required. Previous experience with VisualStudio Code and Redis Tools is also recommended.
 
 <br/>
 
-### Lab exercise 1
+## Prerequisites
 
-<numbered steps are here>
+In this Lab0, the requirements for both the Student and the Azure environment will be described.  *It is imperative that you have the appropriate computer, tools, and Azure access to successfully complete the Workshop.*
 
-### Lab exercise 2
+</br>
 
-<numbered steps are here>
+NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![](media/nginx-azure-icon.png)  |  ![](media/nginx-plus-icon.png)   |  ![](media/kubernetes-icon.png) |  ![](media/docker-icon.png) |  ![](media/redis-icon.png)
 
-### Lab exercise 3
+<br/>
 
-<numbered steps are here>
+### Student Hardware/Software/Azure Requirements
 
-### << more exercises/steps>>
+Verify you have the proper computer requirements - hardware and software.
+- Hardware:  Laptop, Admin rights, Internet connection
+- Software:  Visual Studio, Terminal, Chrome, Docker, AKS and AZ CLI.
+- Verify you have proper computer skills:  Linux CLI, files, SSH/Terminal, Docker/Compose, Azure Portal, Load Balancing concepts, Linux tools, Azure CLI
+- Verify you have the proper access to Azure resources: Azure Subscription with Admin level access
 
-<numbered steps are here>
+
+<br/>
+
+## Required Skills
+
+- Nginx for Azure NGINXperts Workshop has minimum REQUIRED Nginx Skills: Students must be familiar with Nginx operation, configurations, and concepts for HTTP traffic.
+- The NGINXperts Basics Workshop is HIGHLY recommended, students should have taken this workshop prior.
+- The NGINXperts Plus Ingress Controller workshop is also HIGHLY recommended, students should have taken this workshop prior.
+- Azure admin skills, previous training from Microsoft Learn is HIGHLY recommended.
+- Recommended: TLS, DNS, HTTP caching, Grafana, Redis
+
+<br/>
+
+[NGINXperts Basics Workshop](https://github.com/nginxinc/nginx-basics-workshops)
+
+[NGINXperts Nginx Plus Ingress Controller Workshop](https://github.com/nginxinc/nginx-ingress-workshops/tree/main/Plus/labs)
 
 <br/>
 
@@ -71,7 +73,8 @@ By the end of the lab you will be able to:
 - Chris Akker - Solutions Architect - Community and Alliances @ F5, Inc.
 - Shouvik Dutta - Solutions Architect - Community and Alliances @ F5, Inc.
 - Adam Currier - Solutions Architect - Community and Alliances @ F5, Inc.
+- Steve Wagner - Solutions Architect - Community and Alliances @ F5, Inc.
 
 -------------
 
-Navigate to ([Lab1](../lab1/readme.md) | [LabX](../labX/readme.md))
+Get Started! - Navigate to [LabGuide](../LabGuide.md)

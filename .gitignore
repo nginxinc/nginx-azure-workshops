@@ -20,3 +20,4 @@ Thumbs.db
 # Misc Dir #
 ############
 .apc/
+lab/kubernetes-ingress
