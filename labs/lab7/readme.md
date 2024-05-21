@@ -18,7 +18,6 @@ By the end of the lab you will be able to:
 
 - Test access logs within log analytics workspace
 
-
 ## Pre-Requisites
 
 - Within your NGINX for Azure resource, you must have enabled sending metrics to Azure monitor.
@@ -154,6 +153,10 @@ In this section you will create an extended log format which you will use with `
 1. Within the Results pane, expand one of the logs to look into its details. You can also hover your mouse over the message to show the message details as shown in below screenshot. Note that the message follows the `main_ext` log format.
 
     ![cafe query details](media/lab7_cafe_query_details.png)
+
+1. You can save the custom query if you wish by clicking on the `Save` button and then selecting `Save as query`. Within the `Save as query` pane provide a query name and optional description and then finally click on `Save` button.
+
+    ![cafe query save](media/lab7_cafe_query_save.png)
 
 <br/>
 
