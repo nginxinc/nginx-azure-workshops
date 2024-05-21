@@ -46,7 +46,61 @@ Combining the speed and performance of NGINX with the trust and security behind 
 
 [NGINXaaS for Azure Product Page](https://docs.nginx.com/nginxaas/azure/)
 
+<<<<<<< Updated upstream
 [NGINXaaS for Azure Frequently Asked Questions](https://docs.nginx.com/nginxaas/azure/faq/)
+=======
+<br/>
+
+### Prerequisites
+
+See the [Lab0 Readme.md](lab0/readme.md) for details on Student Prerequisites for this Workshop.
+
+</br>
+
+NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![](media/nginx-azure-icon.png)  |  ![](media/nginx-plus-icon.png)   |  ![](media/kubernetes-icon.png) |  ![](media/docker-icon.png) |  ![](media/redis-icon.png)
+
+<br/>
+
+## Lab Outline
+
+### Lab 0: Prerequesites - Azure Subscription / Resources
+- [Lab 0: Prerequesites - Azure Subscription / Resources](lab0/readme.md)
+
+### Lab 1: Azure VNet and Subnet and Network Security Group
+- [Lab 1: Azure VNet and Subnet and Network Security Group](lab1/readme.md)
+
+### Lab 2: Nginx for Azure Overview and Deployment
+- [Lab 2: Nginx for Azure Overview and Deployment](lab2/readme.md)
+
+### Lab 3: Ubuntu VM / Docker / Windows VM / Cafe Demo  
+- [Lab 3: Ubuntu VM / Docker / Windows VM / Cafe Demo](lab3/readme.md)
+
+### Lab 4: AKS / Nginx Ingress Controller / Cafe Demo / Redis
+- [Lab 4: AKS / Nginx Ingress Controller / Cafe Demo / Redis](lab4/readme.md)
+
+### Lab 5: Nginx Load Balancing / Blue-Green / Split Clients
+- [Lab 5: Nginx Load Balancing / Blue-Green / Split Clients](lab5/readme.md)
+
+### Lab 6: Azure Key Vault / TLS Essentials
+- [Lab 6: Azure Key Vault / TLS Essentials](lab6/readme.md)
+
+### Lab 7: Azure Monitoring / Logging Analytics
+- [Lab 7: Azure Monitoring / Logging Analytics](lab7/readme.md)
+
+### Lab 8: Nginx Garage Demo
+- [Lab 8: Nginx Garage Demo](lab8/readme.md)
+
+### Lab 9: Nginx Caching / Rate Limits / Juiceshop
+- [Lab9: Nginx Caching / Rate Limits / Juiceshop](lab9/readme.md)
+
+### Lab 10: Nginx with Grafana for Azure
+- [Lab10: Nginx with Grafana for Azure](lab10/readme.md)
+
+#### Labs Optional: Optional Exercises
+- [Labs Optional: Optional Exercises](labs-optional/readme.md)
+>>>>>>> Stashed changes
 
 <br/>
 
