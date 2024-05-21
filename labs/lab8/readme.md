@@ -1,4 +1,4 @@
-#  NGINX Garage or Azure Petshop
+# NGINX Garage (UNDER CONSTRUCTION)
 
 ## Introduction
 
