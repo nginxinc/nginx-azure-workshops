@@ -321,4 +321,4 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 
 -------------
 
-Navigate to ([Lab7](../lab7/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab7](../lab7/readme.md) | [LabGuide](../readme.md))

@@ -1,4 +1,4 @@
-#  Optional Exercises / Grafana 
+# Optional Exercises / Grafana
 
 ## Introduction
 
@@ -142,4 +142,4 @@ Nginx Rate Limiting here
 
 -------------
 
-Navigate to ([LabX](../labX/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab Guide](../readme.md))

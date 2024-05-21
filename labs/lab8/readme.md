@@ -1,4 +1,4 @@
-#  NGINX Garage or Azure Petshop
+# NGINX Garage (UNDER CONSTRUCTION)
 
 ## Introduction
 
@@ -74,4 +74,4 @@ By the end of the lab you will be able to:
 
 -------------
 
-Navigate to ([Lab9](../lab9/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab9](../lab9/readme.md) | [LabGuide](../readme.md))
