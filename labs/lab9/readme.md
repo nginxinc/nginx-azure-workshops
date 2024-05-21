@@ -537,4 +537,4 @@ And you can use multiple limit directives together for very fine-grain control o
 
 -------------
 
-Navigate to ([Lab10](../lab10/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab10](../lab10/readme.md) | [LabGuide](../labs/readme.md))
