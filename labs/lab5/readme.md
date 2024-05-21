@@ -559,7 +559,7 @@ To accomplish the Split Client functionality with Nginx, you only need 3 things.
             #add_header X-Proxy-Pass aks1_ingress;  # Custom Header
 
             #proxy_pass http://aks2_ingress;        # Proxy AND load balance to AKS2 Nginx Ingress
-            #add_header X-Proxy-Pass aks1_ingress;  # Custom Header
+            #add_header X-Proxy-Pass aks2_ingress;  # Custom Header
 
         }
 
@@ -575,7 +575,15 @@ Unfortunately, refreshing about 100 times and trying to catch the 1% sent to AKS
 1. Open a separate Terminal, and start the WRK load tool. Use the example here, but change the IP address to your Nginx for Azure Public IP:
 
     ```bash
-    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d20m -H 'Host: cafe.example.com' --timeout 2s http://20.3.16.67/coffee
+    ## Set environment variables
+    export MY_RESOURCEGROUP=c.akker-workshop
+    export MY_N4A_IP=$(az network public-ip show \
+    --resource-group $MY_RESOURCEGROUP \
+    --name n4a-publicIP \
+    --query ipAddress \
+    --output tsv)    
+   
+    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d20m -H 'Host: cafe.example.com' --timeout 2s http://$MY_N4A_IP/coffee
     ```
 
 This will open 200 Connections, and run for 20 minutes while we try different Split Ratios.  The Host Header `cafe.example.com` is required, to match your Server Block in your Nginx for Azure configuration.
