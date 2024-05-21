@@ -1,4 +1,4 @@
-#  Nginx Caching / Rate Limits / Juiceshop / My Garage
+#  Nginx Caching / Rate Limits / Juiceshop
 
 ## Introduction
 
@@ -19,12 +19,10 @@ NGINXaaS Azure | Cache | Juiceshop | My Garage
 - Add Nginx Caching to improve delivery of images.
 - Explore, configure, and test HTTP Request Limits
 
-
 ## Pre-Requisites
 
 - You must have your Nginx for Azure instance running
 - You must have your AKS1 Cluster running
-
 - See `Lab0` for instructions on setting up your system for this Workshop
 - Familiarity with basic Linux commands and commandline tools
 - Familiarity with basic HTTP protocol
@@ -313,12 +311,6 @@ Here is a hint:
 Find the `carrot_juice` and `melon_bike` objects.  What are different about them?  Can you figure out what's going on?
 
 >Provide your Answer via Private Zoom Chat if you figure it out *and fix it!*
-
-## Add Caching for My Garage images
-
-In this exercise, you will add Caching to Nginx for Azure for the My Garage images, just like you did for Juiceshop.
-
-1. < Under Construction - to be added >
 
 <br/>
 
