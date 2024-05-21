@@ -18,7 +18,6 @@ By the end of the lab you will be able to:
 
 - Test access logs within log analytics workspace
 
-- Understanding Kusto Query Language (KQL) to pull out and print all access and error logs from log analytics workspace
 
 ## Pre-Requisites
 
@@ -130,27 +129,45 @@ In this section you will create an extended log format which you will use with `
 
     ![nginx4a logs](media/nginx4a_logs.png)
 
-1.
+1. This should open a `new query` window, which is made up of a query editor pane at the top and query result pane at the bottom as shown in below screenshot.
 
-### Understanding Kusto Query Language (KQL) to pull out and print all access and error logs from log analytics workspace
+    ![default query](media/lab7_default_query.png)
 
-<numbered steps are here>
+    > **NOTE:** The logs may take couple of minutes to show up. If the results pane doesn't show the logs then wait for a minute and then click on the `Run` button to run the query again.
+
+1. Azure makes use of Kusto Query Language(KQL) to query logs. Have a look in the [references](#references) section to learn more about KQL.
+
+1. You will modify the default query to show logs for `cafe.example.com` server block. Update the default query with the below query in the query editor pane. Click on the `Run` button to execute the query.
+
+    ```kql
+    // Show NGINXaaS access logs 
+    // A list of access logs sorted by time. 
+    NGXOperationLogs
+    | where FilePath == "/var/log/nginx/cafe.example.com.log"
+    | sort by TimeGenerated desc
+    | project TimeGenerated, FilePath, Message
+    | limit 100
+    ```
+
+    ![cafe query](media/lab7_cafe_query.png)
+
+1. Within the Results pane, expand one of the logs to look into its details. You can also hover your mouse over the message to show the message details as shown in below screenshot. Note that the message follows the `main_ext` log format.
+
+    ![cafe query details](media/lab7_cafe_query_details.png)
 
 <br/>
 
 **This completes Lab7.**
 
-<br/>
-
 ## References:
 
 - [NGINX As A Service for Azure](https://docs.nginx.com/nginxaas/azure/)
-- [NGINX Plus Product Page](https://docs.nginx.com/nginx/)
-- [NGINX Ingress Controller](https://docs.nginx.com//nginx-ingress-controller/)
-- [NGINX on Docker](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-docker/)
+  
+- [Kusto Query Language](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/tutorials/learn-common-operators)
+
 - [NGINX Directives Index](https://nginx.org/en/docs/dirindex.html)
 - [NGINX Variables Index](https://nginx.org/en/docs/varindex.html)
-- [NGINX Technical Specs](https://docs.nginx.com/nginx/technical-specs/)
+
 - [NGINX - Join Community Slack](https://community.nginx.org/joinslack)
 
 <br/>
