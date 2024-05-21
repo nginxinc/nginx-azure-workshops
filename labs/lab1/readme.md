@@ -658,4 +658,4 @@ In this section you will create a Log Analytics resource that would collect Ngin
 
 -------------
 
-Navigate to ([Lab2](../lab2/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab2](../lab2/readme.md) | [LabGuide](../readme.md))

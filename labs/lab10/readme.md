@@ -171,7 +171,6 @@ az grafana delete --name $MY_GRAFANA --resource-group $MY_RESOURCEGROUP --yes
 
 -------------
 
-
-Navigate to ([Main Menu](../readme.md))
+Navigate to ([Lab Guide](../readme.md))
 
 

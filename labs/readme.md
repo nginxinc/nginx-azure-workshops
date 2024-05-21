@@ -1,54 +1,39 @@
-![NGINX for Azure Workshop](media/n4aworkshop-banner.png)
+![NGINX 4 Azure](media/n4aworkshop-banner.png)
 
 <br/>
 
-# NGINXaaS for Azure Workshop
+## NGINXaaS for Azure Workshop
 
 <br/>
 
-## Welcome!
+### Overview
 
 <br/>
 
-> ><strong>Welcome to the NGINX as a Service for Azure Workshop!</strong>
+> ><strong>Welcome to the NGINXaaS for Azure Workshop!</strong>
 
 <br/>
 
-This NGINXperts Workshop will introduce **`NGINXaaS for Azure`** with hands-on practice through lab exercises.
+This **NGINXperts Workshop** will introduce **`NGINXaaS for Azure`** with hands-on practice through lab exercises.
 
-You will learn how to configure NGINX for Azure, deploy it with various Azure Resources. 
-- You will use many NGINX Plus features, for routing traffic, terminate TLS, splitting traffic, and caching.  
-- You will build a sample Enterprise environment with apps and services in Linux and Windows VMs, use Docker, and multiple AKS Kubernetes clusters. 
-- You will terminate TLS, route HTTP/S traffic, load balance running VMs, containers, pods and Nginx Ingress Controllers.  
-- You will configure Advanced Nginx Plus features like Caching, Dynamic Split Clients for Blue/Green testing, using live traffic.  
-- You will expose both Web and TCP applications on the Internet.  
-- You will explore the integrations of Nginx with the Azure Cloud Resources like Key Vault, Monitoring, Logging/Analytics, and Grafana.
+You will learn and explore NGINX for Azure, deploy and configure it with various Azure Resources. You will use many NGINX Plus features, for routing traffic, terminate TLS, splitting traffic, and caching.  You will build a sample Enterprise environment in Azure with apps and services in Linux and Windows VMs, use Docker, and multiple Kubernetes AKS clusters.  You will terminate TLS, route HTTP/S traffic, load balance running VMs, containers, pods and Nginx Ingress Controllers.  You will configure Advanced Nginx Plus features like Caching and Dynamic Split Clients for Blue/Green testing, using live traffic.  You will expose both Web and TCP applications on the Internet.  You will explore the integrations of Nginx with Azure Cloud Resources like Key Vault, Monitoring, Logging/Analytics, and Grafana.
 
 The Hands-on Lab Exercises are designed to build upon each other, adding additional services and features as you progress through them, completing the labs in sequential order is required.  You will follow along as an instructor guides you through these exercises.
 
-![Developer Seated](media/developer-seated.svg)
-
->By the end of this Workshop, you will have a working, operational NGINX for Azure deployment, routing and load balancing traffic to and from VMs, Docker containers, and Nginx Ingress Controllers in Kubernetes with application pods and services. You will learn the necessary skills to deploy and operate N4A for your own Modern Applications running in Azure Cloud.  Thank You for taking the time to attend this NGINXperts Workshop!
-
-![Robot](media/robot.svg)
-
-## About NGINX as a Service for Azure
-
-NGINX for Azure is an Enterprise-Ready solution for directing traffic to/from Azure Resources.  NGINX for Azure is available in most Azure Regions, in the Azure Marketplace.  NGINX for Azure is built from the same source code you know and trust from NGINX Plus.  You can find the full Nginx for Azure support and technical specifications on the https://www.f5.com/products/nginx/f5-nginxaas-for-azure website.  
+This is the third Workshop in the `NGINXperts Series' from the Nginx Communities and Alliances Team at Nginx.
 
 <br/>
 
-![NGINX Azure](media/nginx-azure-icon.png)
+NGINXaaS for Azure  |  NGINXperts Workshops
+:-------------------------:|:-------------------------:
+![](media/nginx-azure-icon.png)  |  ![](media/developer-seated.svg)
 
 <br/>
 
-Combining the speed and performance of NGINX with the trust and security behind F5 Networks, NGINX for Azure is synonymous with high‑performing, scalable, and secure modern apps in production.
+The Hands-On Lab Exercises are designed to build upon each other, adding additional services and features as you progress through them.  `It is important to complete the lab exercises in sequential order.`
 
-[NGINXaaS for Azure Product Page](https://docs.nginx.com/nginxaas/azure/)
+By the end of this Workshop, you will have a working, operational NGINX for Azure deployment and Lab environment, with the skills to deploy and operate one for your Modern Application projects in Azure.
 
-<<<<<<< Updated upstream
-[NGINXaaS for Azure Frequently Asked Questions](https://docs.nginx.com/nginxaas/azure/faq/)
-=======
 <br/>
 
 ### Prerequisites
@@ -99,8 +84,7 @@ NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis
 - [Lab10: Nginx with Grafana for Azure](lab10/readme.md)
 
 #### Labs Optional: Optional Exercises
-- [Labs Optional: Optional Exercises](labs-optional/readme.md)
->>>>>>> Stashed changes
+- [Lab10: Optional Exercises](labs-optional/readme.md)
 
 <br/>
 
@@ -111,12 +95,9 @@ NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis
 - Adam Currier - Solutions Architect - Community and Alliances @ F5, Inc.
 - Steve Wagner - Solutions Architect - Community and Alliances @ F5, Inc.
 
--------------
-
 <br/>
 
-**This completes the Introduction.**
+Click [Lab0: Student Prerequisites](lab0/readme.md) for details on Student Prerequisite Requirements for this Workshop.
 
-<br/> 
+Click [Lab1: Azure VNet and Subnet and Network Security Group](lab1/readme.md) to get started! 
 
-Click on ([LabGuide](LabGuide.md)) to begin the Workshop.
