@@ -1,5 +1,4 @@
-#  NGINX My Garage
-
+# NGINX Garage (UNDER CONSTRUCTION)
 
 ## Introduction
 
@@ -229,4 +228,4 @@ echo "AppConfig Connection String: $appConfigConnectionString"
 
 -------------
 
-Navigate to ([Lab9](../lab9/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab9](../lab9/readme.md) | [LabGuide](../readme.md))

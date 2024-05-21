@@ -993,4 +993,4 @@ So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 8
 
 -------------
 
-Navigate to ([Lab4](../lab4/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab4](../lab4/readme.md) | [LabGuide](../readme.md))

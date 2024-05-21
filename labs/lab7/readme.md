@@ -218,4 +218,4 @@ In this section you will create an extended log format which you will use with `
 
 -------------
 
-Navigate to ([Lab8](../lab8/readme.md) | [LabX](../labX/readme.md))
+Navigate to ([Lab8](../lab8/readme.md) | [LabGuide](../readme.md))
