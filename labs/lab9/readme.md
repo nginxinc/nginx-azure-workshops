@@ -330,22 +330,26 @@ Notice that is was pretty easy to define, and enable Nginx Caching for images an
 
 ## Explore, configure, and test HTTP Request Limits
 
+![Nginx Cache](media/rate-limit-icon.png)
+
 In this exercise, Nginx HTTP Rate Limiting will be explored.  You will configure some Limits, apply them to the Juiceshop application, and see the results of introducing various Limits.  Rate Limiting has many practical use cases - limiting attacks, limiting bots, protecting request load sensitive URLs/APIs, classes of service, and others.
 
 1. Inspect the `lab9/rate-limits.conf` file.  You will see 4 different Rate Limits defined, using the `limit_req_zone` directive.  This directive creates an Nginx memory zone where the limit Keys and counters are stored.  When a request matches a Key, the counter is incremented.  If no key exists, it is added to the zone and the counter is incremented, as you would expect.  Keys are ephemeral, they are lost if you restart Nginx, but are preserved during an Nginx Reload.
 
-A. The first parameter, `$binary_remote_addr` is the Key used in the memory zone for tracking.  In this example, the client's IP Address in binary format is used.  Binary being shorter, using less memory, than a dot.ted.dec.imal IP Address string.  You can use whatever Key $variable you like, as long as it is an Nginx $variable available when Nginx receives an HTTP request, like a cookie, URL argument, HTTP Header, TLS Serial Number, etc.  There are literally hundreds of request $variables you could use, and you can combine multiple $variables together.
+    **Example:  limit_req_zone $binary_remote_addr zone=limitone:10m rate=1r/s;**
 
-B. The second parmater, `zone=limitX:10m`, is the name of the zone, and the size of 10MB.  You can define larger memory zones if needed, 10MB is a good starting point. Each zone must have a unique name, which matches the actual limit being defined in this example.
+    A. The first parameter, `$binary_remote_addr` is the Key used in the memory zone for tracking.  In this example, the client's IP Address in binary format is used.  Binary being shorter, using less memory, than a dot.ted.dec.imal IP Address string.  You can use whatever Key $variable you like, as long as it is an Nginx $variable available when Nginx receives an HTTP request - like a cookie, URL argument, HTTP Header, TLS Serial Number, etc.  There are literally hundreds of request $variables you could use, and you can combine multiple $variables together.
 
-- - limitone is the zone for 1 request/second
-- - limit10 is the zone for 10 requests/second
-- - limit100 is the zone for 100 requests/second
-- - limit1000 is the zone for 1,000 requests/second
+    B. The second parmater, `zone=limitX:10m`, is the name of the zone, and the size of 10MB.  You can define larger memory zones if needed, 10MB is a good starting point. Each zone must have a unique name, which matches the actual limit being defined in this example.
 
-C. The third parameter is the actual Rate Limit Value, expressed as `r/s` for `requests/second`.
+    - - limitone is the zone for 1 request/second
+    - - limit10 is the zone for 10 requests/second
+    - - limit100 is the zone for 100 requests/second
+    - - limit1000 is the zone for 1,000 requests/second
 
-You can define as many zones as you need, as long as you have enough memory for it.  You can use a zone more than once in an Nginx configuration.  You can see the number of requests that are being counted in each limit zone with Azure Monitoring.  You can also use Nginx Logging $variables to track when Limits are being counted and used for the request.  You will create an HTTP Header that will also show you the limit status of the request when Nginx sends back the response.  So you will have very good visibility into how/when the limits are being used.
+    C. The third parameter is the actual Rate Limit Value, expressed as `r/s` for `requests/second`.
+
+    You can define as many zones as you need, as long as you have enough memory for it.  You can use a zone more than once in an Nginx configuration.  You can see the number of requests that are being counted in each limit zone with Azure Monitoring.  You can also use Nginx Logging $variables to track when Limits are being counted and used for the request.  You will create an HTTP Header that will also show you the limit status of the request when Nginx sends back the response.  So you will have very good visibility into how/when the limits are being used.
 
 1. Using the Nginx for Azure Console, create a new file called `/etc/nginx/includes/rate-limits.conf`.  You can use the example file provided, just Copy/Paste.
 
