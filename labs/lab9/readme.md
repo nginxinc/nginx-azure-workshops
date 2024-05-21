@@ -279,14 +279,15 @@ In this exercise, you will create an Nginx for Azure configuration, to add Cachi
 
     ![Chrome Headers](media/lab9_chrome-manage-headers.png)
 
+    ![Chrome new columns](media/lab9_chrome-new-columns.png)
 
-    Now your Object Details Display should have these three new columns you can watch.
+    *Now your Object Details Display should have these three new Headers you can watch.*
 
 1. Click Refresh again, what do you see?  `The X-Cache-Status` header will display `HIT, MISS, EXPIRED`, depending on how Nginx is caching, or not caching, each object. A MISS means the object was not in the cache at all, of course. Clear the Dev tool display, and Click Refresh a couple more times - see if you can find some HITS?   If you wait more than 60 seconds, Refresh, and these same objects will show EXPIRED.  Click on one of the objects of interest, and check the Response Headers.
 
     ![Chrome Headers Hit-Miss](media/lab9_chrome-hit-miss-expired.png)
 
-    What does X-Proxy-Pass show?  Does it show 2 different Values?
+   What does X-Proxy-Pass show?  Does it show 2 different Values?
     - one for `aks1_ingress_juiceshop` for your first `location / block` 
     - and `nginxazure_imagecache` for your `REGEX location block` for the image types?  
 
