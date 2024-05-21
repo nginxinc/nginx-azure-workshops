@@ -84,7 +84,7 @@ NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis
 - [Lab10: Nginx with Grafana for Azure](lab10/readme.md)
 
 #### Labs Optional: Optional Exercises
-- [Lab10: Optional Exercises](labs-optional/readme.md)
+- [Labs Optional: Optional Exercises](labs-optional/readme.md)
 
 <br/>
 
