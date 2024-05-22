@@ -1,8 +1,8 @@
-# Azure Key Vault / TLS Essentials
+# Azure Montoring / Logging Analytics
 
 ## Introduction
 
-In this lab, you will create a new key-vault resource that would be storing self-signed certificates. You will then configure Nginx for Azure to listen for https traffic and then terminate TLS before proxying and load balancing back to the backend system.
+In this lab, you will explore Azure based monitoring and Logging capabilities. You will create the basic access log_format within NGINX for Azure resource. As the basic log_format only contains a fraction of the information, you will then extend it and create a new log_format to include much more information, especially about the Upstream backend servers. You will add access logging to your NGINX for Azure resource and finally capture/see those logs within Azure monitoring tools.
 
 NGINX aaS | Docker
 :-------------------------:|:-------------------------:
@@ -12,303 +12,200 @@ NGINX aaS | Docker
 
 By the end of the lab you will be able to:
 
-- Build your own Azure Key Vault resource.
-- Create your self-signed TLS certificate.
-- Configure NGINX for Azure to listen and terminate TLS traffic
-- Test and validate TLS traffic components and settings
+- Enable basic log format within NGINX for Azure resource
+
+- Create enhance log format with additional logging metrics
+
+- Test access logs within log analytics workspace
+
+- Explore Azure Monitoring for NGINX for Azure
 
 ## Pre-Requisites
 
-- You must have  your Nginx for Azure resource up and running
-- You must have `Owner` role on the resource group that includes NGINX for Azure resource
-- You must also have backend system resources up and running.
-- See `Lab0` for instructions on setting up your system for this Workshop
-
-### Create Azure Key Vault resource
-
-1. Create an Azure key vault within the same resource group which holds your NGINX for azure resource.
-
-    ```bash
-    ## Set environment variable
-    export MY_RESOURCEGROUP=s.dutta-workshop
-    export MY_INITIALS=sdutta
-    export MY_KEYVAULT=n4a-keyvault-$MY_INITIALS
-    ```
-
-    Once the environment variables are all set, run below command to create the key vault resource
-
-    ```bash
-    az keyvault create \
-    --resource-group $MY_RESOURCEGROUP \
-    --name $MY_KEYVAULT \
-    --enable-rbac-authorization false
-    ```
-
-    ```bash
-    ##Sample Output##
-    {
-    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.KeyVault/vaults/n4a-keyvault-sdutta",
-    "location": "centralus",
-    "name": "n4a-keyvault-sdutta",
-    "properties": {
-        "accessPolicies": [
-        {
-            "applicationId": null,
-            "objectId": "xxxx-xxxx-xxxx-xxxx-xxxx",
-            "permissions": {
-            "certificates": [
-                "all"
-            ],
-            "keys": [
-                "all"
-            ],
-            "secrets": [
-                "all"
-            ],
-            "storage": [
-                "all"
-            ]
-            },
-            "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx"
-        }
-        ],
-        "createMode": null,
-        "enablePurgeProtection": null,
-        "enableRbacAuthorization": false,
-        "enableSoftDelete": true,
-        "enabledForDeployment": false,
-        "enabledForDiskEncryption": null,
-        "enabledForTemplateDeployment": null,
-        "hsmPoolResourceId": null,
-        "networkAcls": null,
-        "privateEndpointConnections": null,
-        "provisioningState": "Succeeded",
-        "publicNetworkAccess": "Enabled",
-        "sku": {
-        "family": "A",
-        "name": "standard"
-        },
-        "softDeleteRetentionInDays": 90,
-        "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
-        "vaultUri": "https://n4a-keyvault-sdutta.vault.azure.net/"
-    },
-    "resourceGroup": "s.dutta-workshop",
-    "systemData": {
-        "createdAt": "2024-05-08T12:51:45.338000+00:00",
-        "createdBy": "<YOUR EMAIL ID>",
-        "createdByType": "User",
-        "lastModifiedAt": "2024-05-08T12:51:45.338000+00:00",
-        "lastModifiedBy": "<YOUR EMAIL ID>",
-        "lastModifiedByType": "User"
-    },
-    "tags": {},
-    "type": "Microsoft.KeyVault/vaults"
-    }
-    ```
-
-    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
-
-2. Next you would provide permissions to access this keyvault to the user assigned managed identity that you created while creating NGINX for Azure resource.
-3. Copy the `PrincipalID` of the user identity into an environment variable using below command.
-
-    ```bash
-    ## Set environment variable
-    MY_PRINCIPALID=$(az identity show \
-    --resource-group $MY_RESOURCEGROUP \
-    --name n4a-useridentity \
-    --query principalId \
-    --output tsv)
-    ```
-
-4. Now assign GET secrets and GET certificates permission to this user assigned managed identity for your keyvault using below command.
-
-    ```bash
-    az keyvault set-policy \
-    --name $MY_KEYVAULT \
-    --certificate-permissions get \
-    --secret-permissions get \
-    --object-id $MY_PRINCIPALID
-    ```
-
-    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully set the policy.
-
-### Create a self-signed TLS certificate
-
-1. In this section, you will create a self-signed certificate using the Azure CLI.
-
-   >**NOTE:** It should be clearly understood, that Self-signed certificates are exactly what the name suggest - they are created and signed by you or someone else. **They are not signed by any official Certificate Authority**, so they are not recommended for any use other than testing in lab exercises within this workshop. Most Modern Internet Browsers will display Security Warnings when they receive a Self-Signed certificate from a webserver. In some environments, the Browser may actually block access completely. So use Self-signed certificates with **CAUTION**.
-
-2. Create a self-signed certificate by running the below command.
-
-    > **NOTE:** Make sure your Terminal is the `nginx-azure-workshops/labs` directory before running the below command.
-
-    ```bash
-    az keyvault certificate create \
-    --vault-name $MY_KEYVAULT \
-    --name n4a-cert \
-    --policy @lab6/self-certificate-policy.json
-    ```
-
-    ```bash
-    ##Sample Output##
-    {
-    "cancellationRequested": false,
-    "csr": "<Your Certificate Signing Request Data>",
-    "error": null,
-    "id": "https://n4a-keyvault-sdutta.vault.azure.net/certificates/n4a-cert/pending",
-    "issuerParameters": {
-        "certificateTransparency": null,
-        "certificateType": null,
-        "name": "Self"
-    },
-    "name": "n4a-cert",
-    "requestId": "9e3abe3b0977420cba1733c326fe26e5",
-    "status": "completed",
-    "statusDetails": null,
-    "target": "https://n4a-keyvault-sdutta.vault.azure.net/certificates/n4a-cert"
-    }
-    ```
-
-    > **NOTE:** Within the output json you should have a `"status": "completed"` field which validates the command successfully created the certificate.
-
-3. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault-$MY_INITIALS` key-vault resource.
-
-4. Within the keyvault resources window, click on `Certificates` under `Objects` from the left pane. You should see a self-signed certificate named `n4a-cert` within the certificates pane.
-
-    ![KeyVault Screen](media/lab6_keyvault_screen.png)
-
-5. Click on the newly created certificate and then open up `Issuance Policy` tab for more details on the certificate. You will use this certificate with NGINX for Azure resource to listen for HTTPS traffic.
-
-    ![Certificate Issuance](media/lab6_certificate_issuance.png)
-
-### Configure NGINX for Azure to listen listen and terminate TLS traffic
-
-Now that you have a self signed TLS certificate for testing, you will configure NGINX for Azure resource to use them.
-
-1. Within your resource-group, click on the NGINX for Azure resource (`nginx4a`).
-
-1. From the left pane, click on `NGINX certificates` under `Settings` and then click on the `+ Add certificate` button to add your self signed certificate that you created in previous section.
-
-    ![NGINX Certificates](media/lab6_n4a_cert_screen.png)
-
-1. Within the `Add Certificate` pane, fill in below details:
-    - **Preferred name:** Any unique name for the certificate (eg. n4a-cert)
-    - **Certificate path:** Logical path where the certificate would recide. (eg. /etc/nginx/cert/n4a-cert.cert)
-    - **Key path:** Logical path where the key would recide. (eg. /etc/nginx/cert/n4a-cert.key)
-
-        ![add certificate1](media/lab6_add_certificate1.png)
-
-    - Click on the `Select Certificate` button and then fill in below certificate details. Once done click `Select`
-      - **Key vault:** Select your key vault (eg. n4a-keyvault-sdutta)
-      - **Certificate name:** Select a certificate (eg. n4a-cert)
-
-        ![add certificate2](media/lab6_add_certificate2.png)
+- Within your NGINX for Azure resource, you must have enabled sending metrics to Azure monitor.
   
-1. Once all the fields have been filled, click on `Add Certificate` to save the certificate within NGINX for Azure.
+- You must have created `Log Analytics workspace`.
+- You must have created an Azure diagnostic settings resource that will stream the NGINX logs to the Log Analytics workspace.
+- See `Lab1` for instructions if you missed any of the above steps.
 
-    ![add certificate save](media/lab6_add_certificate_save.png)
+<br/>
 
-1. You should see your certificate in a `Succeeded` status if the values that you entered in previous step was all correct.
+### Enable basic log format
 
-    ![add certificate success](media/lab6_add_certificate_sucess.png)
+1. Within Azure portal, open your resource group and then open your NGINX for Azure resource (nginx4a). From the left pane click on `Settings > NGINX Configuration`. This should open the configuration editor section. Open `nginx.conf` file.
 
-1. Now you will modify your `cafe.example.com.conf` file that you created in `lab2` to set up cafe.example.com as a HTTPS server. First you will add the `ssl` parameter to the `listen` directive in the `server` block. You will then specify the server certificate and private key file within the configuration to point to the certificate that you added in previous steps.
+    ![NGINX Config](media/lab6_nginx_conf_editor.png)
 
-1. Open `lab6/cafe.example.com.conf`. Below is the list of changes that you can observe which has changed from `lab2/cafe.example.com.conf` file to enable HTTPS traffic on cafe.example.com.
-   - On line #6, the listen port has been updated from port 80 to 443. Also `ssl` parameter has been added to enable TLS termination for this `server` block.
-   - On line #11-12, the `ssl_certificate` and `ssl_certificate_key` directives have been added and points to the certificate path that you provided when you added certificate to the NGINX for Azure resource.
-  
+1. You will notice in previous labs, you have added the default basic log format inside the `http` block within the `nginx.conf` file as highlighted in above screenshot. You will make use of this log format initially to capture some useful metrics within NGINX logs.
+
     ```nginx
-    server {
-        
-        listen 443 ssl; # Listening on port 443 with "ssl" parameter for terminating TLS on all IP addresses on this machine
-
-        server_name cafe.example.com;   # Set hostname to match in request
-        status_zone cafe.example.com;   # Metrics zone name
-
-        ssl_certificate /etc/nginx/cert/n4a-cert.cert;
-        ssl_certificate_key /etc/nginx/cert/n4a-cert.key;
-
-        snip...
-    } 
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
     ```
 
-1. Within the Azure portal, open your resource-group, click on the NGINX for Azure resource (`nginx4a`).
+1. Update the `access_log` directive to enable logging. Within this directive, you will pass the full path of the log file (eg. `/var/log/nginx/access.log`) and also the `main` log format that you created in previous step. Click on `Submit` to apply the changes.
 
-1. From the left pane, click on `NGINX configuration` under `Settings` and then open the `cafe.example.com.conf` file under `/etc/nginx/conf.d` directory. This would open the config file in the editor.
+    ```nginx
+    access_log  /var/log/nginx/access.log  main;
+    ```
 
-1. Copy the content of `lab6/cafe.example.com.conf` file and replace the existing `cafe.example.com.conf` content with it.
+    ![Access log update](media/lab6_main_access_log_update.png)
 
-1. Click on `Submit` to push the config changes to the NGINX for Azure resource.
+1. In subsequent sections you will test out the logs inside log analytics workspace.
 
-### Test and validate TLS traffic components and settings
+### Create enhance log format with additional logging metrics
 
-1. Make sure you have mapped your NGINX for Azure resource public IP to `cafe.example.com` hostname within your host file. If not present then please do insert it as you would require the mapping for testing.
+In this section you will create an extended log format which you will use with `cafe.example.com` server's access log.
 
-   ```bash
-   cat /etc/hosts | grep cafe.example.com
-   ```
+1. Within the NGINX for Azure resource (nginx4a), open the `Settings > NGINX Configuration` pane.
 
-1. Using your terminal, try to run the below curl command
+1. Within the `nginx.conf` file add a new extended log format named `main_ext` as shown in the below screenshot. Click on `Submit` to save the config file
+
+    ```nginx
+    # Extended Log Format
+    log_format  main_ext    'remote_addr="$remote_addr", '
+                            '[time_local=$time_local], '
+                            'request="$request", '
+                            'status="$status", '
+                            'http_referer="$http_referer", '
+                            'body_bytes_sent="$body_bytes_sent", '
+                            'Host="$host", '
+                            'sn="$server_name", '
+                            'request_time=$request_time, '
+                            'http_user_agent="$http_user_agent", '
+                            'http_x_forwarded_for="$http_x_forwarded_for", '
+                            'request_length="$request_length", '
+                            'upstream_address="$upstream_addr", '
+                            'upstream_status="$upstream_status", '
+                            'upstream_connect_time="$upstream_connect_time", '
+                            'upstream_header_time="$upstream_header_time", '
+                            'upstream_response_time="$upstream_response_time", '
+                            'upstream_response_length="$upstream_response_length", ';
+    ```
+
+    ![Extended log format add](media/lab6_main_ext_logformat_add.png)
+
+1. Once the extended log format has been created, open `cafe.example.com.conf` file and update the `access_log` to make use of the extended log format as shown in the below screenshot. Click on `Submit` to apply the changes.
+
+    ```nginx
+    access_log  /var/log/nginx/cafe.example.com.log main_ext;
+    ```
+
+    ![cafe access log format update](media/lab6_cafe_access_log_update.png)
+
+1. In subsequent sections you will test out the extended log format within inside log analytics workspace.
+
+### Test the access logs within log analytics workspace
+
+1. To test out access logs, generate some traffic on your `cafe.example.com` server.
+
+1. You can generate some traffic using your local Docker Desktop. Start and run the `WRK` load generation tool from a container using below command to generate traffic:
+
+   First save your NGINX for Azure resource public IP in a environment variable.
 
     ```bash
-    curl -I https://cafe.example.com
+    ## Set environment variables
+    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_N4A_IP=$(az network public-ip show \
+    --resource-group $MY_RESOURCEGROUP \
+    --name n4a-publicIP \
+    --query ipAddress \
+    --output tsv)    
     ```
+
+    Make request to the default server block which is using the `main` log format for access logging by running below command.
 
     ```bash
-    ##Sample Output##
-    curl: (60) SSL certificate problem: unable to get local issuer certificate
-    More details here: https://curl.se/docs/sslcerts.html
-
-    curl failed to verify the legitimacy of the server and therefore could not establish a secure connection to it. To learn more about this situation and how to fix it, please visit the web page mentioned above.
+    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s http://$MY_N4A_IP
     ```
 
-    As you can see, **curl reports an error** that the certificate is not legitimate (because it is self-signed) and refuses to complete the request. Adding the `-k` flag means `-insecure`, would tell curl to ignore this error. This flag is required for self-signed certificates.
-
-1. Try again now with a `-k` flag added to curl
+    Make request to the `cafe.example.com` server block which is using the `main_ext` log format for access logging by running below command.
 
     ```bash
-    curl -k -I https://cafe.example.com
+    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s -H 'Host: cafe.example.com'  http://$MY_N4A_IP/coffee
     ```
+
+1. Within Azure portal, open your NGINX for Azure resource (nginx4a). From the left pane click on `Monitoring > Logs`. This should open a new Qeury pane. Select `Resource type` from drop down and then type in `nginx` in the search box. This should show all the sample queries related to NGINX for Azure. Under `Show NGINXaaS access logs` click on `Run` button
+
+    ![nginx4a logs](media/nginx4a_logs.png)
+
+1. This should open a `new query` window, which is made up of a query editor pane at the top and query result pane at the bottom as shown in below screenshot.
+
+    ![default query](media/lab6_default_query.png)
+
+    > **NOTE:** The logs may take couple of minutes to show up. If the results pane doesn't show the logs then wait for a minute and then click on the `Run` button to run the query again.
+
+1. Azure makes use of Kusto Query Language(KQL) to query logs. Have a look in the [references](#references) section to learn more about KQL.
+
+1. You will modify the default query to show logs for `cafe.example.com` server block. Update the default query with the below query in the query editor pane. Click on the `Run` button to execute the query.
+
+    ```kql
+    // Show NGINXaaS access logs 
+    // A list of access logs sorted by time. 
+    NGXOperationLogs
+    | where FilePath == "/var/log/nginx/cafe.example.com.log"
+    | sort by TimeGenerated desc
+    | project TimeGenerated, FilePath, Message
+    | limit 100
+    ```
+
+    ![cafe query](media/lab6_cafe_query.png)
+
+1. Within the Results pane, expand one of the logs to look into its details. You can also hover your mouse over the message to show the message details as shown in below screenshot. Note that the message follows the `main_ext` log format.
+
+    ![cafe query details](media/lab6_cafe_query_details.png)
+
+1. You can save the custom query if you wish by clicking on the `Save` button and then selecting `Save as query`. Within the `Save as query` pane provide a query name and optional description and then finally click on `Save` button.
+
+    ![cafe query save](media/lab6_cafe_query_save.png)
+
+### Explore Azure Monitoring for NGINX for Azure
+
+1. Generate some steady traffic using your local Docker Desktop. Start and run the `WRK` load generation tool from a container using below command to generate traffic:
 
     ```bash
-    ##Sample Output##
-    HTTP/1.1 200 OK
-    Date: Wed, 08 May 2024 15:51:24 GMT
-    Content-Type: text/html; charset=utf-8
-    Connection: keep-alive
-    Expires: Wed, 08 May 2024 15:51:23 GMT
-    Cache-Control: no-cache
-    X-Proxy-Pass: cafe_nginx
+    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d30m --timeout 2s http://cafe.example.com/coffee
     ```
 
-1. Now try it with a browser, go to https://cafe.example.com. YIKES - what's this?? Most modern browsers will display an **Error or Security Warning**:
+    The above command would run for 30 minutes and send request to `http://cafe.example.com/coffee` using 4 threads and 200 connections.
 
-    ![Browser Cert Invalid](media/lab6_browser_cert_invalid.png)
+1. Within Azure portal, open your NGINX for Azure resource (nginx4a). From the left pane click on `Monitoring > Metrics`. This should open a new Chart pane.
 
-1. You can use browser's built-in certificate viewer to look at the details of the TLS certificate that was sent from NGINX to your browser. In address bar, click on the `Not Secure` icon, then click on `Certificate is not valid`. This will display the certificate. You can verify looking at the `Comman Name` field that this is the same certificate that you provided to NGINX for Azure resource.
+    ![default chart](media/lab6_default_chart.png)
 
-    ![Browser Cert Details](media/lab6_browser_cert_details.png)
+1. For the first chart, within `Metric Namespace` drop-down, select `NGINX requests and response statistics`. For the `metrics` drop-down, select `plus.http.request.count`. For the `Aggregation` drop-down, select `Avg`.
 
-1. Within the browser, close the Certificate Viewer, click on the `Advanced` button, and then click on `Proceed to cafe.example.com (unsafe)` link, to bypass the warning and continue.
-   > CAUTION:  Ignoring Browser Warnings is **Dangerous**, only Ignore these warnings if you are 100% sure it is safe to proceed!!
+   Click on the `Apply Splitting` button. Within the `Values` drop-down, select `server_zone`. From top right change the `Time range` to `Last 30 minutes`. This should generate a chart similar to below screenshot.
 
-1. After you safely Proceed, you should see the cafe.example.com output as below
+    ![server zone request chart](media/lab6_server_request_chart.png)
 
-    ![Browser success](media/lab6_browser_success.png)
+1. You will now save this chart in a new custom dashboard. Within the chart pane, click on `Save to dashboard > Pin to dashboard`.
+
+    Within the `Pin to dashboard` pane, select the `Create new` tab to create your new custom dashboard. Provide a name  for your custom dashboard. Once done click on `Create and pin` button to finish dashboard creation.
+
+    ![Create Dashboard](media/lab6_create_dashboard.png)
+
+1. To view your newly created dashboard, within Azure portal, navigate to `Dashboard` resource.
+
+    By default, this should open the default `My Dashboard` private dashboard. From the top drop-down select your custom dashboard name (`Nginx4a Dashboard`in the screenshot). This should open your custom dashboard which includes the pinned server request chart.
+
+    ![show dashboard](media/lab6_show_dashboard.png)
+
+1. Please look into the [References](#references) section to check the metric catalog and explore various other metrics available with NGINX for Azure. You can also pin multiple metrics to a single dashboard that you created in the previous steps.
 
 <br/>
 
 **This completes Lab6.**
 
-<br/>
-
 ## References:
 
 - [NGINX As A Service for Azure](https://docs.nginx.com/nginxaas/azure/)
   
-- [NGINX As A Service SSL/TLS Docs](https://docs.nginx.com/nginxaas/azure/getting-started/ssl-tls-certificates/)
-- [NGINX Directives Index](https://nginx.org/en/docs/dirindex.html)
+- [Kusto Query Language](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/tutorials/learn-common-operators)
+
+- [NGINX Metrics catalog](https://docs.nginx.com/nginxaas/azure/monitoring/metrics-catalog/)
+
 - [NGINX - Join Community Slack](https://community.nginx.org/joinslack)
 
 <br/>
