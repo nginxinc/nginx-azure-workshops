@@ -68,11 +68,11 @@ NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis
 ### Lab 5: Nginx Load Balancing / Blue-Green / Split Clients
 - [Lab 5: Nginx Load Balancing / Blue-Green / Split Clients](lab5/readme.md)
 
-### Lab 6: Azure Key Vault / TLS Essentials
-- [Lab 6: Azure Key Vault / TLS Essentials](lab6/readme.md)
+### Lab 6: Azure Monitoring / Logging Analytics
+- [Lab 6: Azure Monitoring / Logging Analytics](lab6/readme.md)
 
-### Lab 7: Azure Monitoring / Logging Analytics
-- [Lab 7: Azure Monitoring / Logging Analytics](lab7/readme.md)
+### Lab 7: Azure Key Vault / TLS Essentials
+- [Lab 7: Azure Key Vault / TLS Essentials](lab7/readme.md)
 
 ### Lab 8: Nginx Garage Demo
 - [Lab 8: Nginx Garage Demo](lab8/readme.md)
