@@ -174,9 +174,9 @@ In this section you will create an extended log format which you will use with `
 
     ![default chart](media/lab6_default_chart.png)
 
-1. For the first chart, within `Metric Namespace` drop-down, select `NGINX requests and response statistics`. For the `metrics` drop-down, select `plus.http.request.count`. For the `Aggregation` drop-down, select `Avg`.
+1. For the first chart, within **Metric Namespace** drop-down, select `nginx requests and response statistics`. For the **metrics** drop-down, select `plus.http.request.count`. For the **Aggregation** drop-down, select `Avg`.
 
-   Click on the `Apply Splitting` button. Within the `Values` drop-down, select `server_zone`. From top right change the `Time range` to `Last 30 minutes`. This should generate a chart similar to below screenshot.
+   Click on the **Apply Splitting** button. Within the **Values** drop-down, select `server_zone`. From top right change the **Time range** to `Last 30 minutes`. This should generate a chart similar to below screenshot.
 
     ![server zone request chart](media/lab6_server_request_chart.png)
 
@@ -192,7 +192,29 @@ In this section you will create an extended log format which you will use with `
 
     ![show dashboard](media/lab6_show_dashboard.png)
 
-1. Please look into the [References](#references) section to check the metric catalog and explore various other metrics available with NGINX for Azure. You can also pin multiple metrics to a single dashboard that you created in the previous steps.
+1. Now you will add some more charts to your newly created dashboard. Navigate back to NGINX for Azure resource (nginx4a) and from the left pane click on `Monitoring > Metrics`.
+
+1. Within the chart pane, click on **Metric Namespace** drop-down and select `nginx upstream statistics`. For the **metrics** drop-down, select `plus.http.upstream.peers.response.time`. For the **Aggregation** drop-down, select `Avg`.
+
+    Click on the **Add filter** button. Within the **Property** drop-down, select `upstream`. Leave the **Operator** to `=`. In **values** drop-down, select `aks1_ingress`, `aks2_ingress` and `cafe_nginx`.
+
+    Click on the **Apply Splitting** button. Within the **Values** drop-down, select `upstream`. From top right change the **Time range** to `Last 30 minutes`. This should generate a chart similar to below screenshot.
+
+    ![upstream response time chart](media/lab6_upstream_response_time_chart.png)
+
+1. You will now pin this chart to your custom dashboard. Within the chart pane, click on `Save to dashboard > Pin to dashboard`.
+
+    Within the `Pin to dashboard` pane, by default the `Existing` tab should be open with your recent created dashboard selected. Click on `Pin` button to pin the chart to your dashboard.
+
+    ![pin upstream chart](media/lab6_pin_upstream_chart.png)
+
+1. Navigate back to `Dashboard` resource within Azure portal and select your dashboard. You will notice that the chart that you recently pinned shows up in your dashboard.
+
+    ![upstream chart dashboard](media/lab6_upstream_chart_dashboard.png)
+
+    You can also edit your dashboard by clicking on the pencil icon to reposition/resize charts as per your taste.
+
+1. Please look into the [References](#references) section to check the metric catalog and explore various other metrics available with NGINX for Azure. Feel free to play around and pin multiple metrics to your dashboard.
 
 <br/>
 
