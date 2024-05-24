@@ -823,7 +823,7 @@ So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 8
    ```bash
    ## Set environment variables
    export MY_RESOURCEGROUP=s.dutta-workshop
-   export MY_PUBLICIP=$(curl -4 ifconfig.co)
+   export MY_PUBLICIP=$(curl ipinfo.io/ip)
    ```
 
    ```bash  

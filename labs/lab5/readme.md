@@ -825,7 +825,7 @@ In this exerices, you will use Nginx for Azure to expose the `Redis Leader Servi
     ```bash
     ## Set environment variables
     export MY_RESOURCEGROUP=c.akker-workshop
-    export MY_PUBLICIP=$(curl -4 ifconfig.co)
+    export MY_PUBLICIP=$(curl ipinfo.io/ip)
     ```
 
     Use Azure CLI to add a new Rule for Redis.
