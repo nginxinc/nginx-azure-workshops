@@ -36,7 +36,6 @@ By the end of the lab you will be able to:
 <br/>
 
 ![lab1 diagram](media/lab1_diagram.png)
-Lab1 Diagram
 
 <br/>
 
@@ -65,7 +64,7 @@ Lab1 Diagram
    az group create --name s.dutta-workshop --location centralus
    ```
 
-2. Make sure the new Azure Resource Group has been created by running below command.
+1. Make sure the new Azure Resource Group has been created by running below command.
 
    ```bash
    az group list -o table | grep workshop
@@ -76,7 +75,6 @@ Lab1 Diagram
 ### Setup your Azure Virtual Network, Subnets and Network Security Group
 
 ![lab1 Networks](media/lab1_azure-network.png)
-Lab1 Vnet/Subnets
 
 You will create an Azure Vnet for this Workshop.  Inside of this Vnet are 4 different subnets, representing various backend networks for Azure resources like Nginx for Azure, VMs, and Kubernetes clusters.
 
@@ -94,7 +92,7 @@ aks2-subnet | 172.16.20.0/23 | AKS Cluster #2
     ```bash
     ## Set environment variables
     export MY_RESOURCEGROUP=s.dutta-workshop
-    export MY_PUBLICIP=$(curl -4 ifconfig.co)
+    export MY_PUBLICIP=$(curl ipinfo.io/ip)
     ```
 
     ```bash
@@ -226,6 +224,8 @@ aks2-subnet | 172.16.20.0/23 | AKS Cluster #2
     }
     ```
 
+    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
+
 4. Create a subnet that you will use with NGINX for Azure resource. You will also attach the NSG that you just created to this subnet.
 
     ```bash
@@ -271,6 +271,8 @@ aks2-subnet | 172.16.20.0/23 | AKS Cluster #2
     }
     ```
 
+    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
+
 5. In similar fashion create three more subnets that would be used with docker virtual machines and AKS clusters in later labs.
 
     ```bash
@@ -303,7 +305,6 @@ aks2-subnet | 172.16.20.0/23 | AKS Cluster #2
 Your completed Vnet/Subnets should look similar to this:
 
 ![lab1 Azure Subnets](media/lab1_azure-subnets.png)
-Lab1 Vnet/Subnets
 
 <br/>
 
@@ -346,6 +347,8 @@ Lab1 Vnet/Subnets
         }
     }
     ```
+
+    > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
 
 1. Create a user assigned managed identity that would be tied to the NGINX for Azure resource. This managed identity would be used to read certificates and keys from Azure key vault in later labs.
 
@@ -391,7 +394,7 @@ Lab1 Vnet/Subnets
     --name nginx4a \
     --sku name="standard_Monthly" \
     --network-profile front-end-ip-configuration="{public-ip-addresses:[{id:/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP}]}" network-interface-configuration="{subnet-id:/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet}" \
-    --identity="{type:UserAssigned,userAssignedIdentities:{/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity:{}}}"
+    --identity="{type:'SystemAssigned, UserAssigned',userAssignedIdentities:{/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity:{}}}"
     ```
 
     ```bash
@@ -456,51 +459,11 @@ Lab1 Vnet/Subnets
 
 <br/>
 
-### Explore Nginx for Azure
-
-<br/>
-
-NGINX as a Service for Azure is a service offering that is tightly integrated into Microsoft Azure public cloud and its ecosystem, making applications fast, efficient, and reliable with full lifecycle management of advanced NGINX traffic services. NGINXaaS for Azure is available in the Azure Marketplace.
-
-NGINXaaS for Azure is powered by NGINX Plus, which extends NGINX Open Source with advanced functionality and provides customers with a complete application delivery solution. Initial use cases covered by NGINXaaS include L4 TCP and L7 HTTP load balancing and reverse proxy which can be managed through various Azure management tools. NGINXaaS allows you to provision distinct deployments as per your business or technical requirements.
-
-In this section you will be looking at NGINX for Azure resource that you created within Azure portal.
-
-1. Open Azure portal within your browser and then open your resource group.
-   ![Portal ResourceGroup home](media/portal_rg_home.png)
-
-2. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. You can see useful information like Status, NGINX for Azure resource's public IP, which Nginx version is running, which vnet/subnet it is using, etc.
-   ![Portal N4A home](media/portal_n4a_home.png)
-
-3. From the left pane click on `NGINX Configuration`. As you are opening this resource for first time and you do not have any configuration present, Azure will prompt you to "Get started with a Configuration example". Click on `Populate now` button to start with a sample configuration example.
-   ![nginx conf populate](media/nginx_conf_populate.png)
-
-4. Once you click on the `Populate now` button you will see the configuration editor section has been populated with `nginx.conf` and an `index.html` page. Click on the `Submit` button to deploy this sample config files to the NGINX for Azure resource.
-   ![nginx conf editor](media/nginx_conf_editor.png)
-
-5. Once you have submitted the configuration, you can watch its progress in the notification tab present in right top corner. Intially status would be "Updating NGINX configuration" which would change to "Updated NGINX configuration successfully".
-   ![nginx conf submit success](media/nginx_conf_submit_success.png)
-
-6. Navigate back to Overview section and copy the public IP address of NGINX for Azure resource.
-
-7. In a new browser window, paste the public IP into the address bar. You will notice the sample index page gets rendered into your browser.
-   ![n4a Index Page](media/n4a_index_page.png)
-
-8. This completes the validation of all the resources that you created using Azure CLI. In the upcoming labs you would be modifying the configuration files and exploring various features of NGINX for Azure resources.
-
-<br/>
-
 ### Create Log Analytics workspace to collect NGINX error and Access logs from NGINX for azure
 
 In this section you will create a Log Analytics resource that would collect Nginx logs from your Nginx for Azure resource. As this resource takes time to get provisioned and attached to NGINX for Azure resource, you are building it up here.
 
-1. Within the NGINX for Azure resource (nginx4a), navigate to managed identity section by clicking on `Identity` from the left menu. Within this section, inside the `System assigned` tab, enable system managed identity by changing the status to `on`. Click on `Save` to save your changes. Press `Yes` within the "Enable system assigned managed identity" prompt.
-    ![Enable System Identity](media/enable_system_identity.png)
-
-2. If you open up the Notifications pane, you should see a success status as shown below.
-   ![Enable system Identity success](media/enable_system_identity_success.png)
-
-3. Now go back to your terminal and create a Log Analytics workspace resource that you will attach to NGINX for Azure using Azure CLI. This resource would be used to capture and store NGINX error and access logs. Use below command to create this resource.
+1. Create a Log Analytics workspace resource that you will attach to NGINX for Azure using Azure CLI. This resource would be used to capture and store NGINX error and access logs. Use below command to create this resource.
 
     ```bash
     ## Set environment variables
@@ -545,7 +508,7 @@ In this section you will create a Log Analytics resource that would collect Ngin
 
      > **NOTE:** Within the output json you should have a `"provisioningState": "Succeeded"` field which validates the command successfully provisioned the resource.
 
-4. Next you will update your NGINX for Azure resource to enable sending metrics to Azure monitor by setting the `--enable-diagnostics` flag to `true` using below command.
+2. Next you will update your NGINX for Azure resource to enable sending metrics to Azure monitor by setting the `--enable-diagnostics` flag to `true` using below command.
 
     ```bash
     az nginx deployment update \
@@ -584,7 +547,7 @@ In this section you will create a Log Analytics resource that would collect Ngin
     }
     ```
 
-5. The last step that you need to perform to start collecting NGINX logs is to create an Azure diagnostic settings resource that will stream the NGINX logs to the log-analytics workspace that you created in previous step. Run below commands to create this resource.
+3. The last step that you need to perform to start collecting NGINX logs is to create an Azure diagnostic settings resource that will stream the NGINX logs to the log-analytics workspace that you created in previous step. Run below commands to create this resource.
 
     ```bash
     ## Set environment variables
@@ -632,7 +595,46 @@ In this section you will create a Log Analytics resource that would collect Ngin
     }
     ```
 
-6. In upcoming labs, you will explore and learn more about NGINX logs and make use of these resources that you built in this section.
+4. In upcoming labs, you will explore and learn more about NGINX logs and make use of these resources that you built in this section.
+
+<br/>
+
+### Explore Nginx for Azure
+
+<br/>
+
+NGINX as a Service for Azure is a service offering that is tightly integrated into Microsoft Azure public cloud and its ecosystem, making applications fast, efficient, and reliable with full lifecycle management of advanced NGINX traffic services. NGINXaaS for Azure is available in the Azure Marketplace.
+
+NGINXaaS for Azure is powered by NGINX Plus, which extends NGINX Open Source with advanced functionality and provides customers with a complete application delivery solution. Initial use cases covered by NGINXaaS include L4 TCP and L7 HTTP load balancing and reverse proxy which can be managed through various Azure management tools. NGINXaaS allows you to provision distinct deployments as per your business or technical requirements.
+
+In this section you will be looking at NGINX for Azure resource that you created within Azure portal.
+
+1. Open Azure portal within your browser and then open your resource group.
+   ![Portal ResourceGroup home](media/portal_rg_home.png)
+
+2. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. You can see useful information like Status, NGINX for Azure resource's public IP, which Nginx version is running, which vnet/subnet it is using, etc.
+   ![Portal N4A home](media/portal_n4a_home.png)
+
+3. From the left pane click on `Settings > NGINX Configuration`. As you are opening this resource for first time and you do not have any configuration present, Azure will prompt you to "Get started with a Configuration example". Click on `Populate now` button to start with a sample configuration example.
+   ![nginx conf populate](media/nginx_conf_populate.png)
+
+4. Once you click on the `Populate now` button you will see the configuration editor section has been populated with `nginx.conf` and an `index.html` page. Click on the `Submit` button to deploy this sample config files to the NGINX for Azure resource.
+   ![nginx conf editor](media/nginx_conf_editor.png)
+
+5. Once you have submitted the configuration, you can watch its progress in the notification tab present in right top corner. Intially status would be "Updating NGINX configuration" which would change to "Updated NGINX configuration successfully".
+   ![nginx conf submit success](media/nginx_conf_submit_success.png)
+
+6. Navigate back to Overview section and copy the public IP address of NGINX for Azure resource.
+    ![Copy IP Address](media/lab1_copy_ip_address.png)
+
+7. In a new browser window, paste the public IP into the address bar. You will notice the sample index page gets rendered into your browser.
+   ![n4a Index Page](media/lab1_n4a_index_page.png)
+
+8. This completes the validation of all the resources that you created using Azure CLI. In the upcoming labs you would be modifying the configuration files and exploring various features of NGINX for Azure resources.
+
+<br/>
+
+
 
 <br/>
 
