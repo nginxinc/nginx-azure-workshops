@@ -105,7 +105,7 @@ By the end of the lab you will be able to:
 
     ```bash
     ##Set environment variable
-    export MY_PUBLICIP=$(curl -4 ifconfig.co)
+    export MY_PUBLICIP=$(curl ipinfo.io/ip)
     ```
 
     ```bash
@@ -561,7 +561,7 @@ Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
 
     ```bash
     ##Set environment variable
-    export MY_PUBLICIP=$(curl -4 ifconfig.co)
+    export MY_PUBLICIP=$(curl ipinfo.io/ip)
     ```
 
     ```bash

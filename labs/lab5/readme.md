@@ -139,7 +139,7 @@ Submit your Nginx Configuration. If you have the Server name:port correct, Nginx
 
 In order for Nginx 4 Azure and Nginx Ingress to work correctly, the HTTP Host Headers, and perhaps other headers, will need to be passed. This is done by changing the HTTP Version to 1.1, so that the Host Header can be included.
 
-1. Inspect the `lab5/includes/keepalive.conf`. This is where the HTTP Protocol and Headers are set for proxied traffic. This is a common requirement so it is shared among all the different Nginx configurations.
+1. Inspect the `lab5/keepalive.conf`. This is where the HTTP Protocol and Headers are set for proxied traffic. This is a common requirement so it is shared among all the different Nginx configurations.
 
     Using the Nginx for Azure console, create a new file, `/etc/nginx/includes/keepalive.conf`.  Use the example provided, just copy/paste.
 
@@ -309,7 +309,7 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
 
     You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller, check the HTTP Upstreams Tab as before, you should see the Pod IPs for both the coffee-svc and tea-svc.
 
-    ![Cafe NIC Upstreams](media/lab5_cafe-nic-upstreams.png)
+    ![Cafe NIC Upstreams](media/lab5_cafe-nic1-upstreams.png)
 
 1.  **Loadtest Time!**  While you are in the Nginx Ingress Dashboard watching the coffee upstreams, throw some load at them using WRK HTTP Load tool.
 
@@ -444,14 +444,17 @@ You built and used different CNIs and subnets so that you can see the difference
 Platform | Docker | AKS1 | AKS2
 :--------------:|:--------------:|:-----------------:|:-----------------:
 Network Type | Docker | Kubenet | Azure CNI
-IP Subnet | 172.18.x.y | 172.16.10.y | 172.16.20.y
+POD IP Subnet | 172.18.x.y | 10.244.x.y | 172.16.20.y
 
+AKS1 Pod Network | AKS2 Pod Network 
+:--------------:|:--------------:
+![aks1-kubenet](media/lab5_aks1-kubenet.png) | ![aks2-azurecni](media/lab5_aks2-azurecni.png)
 
 You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller in AKS2 - check the HTTP Upstreams, you should see the Pod IPs for both the coffee-svc and tea-svc.
 
 ![Cafe NIC2 Upstreams](media/lab5_cafe-nic2-upstreams.png)
 
-1.  **Loadtest Time!**  While you are in the Nginx Ingress Dashboard watching the coffee upstreams, throw some load at them:
+1. **Loadtest Time!**  While you are in the Nginx Ingress Dashboard watching the coffee upstreams, throw some load at them:
 
     Using your local Docker Desktop, you will start and run the WRK loadtest from a container. Try this for a 1 minute loadtest:
 
@@ -822,7 +825,7 @@ In this exerices, you will use Nginx for Azure to expose the `Redis Leader Servi
     ```bash
     ## Set environment variables
     export MY_RESOURCEGROUP=c.akker-workshop
-    export MY_PUBLICIP=$(curl -4 ifconfig.co)
+    export MY_PUBLICIP=$(curl ipinfo.io/ip)
     ```
 
     Use Azure CLI to add a new Rule for Redis.
