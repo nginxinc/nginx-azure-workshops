@@ -50,9 +50,11 @@ Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastru
 
 ### Deploy first Kubernetes Cluster with Azure CLI
 
-1. With the use of single Azure CLI command, you will deploy a production-ready AKS cluster with some additional options. (**This will take a while**).
+![AKS Icon](media/aks-icon.png)
 
-   First, initialise the Environment variables based on your setup, which are passed to the Azure CLI command as shown below:
+With the use of single Azure CLI command, you will deploy a production-ready AKS cluster with some additional options. (**This will take a while**).
+
+1. First, initialise the Environment variables based on your setup, which are passed to the Azure CLI command as shown below:
 
    ```bash
     ## Set environment variables
@@ -322,6 +324,8 @@ Just a quick test, is your Nginx Plus Ingress Controller running, and can you se
    Type `Ctrl+C` within your terminal to stop the Port-Forward when you are finished.
 
 ### Deploy second Kubernetes Cluster with Azure CLI
+
+![AKS Icon](media/aks-icon.png)
 
 In this section, similar to how you deployed the first AKS cluster,  you will deploy a second AKS cluster named `n4a-aks2` which has 4 nodes.
 
