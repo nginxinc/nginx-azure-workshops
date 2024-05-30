@@ -187,7 +187,7 @@ In this section, you will be installing NGINX Plus Ingress Controller in first A
 
    However, for this workshop, a Trial License will be provided to you, so you can pull and run the Nginx Plus Commercial version of the Ingress Controller.  This is NOT the same Ingress Controller provided by the Kubernetes Community.  (If you are unsure which Ingress Controller you are using in your other Kubernetes environments, you can find a link to the Blog from Nginx that explains the differences).
 
-1. Once your Workshop Instructor has provide the JWT file, follow these instructions to create a Kubernetes Secret named `regcred`, of type `docker-registry`.  You will need to create the Secret in both of your AKS clusters.
+1. Once your Workshop Instructor has provided the JWT file, follow these instructions to create a Kubernetes Secret named `regcred`, of type `docker-registry`.  You will need to create the Secret in both of your AKS clusters.
 
 1. Copy the `nginx-repo.jwt` file provided in the `/labs/lab3` directory within your cloned workshop repository.
 
