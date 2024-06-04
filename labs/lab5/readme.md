@@ -50,9 +50,9 @@ Configure the Upstream for AKS Cluster1.
 
     ```bash
     ##Sample Output##
-    aks-userpool-76919110-vmss000001  #aks1 node1
-    aks-userpool-76919110-vmss000002  #aks1 node2
-    aks-userpool-76919110-vmss000003  #aks1 node3
+    aks-nodepool1-76919110-vmss000001  #aks1 node1
+    aks-nodepool1-76919110-vmss000002  #aks1 node2
+    aks-nodepool1-76919110-vmss000003  #aks1 node3
     ```
 
 1. Using the Nginx4Azure configuration tool, create a new file called `/etc/nginx/conf.d/aks1-upstreams.conf`. Copy and Paste the contents of the provided file. You will have to EDIT this example config file, and change the `server` entries to match your AKS Cluster1 Nodepool node names. You can find your AKS1 nodepool nodenames from `kubectl get nodes` or the Azure Portal. Make sure you use `:32080` for the port number, this is the static `nginx-ingress NodePort Service` for HTTP traffic that was defined earlier.
@@ -71,9 +71,9 @@ Configure the Upstream for AKS Cluster1.
       # from nginx-ingress NodePort Service / aks Node names
       # Note: change servers to match
       #
-      server aks-userpool-76919110-vmss000001:32080;    #aks1 node1
-      server aks-userpool-76919110-vmss000002:32080;    #aks1 node2
-      server aks-userpool-76919110-vmss000003:32080;    #aks1 node3
+      server aks-nodepool1-76919110-vmss000001:32080;    #aks1 node1
+      server aks-nodepool1-76919110-vmss000002:32080;    #aks1 node2
+      server aks-nodepool1-76919110-vmss000003:32080;    #aks1 node3
 
       keepalive 32;
 
@@ -224,20 +224,27 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
         location / {
             #
             # return 200 "You have reached cafe.example.com, location /\n";
+            
             # proxy_pass http://cafe_nginx;          # Proxy AND load balance to a list of servers
             # add_header X-Proxy-Pass cafe_nginx;    # Custom Header
+
+            # proxy_pass http://windowsvm;           # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass windowsvm;     # Custom Header
             
-            proxy_pass http://aks1_ingress;          # Proxy to AKS1 Nginx Ingress Controller NodePort
-            add_header X-Proxy-Pass aks1_ingress;    # Custom Header
+            proxy_pass http://aks1_ingress;        # Proxy to AKS1 Nginx Ingress Controller NodePort
+            add_header X-Proxy-Pass aks1_ingress;  # Custom Header
             
             # proxy_pass http://aks2_ingress;        # Proxy to AKS2 Nginx Ingress Controller NodePort
             # add_header X-Proxy-Pass aks2_ingress;  # Custom Header
+
+            # proxy_pass http://$upstream;            # Use Split Clients config
+            # add_header X-Proxy-Pass $upstream;      # Custom Header
 
         }
     ...
     ```
 
-    This changes where Nginx will `proxy_pass` the requests.  Nginx will now proxy and load balance requests to your AKS1 Nginx Ingress Controller, listening on port 32080 on each AKS1 Node.  The X-Proxy-Pass Header will now show `aks1-ingress` instead of cafe-nginx.
+    This updates where Nginx will `proxy_pass` the requests.  Nginx will now proxy and load balance requests to your AKS1 Nginx Ingress Controller, listening on port 32080 on each AKS1 Node.  The X-Proxy-Pass Header will now show `aks1-ingress` instead of cafe-nginx.
 
     Submit your Nginx Configuration.
 
@@ -250,7 +257,6 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
     ```bash
     ##Sample Output##
     HTTP/1.1 200 OK
-    Server: N4A-1.25.1-cakker
     Date: Fri, 05 Apr 2024 20:08:24 GMT
     Content-Type: text/html; charset=utf-8
     Connection: keep-alive
@@ -354,11 +360,18 @@ Repeat the last procedure, to test access to the AKS2 Cluster and pods.
             
             # proxy_pass http://cafe_nginx;          # Proxy AND load balance to a list of servers
             # add_header X-Proxy-Pass cafe_nginx;    # Custom Header
-            #proxy_pass http://aks1_ingress;         # Proxy to AKS1 Nginx Ingress Controller NodePort
+
+            # proxy_pass http://windowsvm;           # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass windowsvm;     # Custom Header
+
+            # proxy_pass http://aks1_ingress;        # Proxy to AKS1 Nginx Ingress Controller NodePort
             # add_header X-Proxy-Pass aks1_ingress;  # Custom Header
 
-            proxy_pass http://aks2_ingress;          # Proxy to AKS2 Nginx Ingress Controller NodePort
-            add_header X-Proxy-Pass aks2_ingress;    # Custom Header
+            proxy_pass http://aks2_ingress;        # Proxy to AKS2 Nginx Ingress Controller NodePort
+            add_header X-Proxy-Pass aks2_ingress;  # Custom Header
+
+            # proxy_pass http://$upstream;            # Use Split Clients config
+            # add_header X-Proxy-Pass $upstream;      # Custom Header
 
         }
     ...
@@ -525,20 +538,19 @@ To accomplish the Split Client functionality with Nginx, you only need 3 things.
     #
     split_clients $request_id $upstream {
 
-    # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
-    #0.1% aks1_ingress;
-    1.0% aks1_ingress;    # Starting with 1% Live Traffic
-    #5.0% aks1_ingress;
-    #30% aks1_ingress; 
-    #50% aks1_ingress;
-    #80% aks1_ingress;
-    #95% aks1_ingress;
-    #99% aks1_ingress;
-    #* aks1_ingress;
-    #* aks2_ingress;
-    #30% aks2_ingress;
-    * cafe_nginx;          # Ubuntu VM containers
-    #* aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
+        # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
+        # 0.1% aks1_ingress;
+        1.0% aks1_ingress;
+        # 5.0% aks1_ingress;
+        # 30% aks1_ingress; 
+        # 50% aks1_ingress;
+        # 80% aks1_ingress;
+        # 95% aks1_ingress;
+        # 99% aks1_ingress;
+        # * aks1_ingress;
+        # 30% aks2_ingress;
+        * cafe_nginx;          # Ubuntu VM containers
+        # * aks1_nic_direct;    # Direct to NIC pods - headless/no nodeport
 
     }
     ```
@@ -550,19 +562,21 @@ To accomplish the Split Client functionality with Nginx, you only need 3 things.
         location / {
             #
             # return 200 "You have reached cafe.example.com, location /\n";
+            
+            # proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass cafe_nginx;  # Custom Header
+
+            # proxy_pass http://windowsvm;        # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass windowsvm;  # Custom Header
+
+            # proxy_pass http://aks1_ingress;        # Proxy AND load balance to AKS1 Nginx Ingress
+            # add_header X-Proxy-Pass aks1_ingress;  # Custom Header
+
+            # proxy_pass http://aks2_ingress;        # Proxy AND load balance to AKS2 Nginx Ingress
+            # add_header X-Proxy-Pass aks2_ingress;  # Custom Header
 
             proxy_pass http://$upstream;            # Use Split Clients config
-
             add_header X-Proxy-Pass $upstream;      # Custom Header
-            
-            #proxy_pass http://cafe_nginx;          # Proxy AND load balance to Docker VM
-            #add_header X-Proxy-Pass cafe_nginx;    # Custom Header
-
-            #proxy_pass http://aks1_ingress;        # Proxy AND load balance to AKS1 Nginx Ingress
-            #add_header X-Proxy-Pass aks1_ingress;  # Custom Header
-
-            #proxy_pass http://aks2_ingress;        # Proxy AND load balance to AKS2 Nginx Ingress
-            #add_header X-Proxy-Pass aks2_ingress;  # Custom Header
 
         }
 
@@ -578,18 +592,10 @@ Unfortunately, refreshing about 100 times and trying to catch the 1% sent to AKS
 1. Open a separate Terminal, and start the WRK load tool. Use the example here, but change the IP address to your Nginx for Azure Public IP:
 
     ```bash
-    ## Set environment variables
-    export MY_RESOURCEGROUP=c.akker-workshop
-    export MY_N4A_IP=$(az network public-ip show \
-    --resource-group $MY_RESOURCEGROUP \
-    --name n4a-publicIP \
-    --query ipAddress \
-    --output tsv)    
-   
-    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d20m -H 'Host: cafe.example.com' --timeout 2s http://$MY_N4A_IP/coffee
+    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d20m --timeout 2s http://cafe.example.com/coffee
     ```
 
-This will open 200 Connections, and run for 20 minutes while we try different Split Ratios.  The Host Header `cafe.example.com` is required, to match your Server Block in your Nginx for Azure configuration.
+This will open 200 Connections, and run for 20 minutes while we try different Split Ratios.  The FQDN `cafe.example.com` will match your Server Block in your Nginx for Azure configuration.
 
 1. Open your AKS1 NIC Dashboard (the one you bookmarked earlier), the HTTP Upstreams Tab, coffee upstreams.  These are the Pods running the latest version of your Nginx Cafe Application. You should see about 1% of your Requests trickling into the AKS1 Ingress Controller, and it is load balancing those requests to a couple coffee Pods. In the NIC Dashboard, you should see about 20-30 Requests/sec for AKS1 coffee.
 
@@ -613,18 +619,18 @@ You can check your Azure Monitor where you would find about 99% going to the caf
     split_clients $request_id $upstream {
 
     # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
-    #0.1% aks1_ingress;
-    #1.0% aks1_ingress;
-    #5.0% aks1_ingress;
+    # 0.1% aks1_ingress;
+    # 1.0% aks1_ingress;
+    # 5.0% aks1_ingress;
     30% aks1_ingress;      # Next test, 30% Live Traffic
-    #50% aks1_ingress;
-    #80% aks1_ingress;
-    #95% aks1_ingress;
-    #99% aks1_ingress;
-    #* aks1_ingress;
-    #30% aks2_ingress;
-    * cafe_nginx;          # Ubuntu VM containers
-    #* aks1_nic_direct;    # Direct to NIC pods - headless/no nodeport
+    # 50% aks1_ingress;
+    # 80% aks1_ingress;
+    # 95% aks1_ingress;
+    # 99% aks1_ingress;
+    # * aks1_ingress;
+    # 30% aks2_ingress;
+    * cafe_nginx;         # Ubuntu VM containers
+    # * aks1_nic_direct;    # Direct to NIC pods - headless/no nodeport
 
     }
     ```
@@ -647,19 +653,19 @@ After a couple hours of 30%, all the logs are clean, the dev and test tools are 
     split_clients $request_id $upstream {
 
     # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
-    #0.1% aks1_ingress;
-    #1.0% aks1_ingress;
-    #5.0% aks1_ingress;
-    #30% aks1_ingress; 
+    # 0.1% aks1_ingress;
+    # 1.0% aks1_ingress;
+    # 5.0% aks1_ingress;
+    # 30% aks1_ingress; 
     50% aks1_ingress;     # Next test, 50% Live Traffic
-    #80% aks1_ingress;
-    #95% aks1_ingress;
-    #99% aks1_ingress;
-    #* aks1_ingress;
-    #* aks2_ingress;
-    #30% aks2_ingress;
+    # 80% aks1_ingress;
+    # 95% aks1_ingress;
+    # 99% aks1_ingress;
+    # * aks1_ingress;
+    # * aks2_ingress;
+    # 30% aks2_ingress;
     * cafe_nginx;          # Ubuntu VM containers
-    #* aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
+    # * aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
 
     }
     ```
@@ -684,7 +690,6 @@ Looking pretty good, traffic is even, no logging errors or tickets, no whining a
 - AKS1 will get 80% traffic - for new version
 - Docker VM will get 19% traffic - for legacy/current version
 
-
 1. Once again, modify the `split-clients.conf` file, with the percentages needed. Open your Dashboards and Monitoring so that you can watch in real time. You tell the Director, here it comes:
 
     ```nginx
@@ -695,26 +700,26 @@ Looking pretty good, traffic is even, no logging errors or tickets, no whining a
     split_clients $request_id $upstream {
 
     # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
-    #0.1% aks1_ingress;
+    # 0.1% aks1_ingress;
     1.0% aks2_ingress;      # For the Dev Director
-    #5.0% aks1_ingress;
-    #30% aks1_ingress; 
-    #50% aks1_ingress;
+    # 5.0% aks1_ingress;
+    # 30% aks1_ingress; 
+    # 50% aks1_ingress;
     80% aks1_ingress;       # For new version
-    #95% aks1_ingress;
-    #99% aks1_ingress;
-    #* aks1_ingress;
-    #* aks2_ingress;
-    #30% aks2_ingress;
-    * cafe_nginx;           # Ubuntu VM containers
-    #* aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
+    # 95% aks1_ingress;
+    # 99% aks1_ingress;
+    # * aks1_ingress;
+    # * aks2_ingress;
+    # 30% aks2_ingress;
+    * cafe_nginx;          # Ubuntu VM containers
+    # * aks1_nic_headless;   # Direct to NIC pods - headless/no nodeport
 
     }
     ```
 
 Submit your Nginx Configuration.
 
-Check your Nginx Ingress Dashboards, do you see traffic on both, making use of the (5) coffee upstream pods?  What about Azure Monitor ... 
+Check your Nginx Ingress Dashboards, do you see traffic on both, making use of the (5) coffee upstream pods?  What about Azure Monitor ...
 
 ![Cafe - 3 way split](media/lab5_cafe-3way-split.png)
 
@@ -736,7 +741,6 @@ No worries, you comment out the `aks2_ingress` in the Split Config, and his 1% L
 
 But don't be surprised - in a few days he will ask again to send traffic to AKS2, and you can begin the Split migration process, this time from AKS1 to AKS2.  
 
-
 >>Now you've reached the Ultimate Kubernetes Application Solution, `Mutli Cluster Load Balancing, Active/Active, with Dynamic Split Ratios.` No one else can do this for your app team this easily, it's just Nginx!  
 
 >Cherry on top - not only can you do Split Client `outside` the Cluster with Nginx for Azure, but Nginx Ingress Controller can also do Split Clients `inside` the cluster, ratios between different Services. You can find that example in `Lab10 of the Nginx Plus Ingress Workshop` :-)
@@ -755,13 +759,11 @@ Using the HTTP Split Clients module from Nginx can provide multiple traffic mana
 - - ^^ With NO downtime or reloads
 - API Gateway testing/upgrades/migrations
 
-## Configure Nginx for Azure for Redis traffic 
-
+## Configure Nginx for Azure for Redis traffic
 
 NGINXaaS | Redis
 :-------:|:------:
 ![Redis](media/nginx-azure-icon.png)| ![Redis](media/redis-icon.png)
-
 
 In this exerices, you will use Nginx for Azure to expose the `Redis Leader Service` running in AKS Cluster #2. As Redis communicates with TCP instead of HTTP, the Nginx Stream Context will be used.  Following Nginx Best Practices, and standard Nginx folders/files layout, the `TCP Stream context` configuration files will be created in a new folder, called `/etc/nginx/stream/`.
 
@@ -934,7 +936,6 @@ Now how cool is that? A Redis Cluster running in AKS, exposed with Nginx Ingress
 
 ![Redis Bench](media/redis-benchmark-icon.png)
 
-
 ```bash
 redis-benchmark -h redis.example.com -c 50 -n 10000 -q --csv
 ```
@@ -996,7 +997,7 @@ In order to configure this correctly, you will need the following items.
 1. Inspect the `lab5/nginx-ingress-headless.yaml` manifest.  You are creating another Service, that represents the Nginx Plus Ingress Controller Pod(s).  
 
 - Notice the NodePort is commented out, so you can see that it is not being used.  
-- Notice the ClusterIP is set to None. 
+- Notice the ClusterIP is set to None.
 - The service name is also different, it's called `nginx-ingress-headless`.
 - This is in addition to the existing NodePort Service you created earlier.
 
@@ -1215,9 +1216,9 @@ Give it a try:
     nginx-ingress-69b95fb8ff-ntdwz   1/1     Running   0          2d17h
     nginx-ingress-69b95fb8ff-sgv2b   1/1     Running   0          16s
     ```
-        
+
     Check again, the `nginx-ingress` Headless Service, you should now see THREE Endpoints.
-        
+
     ```bash
     kubectl describe svc nginx-ingress-headless -n nginx-ingress
     ```
@@ -1256,13 +1257,11 @@ NOTE:  The aks2_nic_headless Upstream is configured for `least_time last_byte`, 
 
 **Optional Exercise:** Install a DNS testing Pod in your Cluster, like busy-box or Ubuntu, and use `dig or nslookup` to query the A records from Kube-DNS.
 
-
 ## Wrap Up
 
 As you have seen, using Nginx for Azure is quite easy to create various backend Systems, Services, platforms of different types and have Nginx Load Balance them through a single entry point. Using Advanced Nginx directives/configs with Resolver, Nginx Ingress Controllers, Headless, and even Split Clients help you control and manage dev/test/pre-prod and even Production workloads with ease. Dashboards and Monitoring give you insight with over 240 useful metrics, providing data needed for decisions based on both real time and historical metadata about your Apps and Traffic.
 
 **This completes Lab5.**
-
 
 ## References:
 
@@ -1274,7 +1273,6 @@ As you have seen, using Nginx for Azure is quite easy to create various backend 
 - [NGINX Variables Index](https://nginx.org/en/docs/varindex.html)
 - [NGINX Technical Specs](https://docs.nginx.com/nginx/technical-specs/)
 - [NGINX - Join Community Slack](https://community.nginx.org/joinslack)
-
 
 ### Authors
 
