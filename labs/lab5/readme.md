@@ -682,9 +682,10 @@ Looking pretty good, traffic is even, no logging errors or tickets, no whining a
 ![Cafe - AKS1 split 99%](media/lab5_cafe-aks1-split99.png)
 99% Split
 
->Now that you get the concept and the configuration steps, you can see how EASY it is with Nginx Split Clients to route traffic to different backend applications, including different versions of apps - it's as easy as creating a new Upstream block, and determining the Split Ratio. Consider this not so subtle point - *you did not have to create ONE ticket, change a single DNS record and WAIT, change any firewall rules, update cloud XYZ devices - nothing!*  All you did was tell Nginx to Split existing Live traffic, accelerating your app development velocity into OverDrive.
+<br/>
+Now that you get the concept and the configuration steps, you can see how EASY it is with Nginx Split Clients to route traffic to different backend applications, including different versions of apps - it's as easy as creating a new Upstream block, and determining the Split Ratio. Consider this not so subtle point - *you did not have to create ONE ticket, change a single DNS record and WAIT, change any firewall rules, update cloud XYZ devices - nothing!*  All you did was tell Nginx to Split existing Live traffic, accelerating your app development velocity into OverDrive.
 
->>The Director of Development has heard about your success with Nginx for Azure Split Clients, and now also wants a small percentage of Live Traffic for the next App version, but this Alpha version is `running in AKS Cluster2`.  Oh NO!! - Success usually does mean more work.  But lucky for you, Split clients can work with many Upstreams.  So after several beers, microwaved pizza and intense discussions, your QA team decides on the following Splits:
+>The Director of Development has heard about your success with Nginx for Azure Split Clients, and now also wants a small percentage of Live Traffic for the next App version, but this Alpha version is `running in AKS Cluster2`.  Oh NO!! - Success usually does mean more work.  But lucky for you, Split clients can work with many Upstreams.  So after several beers, microwaved pizza and intense discussions, your QA team decides on the following Splits:
 
 - AKS2 will get 1% traffic - for the Dev Director's request
 - AKS1 will get 80% traffic - for new version
@@ -732,7 +733,7 @@ Cafe Nginx - Split 3 ways: DockerVM, AKS1, AKS2
 - The ratios must add up to 100% or Nginx will not apply the configuration.
 - .01% is the smallest split ratio available, that = 1/10,000th.  
 - The * asterick means either 100%, or the remainder after other ratios.
-- If all the servers in an Upstream Block are DOWN, you will get that ratio of 502 errors, so always test your Upstreams prior to adding them to Split configurations. There is no elegant way to "re-try" when using Splits.  Changing Splits under HIGH load is not recommended, there is always a chance something could go wrong and you will drop clients/traffic. A maintenance window for changes is always a Best Practice.
+- If all the servers in an Upstream Block are DOWN, you will get that ratio of 502 errors, so always test your Upstreams prior to adding them to Split configurations. There is no elegant way to "re-try" when using Splits. Changing Splits under HIGH load is not recommended, there is always a chance something could go wrong and you will drop clients/traffic. A maintenance window for changes is always a Best Practice.
 - Split Clients is also available for TCP traffic, like your Redis Cluster. It splits traffic based on new incoming TCP connections. Ever heard of Active/Active Redis Clusters? Yes, you can do that and control the ratios, just like shown here for HTTP traffic.
 
 >*HIT a nasty bug! - Director of Dev says the new code can't handle that 1% load, and several other backend systems have crashed!*  - not quite ready for testing like his devs told him...
@@ -791,7 +792,7 @@ In this exerices, you will use Nginx for Azure to expose the `Redis Leader Servi
        zone aks2_redis_leader 256k;
        least_time last_byte;
     
-    # from nginx-ingress NodePort Service / aks Node IPs
+       # from nginx-ingress NodePort Service / aks Node IPs
        server aks-nodepool1-19485366-vmss000003:32379;    #aks2 node1:
        server aks-nodepool1-19485366-vmss000004:32379;    #aks2 node2:
        server aks-nodepool1-19485366-vmss000005:32379;    #aks2 node3: 
@@ -867,7 +868,7 @@ In this exerices, you will use Nginx for Azure to expose the `Redis Leader Servi
     "protocol": "Tcp",
     "provisioningState": "Succeeded",
     "resourceGroup": "c.akker-workshop",
-    "sourceAddressPrefix": "209.166.XX.XX",
+    "sourceAddressPrefix": "<MY_PUBLICIP>",
     "sourceAddressPrefixes": [],
     "sourcePortRange": "*",
     "sourcePortRanges": [],
@@ -886,21 +887,24 @@ Edit your local hosts file, adding the `redis.example.com` FQDN as shown below. 
 cat /etc/hosts
 
 # Added for N4A Workshop
-13.86.100.10 cafe.example.com dashboard.example.com redis.example.com
+11.22.33.44 cafe.example.com dashboard.example.com redis.example.com
 
 ```
 
->**Note:** All hostnames are mapped to the same N4A External-IP. Your N4A External-IP address will be different than the example.
+where
+   - `11.22.33.44` replace with your `n4a-publicIP` resource IP address.
+
+>**Note:** All hostnames are mapped to the same N4A External-IP.
 
 
 ## Test Access to the Redis Leader with Redis Tools
 
 If you need to install redis and tools locally, you can follow the instructions on the official site: https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/
 
-1. Using the `Redis-cli` tool, see if you can connect/ping to the Redis Leader:
+1. Using the `Redis-cli` tool within the redis docker image, see if you can connect/ping to the Redis Leader:
 
     ```bash
-    redis-cli -h redis.example.com PING
+    docker run --rm -it redis:alpine redis-cli -h redis.example.com PING
     ```
 
     ```bash
@@ -909,7 +913,7 @@ If you need to install redis and tools locally, you can follow the instructions 
     ```
 
     ```bash
-    redis-cli -h redis.example.com HELLO 2
+    docker run --rm -it redis:alpine redis-cli -h redis.example.com HELLO 2
     ```
 
     ```bash
@@ -937,7 +941,7 @@ Now how cool is that? A Redis Cluster running in AKS, exposed with Nginx Ingress
 ![Redis Bench](media/redis-benchmark-icon.png)
 
 ```bash
-redis-benchmark -h redis.example.com -c 50 -n 10000 -q --csv
+docker run --rm -it redis:alpine redis-benchmark -h redis.example.com -c 50 -n 10000 -q --csv
 ```
 
 ```bash
@@ -1067,15 +1071,15 @@ nginx-ingress-headless   ClusterIP   None          <none>        80/TCP,443/TCP
     IPs:               None
     Port:              http  80/TCP
     TargetPort:        80/TCP
-    Endpoints:         172.16.4.240:80
+    Endpoints:         172.16.20.70:80
     Port:              https  443/TCP
     TargetPort:        443/TCP
-    Endpoints:         172.16.4.240:443
+    Endpoints:         172.16.20.70:443
     Session Affinity:  None
     Events:            <none>
     ```
 
-1. Take NOTE of the Endpoint IP Address, `172.16.4.240` in this example.  It should be the same as the IP Address of the NIC Pod, check it out:
+1. Take NOTE of the Endpoint IP Address, `172.16.20.70` in this example.  It should be the same as the IP Address of the NIC Pod, check it out:
 
     ```bash
     kubectl describe pod $NIC -n nginx-ingress |grep IP
@@ -1083,9 +1087,9 @@ nginx-ingress-headless   ClusterIP   None          <none>        80/TCP,443/TCP
 
     ```bash
     ##Sample Output##
-    IP:               172.16.4.240
+    IP:               172.16.20.70
     IPs:
-    IP:           172.16.4.240
+    IP:           172.16.20.70
     ```
 
 Yes, they both match, so your Service definition and Headless manifests are configured correctly.
@@ -1101,9 +1105,9 @@ Yes, they both match, so your Service definition and Headless manifests are conf
     Name:              kube-dns
     Namespace:         kube-system
     Labels:            addonmanager.kubernetes.io/mode=Reconcile
-                    k8s-app=kube-dns
-                    kubernetes.io/cluster-service=true
-                    kubernetes.io/name=CoreDNS
+                       k8s-app=kube-dns
+                       kubernetes.io/cluster-service=true
+                       kubernetes.io/name=CoreDNS
     Annotations:       <none>
     Selector:          k8s-app=kube-dns
     Type:              ClusterIP
@@ -1113,15 +1117,15 @@ Yes, they both match, so your Service definition and Headless manifests are conf
     IPs:               10.0.0.10
     Port:              dns  53/UDP
     TargetPort:        53/UDP
-    Endpoints:         172.16.4.115:53,172.16.4.178:53   # Use these IPs for Nginx Resolver
+    Endpoints:         172.16.20.59:53,172.16.20.81:53   # Use these IPs for Nginx Resolver
     Port:              dns-tcp  53/TCP
     TargetPort:        53/TCP
-    Endpoints:         172.16.4.115:53,172.16.4.178:53
+    Endpoints:         172.16.20.59:53,172.16.20.81:53
     Session Affinity:  None
     Events:            <none>
     ```
 
-You will use these two IP Addresses from DNS Service Endpoints in your Nginx for Azure configuration. `172.16.4.115 and 172.16.4.178` in this example.
+You will use these two IP Addresses from DNS Service Endpoints in your Nginx for Azure configuration. `172.16.20.59 and 172.16.20.81` in this example.
 
 1. Inspect the `lab5/aks2-nic-headless.conf` file.  
 
@@ -1143,20 +1147,20 @@ Now that the Nginx Headless Service has been configured, and you have the Kube-D
     # direct to nginx ingress Headless Service ( no NodePort )
     #
     upstream aks2_nic_headless {
-    zone aks2_nic_headless 256k;
-    least_time last_byte;
-    
-    # direct to nginx-ingress Headless Service Endpoint
-    # Resolver set to kube-dns IPs
+        zone aks2_nic_headless 256k;
+        least_time last_byte;
+        
+        # direct to nginx-ingress Headless Service Endpoint
+        # Resolver set to kube-dns IPs
 
-        resolver 172.16.4.115 172.16.4.178 valid=10s ipv6=off status_zone=kube-dns;
-    
-    # Server name must follow this Kubernetes Service Name format
-    # server <service name>.<namespace>.svc.cluster.local
+        resolver 172.16.20.59 172.16.20.81 valid=10s ipv6=off status_zone=kube-dns;
+        
+        # Server name must follow this Kubernetes Service Name format
+        # server <service name>.<namespace>.svc.cluster.local
 
         server nginx-ingress-headless.nginx-ingress.svc.cluster.local:80 resolve;
 
-    keepalive 32;
+        keepalive 32;
     }
     ```
 
@@ -1237,17 +1241,17 @@ Give it a try:
     IPs:               None
     Port:              http  80/TCP
     TargetPort:        80/TCP
-    Endpoints:         172.16.4.201:80,172.16.4.221:80,172.16.4.240:80
+    Endpoints:         172.16.20.25:80,172.16.20.37:80,172.16.20.70:80
     Port:              https  443/TCP
     TargetPort:        443/TCP
-    Endpoints:         172.16.4.201:443,172.16.4.221:443,172.16.4.240:443
+    Endpoints:         172.16.20.25:443,172.16.20.37:443,172.16.20.70:443
     Session Affinity:  None
     Events:            <none>
     ```
 
-If you recall, 172.16.2.240 was your first Nginx Ingress Pod, now you have 2 more, 172.16.4.221 and .201. If you `kubectl describe pod` on each one, the NIC Pod IP Addresses will match the Headless Service list, that's how Kubernetes Services work.
+If you recall, 172.16.20.70 was your first Nginx Ingress Pod, now you have 2 more, 172.16.20.25 and 172.16.20.37. If you `kubectl describe pod` on each one, the NIC Pod IP Addresses will match the Headless Service list, that's how Kubernetes Services work.
 
-1. Test with Chrome. Open your browser to http://cafe.example.com/coffee, and Refresh several times. Watch the `Ingress Controller IP address`, it will change to the 3 NIC Pod IPs, 172.16.4.240, .221, and .201 in this example. Nginx for Azure is load balancing all three Ingress Controllers. 
+1. Test with Chrome. Open your browser to http://cafe.example.com/coffee, and Refresh several times. Watch the `Ingress Controller IP address`, it will change to the 3 NIC Pod IPs, 172.16.20.70, .25, and .37 in this example. Nginx for Azure is load balancing all three Ingress Controllers.
 
 NOTE:  The aks2_nic_headless Upstream is configured for `least_time last_byte`, so Nginx for Azure will choose the fastest NIC Pod. If you want to see it in Round-Robin mode, comment out the `least_time last_byte` directive.
 
