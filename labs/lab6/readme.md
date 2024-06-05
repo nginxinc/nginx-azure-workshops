@@ -260,7 +260,7 @@ In this section you will create an extended log format which you will use with `
 
 1. You will now pin this chart to your custom dashboard. Within the chart pane, click on `Save to dashboard > Pin to dashboard`.
 
-    Within the `Pin to dashboard` pane, by default the `Existing` tab should be open with your recent created dashboard selected. Click on `Pin` button to pin the chart to your dashboard.
+    Within the `Pin to dashboard` pane, by default the `Existing` tab should be open with your recently created dashboard selected. Click on `Pin` button to pin the chart to your dashboard.
 
     ![pin upstream chart](media/lab6_pin_upstream_chart.png)
 
