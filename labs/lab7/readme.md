@@ -187,11 +187,11 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 
 1. Within your resource-group, click on the NGINX for Azure resource (`nginx4a`).
 
-2. From the left pane, click on `Settings > NGINX certificates` and then click on the `+ Add certificate` button to add your self signed certificate that you created in previous section.
+1. From the left pane, click on `Settings > NGINX certificates` and then click on the `+ Add certificate` button to add your self signed certificate that you created in previous section.
 
     ![NGINX Certificates](media/lab7_n4a_cert_screen.png)
 
-3. Within the `Add Certificate` pane, fill in below details:
+1. Within the `Add Certificate` pane, fill in below details:
     - **Preferred name:** Any unique name for the certificate (eg. n4a-cert)
     - **Certificate path:** Logical path where the certificate would recide. (eg. /etc/nginx/cert/n4a-cert.cert)
     - **Key path:** Logical path where the key would recide. (eg. /etc/nginx/cert/n4a-cert.key)
@@ -204,17 +204,17 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 
         ![add certificate2](media/lab7_add_certificate2.png)
   
-4. Once all the fields have been filled, click on `Add Certificate` to save the certificate within NGINX for Azure.
+1. Once all the fields have been filled, click on `Add Certificate` to save the certificate within NGINX for Azure.
 
     ![add certificate save](media/lab7_add_certificate_save.png)
 
-5. You should see your certificate in a `Succeeded` status if the values that you entered in previous step was all correct.
+1. You should see your certificate in a `Succeeded` status if the values that you entered in previous step was all correct.
 
     ![add certificate success](media/lab7_add_certificate_success.png)
 
-6. Now you will modify your `cafe.example.com.conf` file to set up cafe.example.com as a HTTPS server. First you will add the `ssl` parameter to the `listen` directive in the `server` block. You will then specify the server certificate and private key file within the configuration to point to the certificate that you added in previous steps.
+1. Now you will modify your `cafe.example.com.conf` file to set up cafe.example.com as a HTTPS server. First you will add the `ssl` parameter to the `listen` directive in the `server` block. You will then specify the server certificate and private key file within the configuration to point to the certificate that you added in previous steps.
 
-7. Open `lab7/cafe.example.com.conf`. Below is the list of changes that you can observe which has changed from `lab2/cafe.example.com.conf` file to enable HTTPS traffic on cafe.example.com.
+1. Open `lab7/cafe.example.com.conf`. Below is the list of changes that you can observe which has changed from `lab2/cafe.example.com.conf` file to enable HTTPS traffic on cafe.example.com.
    - On line #6, the listen port has been updated from port 80 to 443. Also `ssl` parameter has been added to enable TLS termination for this `server` block.
    - On line #11-12, the `ssl_certificate` and `ssl_certificate_key` directives have been added and points to the certificate path that you provided when you added certificate to the NGINX for Azure resource.
   
@@ -233,13 +233,13 @@ Now that you have a self signed TLS certificate for testing, you will configure 
     } 
     ```
 
-8. Within the Azure portal, open your resource-group, click on the NGINX for Azure resource (`nginx4a`).
+1. Within the Azure portal, open your resource-group, click on the NGINX for Azure resource (`nginx4a`).
 
-9. From the left pane, click on `Settings > NGINX configuration` and then open the `cafe.example.com.conf` file under `/etc/nginx/conf.d` directory. This would open the config file in the editor.
+1. From the left pane, click on `Settings > NGINX configuration` and then open the `cafe.example.com.conf` file under `/etc/nginx/conf.d` directory. This would open the config file in the editor.
 
-10. Copy the content of `lab7/cafe.example.com.conf` file and replace the existing `cafe.example.com.conf` content with it.
+1. Copy the content of `lab7/cafe.example.com.conf` file and replace the existing `cafe.example.com.conf` content with it.
 
-11. Click on `Submit` to push the config changes to the NGINX for Azure resource.
+1. Click on `Submit` to push the config changes to the NGINX for Azure resource.
 
 ### Test and validate TLS traffic components and settings
 
