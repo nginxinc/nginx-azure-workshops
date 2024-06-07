@@ -165,6 +165,11 @@ The Cafe application that you will deploy looks like the following diagram below
 
     >*However - do not Scale down the coffee and tea replicas, leave three of each pod running in AKS2.*
 
+    ```bash
+    kubectl apply -f lab4/cafe.yaml
+    kubectl apply -f lab4/cafe-vs.yaml
+    ```
+
 3. Check your Second Nginx Plus Ingress Controller Dashboard, at http://dashboard.example.com:9002/dashboard.html.  You should find the same HTTP Zones, and 3 each of the coffee and tea pods for HTTP Upstreams.
 
 ![Cafe Upstreams](media/lab4_cafe-upstreams-3.png)

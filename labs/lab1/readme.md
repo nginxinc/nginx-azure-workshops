@@ -634,7 +634,7 @@ In this section you will be looking at NGINX for Azure resource that you created
 
     ![n4a Index Page](media/lab1_n4a_index_page.png)
 
-8. This completes the validation of all the resources that you created using Azure CLI. In the upcoming labs you would be modifying the configuration files and exploring various features of NGINX for Azure resources.
+8. Congratulations!!! you have successfully deployed the sample index page within NGINX for Azure. This also completes the validation of all the resources that you created using Azure CLI. In the upcoming labs you would be modifying the configuration files and exploring various features of NGINX for Azure resources.
 
 <br/>
 

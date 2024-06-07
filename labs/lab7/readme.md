@@ -187,7 +187,7 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 
 1. Within your resource-group, click on the NGINX for Azure resource (`nginx4a`).
 
-1. From the left pane, click on `NGINX certificates` under `Settings` and then click on the `+ Add certificate` button to add your self signed certificate that you created in previous section.
+1. From the left pane, click on `Settings > NGINX certificates` and then click on the `+ Add certificate` button to add your self signed certificate that you created in previous section.
 
     ![NGINX Certificates](media/lab7_n4a_cert_screen.png)
 
@@ -212,7 +212,7 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 
     ![add certificate success](media/lab7_add_certificate_success.png)
 
-1. Now you will modify your `cafe.example.com.conf` file that you created in `lab2` to set up cafe.example.com as a HTTPS server. First you will add the `ssl` parameter to the `listen` directive in the `server` block. You will then specify the server certificate and private key file within the configuration to point to the certificate that you added in previous steps.
+1. Now you will modify your `cafe.example.com.conf` file to set up cafe.example.com as a HTTPS server. First you will add the `ssl` parameter to the `listen` directive in the `server` block. You will then specify the server certificate and private key file within the configuration to point to the certificate that you added in previous steps.
 
 1. Open `lab7/cafe.example.com.conf`. Below is the list of changes that you can observe which has changed from `lab2/cafe.example.com.conf` file to enable HTTPS traffic on cafe.example.com.
    - On line #6, the listen port has been updated from port 80 to 443. Also `ssl` parameter has been added to enable TLS termination for this `server` block.
@@ -235,7 +235,7 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 
 1. Within the Azure portal, open your resource-group, click on the NGINX for Azure resource (`nginx4a`).
 
-1. From the left pane, click on `NGINX configuration` under `Settings` and then open the `cafe.example.com.conf` file under `/etc/nginx/conf.d` directory. This would open the config file in the editor.
+1. From the left pane, click on `Settings > NGINX configuration` and then open the `cafe.example.com.conf` file under `/etc/nginx/conf.d` directory. This would open the config file in the editor.
 
 1. Copy the content of `lab7/cafe.example.com.conf` file and replace the existing `cafe.example.com.conf` content with it.
 

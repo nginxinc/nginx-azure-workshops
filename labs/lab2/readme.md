@@ -181,6 +181,9 @@ By the end of the lab you will be able to:
 
     ```bash
     sudo docker images
+    ```
+
+    ```bash
     sudo docker ps -a
     ```
 
@@ -442,6 +445,12 @@ NGINX aaS | Docker | Cafe Demo
         # include /etc/nginx/includes/*.conf;    # shared files
     
     }
+
+    # stream {
+        
+    #     include /etc/nginx/stream/*.conf;          # Stream TCP nginx files
+
+    # }
     ```
 
     Notice that the Nginx standard / Best Practice of placing the HTTP Context config files in the `/etc/nginx/conf.d` folder is being followed, and the `include` directive is being used to read these files at Nginx configuration load time.
@@ -485,7 +494,7 @@ NGINX aaS | Docker | Cafe Demo
     Connection: keep-alive
     Expires: Thu, 04 Apr 2024 21:36:29 GMT
     Cache-Control: no-cache
-    X-Proxy-Pass: cafe-nginx
+    X-Proxy-Pass: cafe_nginx
     ```
 
     Try the coffee and tea URLs, at http://cafe.example.com/coffee and http://cafe.example.com/tea.

@@ -50,9 +50,11 @@ Azure Kubernetes Service is a service provided for Kubernetes on Azure infrastru
 
 ### Deploy first Kubernetes Cluster with Azure CLI
 
-1. With the use of single Azure CLI command, you will deploy a production-ready AKS cluster with some additional options. (**This will take a while**).
+![AKS Icon](media/aks-icon.png)
 
-   First, initialise the Environment variables based on your setup, which are passed to the Azure CLI command as shown below:
+With the use of single Azure CLI command, you will deploy a production-ready AKS cluster with some additional options. (**This will take a while**).
+
+1. First, initialise the Environment variables based on your setup, which are passed to the Azure CLI command as shown below:
 
    ```bash
     ## Set environment variables
@@ -185,7 +187,7 @@ In this section, you will be installing NGINX Plus Ingress Controller in first A
 
    However, for this workshop, a Trial License will be provided to you, so you can pull and run the Nginx Plus Commercial version of the Ingress Controller.  This is NOT the same Ingress Controller provided by the Kubernetes Community.  (If you are unsure which Ingress Controller you are using in your other Kubernetes environments, you can find a link to the Blog from Nginx that explains the differences).
 
-1. Once your Workshop Instructor has provide the JWT file, follow these instructions to create a Kubernetes Secret named `regcred`, of type `docker-registry`.  You will need to create the Secret in both of your AKS clusters.
+1. Once your Workshop Instructor has provided the JWT file, follow these instructions to create a Kubernetes Secret named `regcred`, of type `docker-registry`.  You will need to create the Secret in both of your AKS clusters.
 
 1. Copy the `nginx-repo.jwt` file provided in the `/labs/lab3` directory within your cloned workshop repository.
 
@@ -322,6 +324,8 @@ Just a quick test, is your Nginx Plus Ingress Controller running, and can you se
    Type `Ctrl+C` within your terminal to stop the Port-Forward when you are finished.
 
 ### Deploy second Kubernetes Cluster with Azure CLI
+
+![AKS Icon](media/aks-icon.png)
 
 In this section, similar to how you deployed the first AKS cluster,  you will deploy a second AKS cluster named `n4a-aks2` which has 4 nodes.
 

@@ -94,7 +94,7 @@ In this section you will create an extended log format which you will use with `
 
     ![cafe access log format update](media/lab6_cafe_access_log_update.png)
 
-1. In subsequent sections you will test out the extended log format within inside log analytics workspace.
+1. In the next section, you will test out the extended log format within inside log analytics workspace.
 
 ### Test the access logs within log analytics workspace
 
@@ -130,7 +130,7 @@ In this section you will create an extended log format which you will use with `
 
     ![nginx4a logs](media/nginx4a_logs.png)
 
-1. This should open a `new query` window, which is made up of a query editor pane at the top and query result pane at the bottom as shown in below screenshot.
+1. This should open a `new query` window, which is made up of a query editor pane at the top and query result pane at the bottom as shown in the below screenshot.
 
     ![default query](media/lab6_default_query.png)
 
@@ -162,7 +162,63 @@ In this section you will create an extended log format which you will use with `
 
 ### Explore Azure Monitoring for NGINX for Azure
 
-1. Generate some steady traffic using your local Docker Desktop. Start and run the `WRK` load generation tool from a container using below command to generate traffic:
+1. Within the NGINX for Azure resource (nginx4a), open the `Settings > NGINX Configuration` pane.
+
+1. Modify the `includes/split-clients.conf` file, to set traffic split ratio as 30% to aks1_ingress, 30% to aks2_ingress and rest 40% to cafe_nginx:
+
+    ```nginx
+    # Nginx 4 Azure to AKS1/2 NICs and/or UbuntuVMs for Upstreams
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    # HTTP Split Clients Configuration for AKS Cluster1/Cluster2 or UbuntuVM ratios
+    #
+    split_clients $request_id $upstream {
+
+        # Uncomment the percent wanted for AKS Cluster #1, #2, or UbuntuVM
+        # 0.1% aks1_ingress;
+        # 1.0% aks1_ingress;
+        # 5.0% aks1_ingress;
+        30% aks1_ingress;      # 30% traffic to AKS1
+        # 50% aks1_ingress;
+        # 80% aks1_ingress;
+        # 95% aks1_ingress;
+        # 99% aks1_ingress;
+        # * aks1_ingress;
+        30% aks2_ingress;      # 30% traffic to AKS2
+        * cafe_nginx;          # Rest 40% traffic to Ubuntu VM containers
+        # * aks1_nic_direct;    # Direct to NIC pods - headless/no nodeport
+
+    }
+    ```
+
+1. Within the `cafe.example.com.conf` file, modify the `proxy_pass` directive in your `location /` block, to use the `$upstream` variable. Click on Submit to save the config file
+
+    ```nginx
+    ...
+        location / {
+            #
+            # return 200 "You have reached cafe.example.com, location /\n";
+            
+            # proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass cafe_nginx;  # Custom Header
+
+            # proxy_pass http://windowsvm;        # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass windowsvm;  # Custom Header
+
+            # proxy_pass http://aks1_ingress;        # Proxy AND load balance to AKS1 Nginx Ingress
+            # add_header X-Proxy-Pass aks1_ingress;  # Custom Header
+
+            # proxy_pass http://aks2_ingress;        # Proxy AND load balance to AKS2 Nginx Ingress
+            # add_header X-Proxy-Pass aks2_ingress;  # Custom Header
+
+            proxy_pass http://$upstream;            # Use Split Clients config
+            add_header X-Proxy-Pass $upstream;      # Custom Header
+
+        }
+
+    ...
+    ```
+
+1. Now generate some steady traffic using your local Docker Desktop. Start and run the `WRK` load generation tool from a container using below command to generate traffic:
 
     ```bash
     docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d30m --timeout 2s http://cafe.example.com/coffee
@@ -170,13 +226,13 @@ In this section you will create an extended log format which you will use with `
 
     The above command would run for 30 minutes and send request to `http://cafe.example.com/coffee` using 4 threads and 200 connections.
 
-1. Within Azure portal, open your NGINX for Azure resource (nginx4a). From the left pane click on `Monitoring > Metrics`. This should open a new Chart pane.
+1. Within Azure portal, open your NGINX for Azure resource (nginx4a). From the left pane click on `Monitoring > Metrics`. This should open a new Chart pane as shown in below screenshot.
 
     ![default chart](media/lab6_default_chart.png)
 
 1. For the first chart, within **Metric Namespace** drop-down, select `nginx requests and response statistics`. For the **metrics** drop-down, select `plus.http.request.count`. For the **Aggregation** drop-down, select `Avg`.
 
-   Click on the **Apply Splitting** button. Within the **Values** drop-down, select `server_zone`. From top right change the **Time range** to `Last 30 minutes`. This should generate a chart similar to below screenshot.
+   Click on the **Apply Splitting** button. Within the **Values** drop-down, select `server_zone`. From top right change the **Time range** to `Last 30 minutes` and click on `Apply`. This should generate a chart similar to the below screenshot.
 
     ![server zone request chart](media/lab6_server_request_chart.png)
 
@@ -198,13 +254,13 @@ In this section you will create an extended log format which you will use with `
 
     Click on the **Add filter** button. Within the **Property** drop-down, select `upstream`. Leave the **Operator** to `=`. In **values** drop-down, select `aks1_ingress`, `aks2_ingress` and `cafe_nginx`.
 
-    Click on the **Apply Splitting** button. Within the **Values** drop-down, select `upstream`. From top right change the **Time range** to `Last 30 minutes`. This should generate a chart similar to below screenshot.
+    Click on the **Apply Splitting** button. Within the **Values** drop-down, select `upstream`. From top right change the **Time range** to `Last 30 minutes` and click on `Apply`. This should generate a chart similar to below screenshot.
 
     ![upstream response time chart](media/lab6_upstream_response_time_chart.png)
 
 1. You will now pin this chart to your custom dashboard. Within the chart pane, click on `Save to dashboard > Pin to dashboard`.
 
-    Within the `Pin to dashboard` pane, by default the `Existing` tab should be open with your recent created dashboard selected. Click on `Pin` button to pin the chart to your dashboard.
+    Within the `Pin to dashboard` pane, by default the `Existing` tab should be open with your recently created dashboard selected. Click on `Pin` button to pin the chart to your dashboard.
 
     ![pin upstream chart](media/lab6_pin_upstream_chart.png)
 
