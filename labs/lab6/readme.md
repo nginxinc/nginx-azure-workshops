@@ -94,7 +94,7 @@ In this section you will create an extended log format which you will use with `
 
     ![cafe access log format update](media/lab6_cafe_access_log_update.png)
 
-1. In next section, you will test out the extended log format within inside log analytics workspace.
+1. In the next section, you will test out the extended log format within inside log analytics workspace.
 
 ### Test the access logs within log analytics workspace
 
@@ -130,7 +130,7 @@ In this section you will create an extended log format which you will use with `
 
     ![nginx4a logs](media/nginx4a_logs.png)
 
-1. This should open a `new query` window, which is made up of a query editor pane at the top and query result pane at the bottom as shown in below screenshot.
+1. This should open a `new query` window, which is made up of a query editor pane at the top and query result pane at the bottom as shown in the below screenshot.
 
     ![default query](media/lab6_default_query.png)
 
@@ -232,7 +232,7 @@ In this section you will create an extended log format which you will use with `
 
 1. For the first chart, within **Metric Namespace** drop-down, select `nginx requests and response statistics`. For the **metrics** drop-down, select `plus.http.request.count`. For the **Aggregation** drop-down, select `Avg`.
 
-   Click on the **Apply Splitting** button. Within the **Values** drop-down, select `server_zone`. From top right change the **Time range** to `Last 30 minutes` and click on `Apply`. This should generate a chart similar to below screenshot.
+   Click on the **Apply Splitting** button. Within the **Values** drop-down, select `server_zone`. From top right change the **Time range** to `Last 30 minutes` and click on `Apply`. This should generate a chart similar to the below screenshot.
 
     ![server zone request chart](media/lab6_server_request_chart.png)
 
