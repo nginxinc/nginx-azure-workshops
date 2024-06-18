@@ -26,4 +26,5 @@ Thumbs.db
 kubernetes-ingress
 
 n4a-configs-staging/
+*.tar.gz
 
