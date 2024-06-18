@@ -313,12 +313,12 @@ kubectl apply -f labs/lab3/dashboard-vs.yaml
 kubectl get svc,vs -n nginx-ingress
 
 kubectl config use-context n4a-aks1
-kubectl apply -f labs/lab3/nodeport-static.yaml
+kubectl apply -f labs/lab4/nodeport-static-redis.yaml
 kubectl get svc nginx-ingress -n nginx-ingress
 
 
 kubectl config use-context n4a-aks2
-kubectl apply -f labs/lab3/nodeport-static.yaml
+kubectl apply -f labs/lab4/nodeport-static-redis.yaml
 kubectl get svc nginx-ingress -n nginx-ingress
 
 
@@ -376,6 +376,9 @@ echo "--> Getting the Node Ids for the AKS1 Cluster..."
 kubectl config use-context n4a-aks1
 export AKS1_NODE_NUMBER=$(kubectl get nodes -o jsonpath="{.items[0].metadata.name}" | cut -d- -f 3)
 
+echo
+echo "--> Getting the Node Ids for the AKS2 Cluster..."
+
 kubectl config use-context n4a-aks2
 export AKS2_NODE_NUMBER=$(kubectl get nodes -o jsonpath="{.items[0].metadata.name}" | cut -d- -f 3)
 
@@ -385,8 +388,23 @@ echo "--> Update n4a configs..."
 cp -r n4a-configs/ n4a-configs-staging/
 sed -i "s/_AKS1_NODES_/$AKS1_NODE_NUMBER/g" n4a-configs-staging/etc/nginx/conf.d/aks1-upstreams.conf
 sed -i "s/_AKS2_NODES_/$AKS2_NODE_NUMBER/g" n4a-configs-staging/etc/nginx/conf.d/aks2-upstreams.conf
+sed -i "s/_AKS1_NODES_/$AKS1_NODE_NUMBER/g" n4a-configs-staging/etc/nginx/conf.d/nic1-dashboard-upstreams.conf
+sed -i "s/_AKS2_NODES_/$AKS2_NODE_NUMBER/g" n4a-configs-staging/etc/nginx/conf.d/nic2-dashboard-upstreams.conf
 
+echo
+echo "--> Creating the archive..."
+cd n4a-configs-staging
+tar -czf ../n4a-configs.tar.gz *
+cd ..
 
+echo
+echo "--> Uploading the configuration..."
+az nginx deployment configuration create \
+  --configuration-name default \
+  --deployment-name nginx4a \
+  --resource-group $MY_RESOURCEGROUP \
+  --root-file var/nginx.conf \
+  --package data=$(base64 -i n4a-configs.tar.gz)
 
 cat <<EOI
 export MY_N4A_ID=$MY_N4A_ID
