@@ -252,7 +252,7 @@ In this exercise you will establish the necessary Azure resources to deploy the 
          "lastModified": "2024-05-30T19:52:50+00:00",
          "locked": false,
          "tags": {},
-         "value": "DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net;AccountName=mygsa1717095655594493;AccountKey=ZSuhwkwu8/w9CH/LJKEvOsD5npv3HIwKH7ZdvZif82bQyp63ub+XlFWdv7BznhsnCQT0TrLltyc4+AStI/S5xA==;BlobEndpoint=https://mygsa1717095655594493.blob.core.windows.net/;FileEndpoint=https://mygsa1717095655594493.file.core.windows.net/;QueueEndpoint=https://mygsa1717095655594493.queue.core.windows.net/;TableEndpoint=https://mygsa1717095655594493.table.core.windows.net/"
+         "value": "<...>"
       }
       {
          "contentType": "",
