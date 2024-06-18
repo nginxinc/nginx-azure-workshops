@@ -24,3 +24,6 @@ Thumbs.db
 #Kubernetes-ingress#
 ####################
 kubernetes-ingress
+
+n4a-configs-staging/
+

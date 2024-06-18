@@ -282,12 +282,122 @@ In this exercise you will establish the necessary Azure resources to deploy the 
 
 In this exercise you will establish the NGINX for Azure configuration. 
 
+1. We will be installing The Garage app into AKS Cluster 2, so we'll need to be in that context and have a list of the nodes:
+
+   ```shell
+   kubectl config use-context n4a-aks2
+   kubectl get nodes
+   ```
+   
+   Sample Output
+
+   ```shell
+   Switched to context "n4a-aks2".
+   NAME                                STATUS   ROLES   AGE   VERSION
+   aks-nodepool1-59322765-vmss000000   Ready    agent   14d   v1.27.9
+   aks-nodepool1-59322765-vmss000001   Ready    agent   14d   v1.27.9
+   aks-nodepool1-59322765-vmss000002   Ready    agent   14d   v1.27.9
+   aks-nodepool1-59322765-vmss000003   Ready    agent   14d   v1.27.9
+   ```
+1. Open Azure portal within your browser and then open your resource group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under settings.
+
+1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/the-garage-upstreams.conf`. You can use the example provided, just edit the Node Names to match your cluster:
+
+   ```nginx
+   upstream the_garage {
+     zone the_garage 256k;
+   
+     least_time last_byte;
+   
+     server aks-nodepool1-<update-this-value>-vmss000000:32080;    #aks2 node1
+     server aks-nodepool1-<update-this-value>-vmss000001:32080;    #aks2 node2
+     server aks-nodepool1-<update-this-value>-vmss000002:32080;    #aks2 node3 
+     server aks-nodepool1-<update-this-value>-vmss000003:32080;    #aks2 node4
+   
+     keepalive 32;
+   
+   }
+   ```
+
+1. Click the `Submit` Button above the Editor. Nginx will validate your configurations, and if successful, will reload Nginx with your new configurations. If you receive an error, you will need to fix it before you proceed.
+
+1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/the-garage.conf`. You can use the example provided, just edit the Node Names to match your cluster:
+
+   ```nginx
+   server {
+       listen 8080;
+   
+       server_name the-garage.example.com;
+       status_zone the-garage.example.com;   # Metrics zone name
+   
+       access_log  /var/log/nginx/the-garage.example.com.log main_ext;
+       error_log   /var/log/nginx/the-garage.example.com_error.log info;
+   
+      location / {
+           proxy_pass http://the_garage;
+           add_header X-Proxy-Pass the-garage;  # Custom Header
+      }
+   }
+   ```
+
+1. Click the `Submit` Button above the Editor. Nginx will validate your configurations, and if successful, will reload Nginx with your new configurations. If you receive an error, you will need to fix it before you proceed.
+
+1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/my-garage-upstreams.conf`. You can use the example provided, just edit the Node Names to match your cluster:
+
+   ```nginx
+   upstream my_garage {
+      zone my_garage 256k;
+      
+      server aks-nodepool1-<update-this-value>-vmss000000:32080;    #aks2 node1
+      server aks-nodepool1-<update-this-value>-vmss000001:32080;    #aks2 node2
+      server aks-nodepool1-<update-this-value>-vmss000002:32080;    #aks2 node3 
+      server aks-nodepool1-<update-this-value>-vmss000003:32080;    #aks2 node4
+      
+      keepalive 8;
+   }
+   ```
+
+1. Click the `Submit` Button above the Editor. Nginx will validate your configurations, and if successful, will reload Nginx with your new configurations. If you receive an error, you will need to fix it before you proceed.
+
+1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/my-garage.conf`. You can use the example provided, just edit the Node Names to match your cluster:
+
+   ```nginx
+   server {
+       listen 80;
+   
+       server_name my-garage.example.com;
+       status_zone my-garage.example.com;   # Metrics zone name
+   
+       access_log  /var/log/nginx/my-garage.example.com.log main_ext;
+       error_log   /var/log/nginx/my-garage.example.com_error.log info;
+   
+      location / {
+           proxy_pass http://my_garage;
+           add_header X-Proxy-Pass my-garage;  # Custom Header
+      }
+   }
+   ```
+
+1. Click the `Submit` Button above the Editor. Nginx will validate your configurations, and if successful, will reload Nginx with your new configurations. If you receive an error, you will need to fix it before you proceed.
 
 
 ### Lab exercise 3
 
-<numbered steps are here>
+In this exercise you will deploy the application into AKS Cluster 2.
 
+1. Create the deployment manifest for the garage service:
+
+    ```bash
+    cat <<EOF > the-garage-deployment.yaml
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: example-config
+    data:
+      key1: value1
+      key2: value2
+    EOF
+    ```
 ### << more exercises/steps>>
 
 <numbered steps are here>
