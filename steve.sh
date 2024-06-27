@@ -16,6 +16,11 @@ MY_PUBLICIP: $MY_PUBLICIP
 MY_SUBSCRIPTIONID: $MY_SUBSCRIPTIONID
 EOI
 
+## Clean up previous run...
+
+if [ -d "n4a-configs-staging" ]; then
+  rm -r n4a-configs-staging
+fi
 
 ## Lab 1
 
@@ -390,12 +395,24 @@ sed -i "s/_AKS1_NODES_/$AKS1_NODE_NUMBER/g" n4a-configs-staging/etc/nginx/conf.d
 sed -i "s/_AKS2_NODES_/$AKS2_NODE_NUMBER/g" n4a-configs-staging/etc/nginx/conf.d/aks2-upstreams.conf
 sed -i "s/_AKS1_NODES_/$AKS1_NODE_NUMBER/g" n4a-configs-staging/etc/nginx/conf.d/nic1-dashboard-upstreams.conf
 sed -i "s/_AKS2_NODES_/$AKS2_NODE_NUMBER/g" n4a-configs-staging/etc/nginx/conf.d/nic2-dashboard-upstreams.conf
+sed -i "s/_AKS2_NODES_/$AKS2_NODE_NUMBER/g" n4a-configs-staging/etc/nginx/conf.d/the-garage-upstreams.conf
+sed -i "s/_AKS2_NODES_/$AKS2_NODE_NUMBER/g" n4a-configs-staging/etc/nginx/conf.d/my-garage-upstreams.conf
 
 echo
 echo "--> Creating the archive..."
 cd n4a-configs-staging
 tar -czf ../n4a-configs.tar.gz *
 cd ..
+rm -r n4a-configs-staging
+
+echo
+echo "--> Prepare the upload package..."
+export B64_N4A_CONFIG=$(base64 -i n4a-configs.tar.gz | tr -d '\n')
+cat << EOF > package.json
+{
+"data": "$B64_N4A_CONFIG"
+}
+EOF
 
 echo
 echo "--> Uploading the configuration..."
@@ -404,7 +421,11 @@ az nginx deployment configuration create \
   --deployment-name nginx4a \
   --resource-group $MY_RESOURCEGROUP \
   --root-file var/nginx.conf \
-  --package data=$(base64 -i n4a-configs.tar.gz)
+  --package "@package.json"
+
+echo
+echo "--> Updating the hosts file with the new Azure Public IP..."
+sudo sed -i "/N4AWSEX/{n;s/^[^ ]*/$MY_AZURE_PUBLIC_IP/}" /etc/hosts
 
 cat <<EOI
 export MY_N4A_ID=$MY_N4A_ID

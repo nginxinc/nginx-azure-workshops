@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: the-garage-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: the-garage
+  template:
+    metadata:
+      labels:
+        app: the-garage
+    spec:
+      containers:
+        - name: the-garage
+          image: ghcr.io/ciroque/the-garage:18fb641c
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+            - name: ConnectionStrings__AppConfig
+              value: "Endpoint=https://mygac1719520913635582.azconfig.io;Id=wOL3;Secret=Bnt3dVF8vU4ZqnmPyl2i6Zroi7z5GUOCu6Zjr6rViB0FUCTkwyFDJQQJ99AFAC8vTIns17ujAAABAZACiTCv"
+          livenessProbe:
+            httpGet:
+              path: "/vehicles"
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: "/vehicles"
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: the-garage-svc
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http-alt
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: the-garage
+
+---
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: the-garage-vs
+spec:
+  host: the-garage.example.com
+  upstreams:
+    - name: the-garage
+      service: the-garage-svc
+      port: 8080
+      healthCheck:
+        enable: true
+        path: /vehicles
+        interval: 10s
+        jitter: 3s
+        fails: 3
+        passes: 2
+        connect-timeout: 30s
+        read-timeout: 20s
+  routes:
+    - path: /
+      action:
+        pass: the-garage
+    - path: /garage-lab
+      action:
+        return:
+          code: 200
+          type: text/html
+          body: "You have found The Garage"

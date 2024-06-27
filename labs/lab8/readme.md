@@ -21,7 +21,7 @@ By the end of the lab you will be able to:
 - Ensure the My Garage application is accessible from the internet
 - Monitor traffic to the My Garage application using the NGINX Dashboard
 
-## Pre-Requisites@A
+## Pre-Requisites
 
 You need to have followed the labs up to this point. Specifically, Lab 0 and Lab 4 are required to have been completed. 
 
@@ -38,7 +38,7 @@ Set some environment variables to be used when creating the Azure Resources:
 # Modify these as desired
 export MY_RESOURCEGROUP="${MY_RESOURCEGROUP:-$(whoami)-n4a-workshop}"
 export SAS_EXPIRY=2024-12-31Z23:59:59
-export REDIS_CONNECTION_STRING=redis.example.com:6379
+export REDIS_CONNECTION_STRING=redis-leader
 export LOCATION=westus2
 
 # Using the ticks value ensures the naming requirements for Azure Resources are met 
@@ -385,22 +385,39 @@ In this exercise you will establish the NGINX for Azure configuration.
 
 In this exercise you will deploy the application into AKS Cluster 2.
 
-1. Create the deployment manifest for the garage service:
+There are two Manifests that can be used to deploy the two services.
 
-    ```bash
-    cat <<EOF > the-garage-deployment.yaml
-    apiVersion: v1
-    kind: ConfigMap
-    metadata:
-      name: example-config
-    data:
-      key1: value1
-      key2: value2
-    EOF
-    ```
-### << more exercises/steps>>
+1. `the-garage-deployment.yaml`: Deploys The Garage ASP.Net Core MVC application, this acts as the data layer;
+2. `my-garage-deployment.yaml`: Deploys the ASP.Net Blazor WebAssembly application, the front-end;
 
-<numbered steps are here>
+To prepare the the-garage service for deployment, replace the `_YOUR_APP_CONFIG_CONNECTION_STRING_HERE_` token in `the-garage-deployment.yaml` file with the value of
+`APP_CONFIG_CONNECTION_STRING` environment variable...
+
+Then apply the Manifest:
+
+```bash
+kubectl apply -f ./the-garage-deployment.yaml
+```
+
+Navigate to the AKS Cluster 2 (n4a-aks2) in the Azure Console, then Workloads on the left. In the list of Workloads on the right, 
+find the "the-garage-deployment" and click on it. You should see a Pod running. 
+
+Next, to deploy the front-end, apply the Manifest:
+
+```bash
+kubectl apply -f ./my-garage-deployment.yaml
+```
+
+Navigate to the AKS Cluster 2 (n4a-aks2) in the Azure Console, then Workloads on the left. In the list of Workloads on the right,
+find the "my-garage-deployment" and click on it. You should see a Pod running.
+
+Next, update your hosts file to include `the-garage.example.com`, and `my-garage.example.com`:
+
+```text
+0.0.0.0 example.com dashboard.example.com cafe.example.com the-garage.example.com my-garage.example.com 
+```
+
+Then navigate to the application [My Garage](http://my-garage.example.com)
 
 <br/>
 
