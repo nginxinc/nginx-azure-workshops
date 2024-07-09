@@ -1189,17 +1189,15 @@ Submit your Nginx Configuration.
         }
     ```
 
-Submit your Nginx Configuration.
-
-### Test Nginx for Azure to NIC Headless
+    Submit your Nginx Configuration.
 
 1. Open Chrome to http://cafe.example.com/coffee, and hit refresh several times. Inspect the page with Dev Tools, you should see the updated Header value = `aks2_nic_headless`. Notice the `Ingress Controller IP` address is the same as your NIC Pod. Watch your Nginx Ingress Dashboard on AKS2, you will see traffic on all three coffee pods.
 
-*Optional:*  Fire up a loadtest with WRK again, modify your Upstream Selected Filter in Azure Monitor and add `aks2_nic_headless`. All the traffic should be going there.  
+    *Optional:*  Fire up a loadtest with WRK again, modify your Upstream Selected Filter in Azure Monitor and add `aks2_nic_headless`. All the traffic should be going there.  
 
-**Advanced Deep Dive Exercise:** If you `SCALE UP` the number of Nginx Ingress Pods, the Nginx Ingress Headless Service will represent all of the NIC Replicas. As the Nginx for Azure Resolver is set to re-query every 10 seconds, it should pick up this change in the Nginx Headless Endpoints list quickly. Using the A records from Kube-DNS, Nginx for Azure will update its `aks2_nic_headless` Upstream list, and load balance traffic to ALL the NIC Replicas. You can see the Upstreams List in Azure Monitoring.
+    **Advanced Deep Dive Exercise:** If you `SCALE UP` the number of Nginx Ingress Pods, the Nginx Ingress Headless Service will represent all of the NIC Replicas. As the Nginx for Azure Resolver is set to re-query every 10 seconds, it should pick up this change in the Nginx Headless Endpoints list quickly. Using the A records from Kube-DNS, Nginx for Azure will update its `aks2_nic_headless` Upstream list, and load balance traffic to ALL the NIC Replicas. You can see the Upstreams List in Azure Monitoring.
 
-Give it a try:
+    Give it a try:
 
 1. Scale UP the number of Nginx Ingress Controllers running to 3:
 
@@ -1249,17 +1247,17 @@ Give it a try:
     Events:            <none>
     ```
 
-If you recall, 172.16.20.70 was your first Nginx Ingress Pod, now you have 2 more, 172.16.20.25 and 172.16.20.37. If you `kubectl describe pod` on each one, the NIC Pod IP Addresses will match the Headless Service list, that's how Kubernetes Services work.
+    If you recall, 172.16.20.70 was your first Nginx Ingress Pod, now you have 2 more, 172.16.20.25 and 172.16.20.37. If you `kubectl describe pod` on each one, the NIC Pod IP Addresses will match the Headless Service list, that's how Kubernetes Services work.
 
 1. Test with Chrome. Open your browser to http://cafe.example.com/coffee, and Refresh several times. Watch the `Ingress Controller IP address`, it will change to the 3 NIC Pod IPs, 172.16.20.70, .25, and .37 in this example. Nginx for Azure is load balancing all three Ingress Controllers.
 
-NOTE:  The aks2_nic_headless Upstream is configured for `least_time last_byte`, so Nginx for Azure will choose the fastest NIC Pod. If you want to see it in Round-Robin mode, comment out the `least_time last_byte` directive.
+    NOTE:  The aks2_nic_headless Upstream is configured for `least_time last_byte`, so Nginx for Azure will choose the fastest NIC Pod. If you want to see it in Round-Robin mode, comment out the `least_time last_byte` directive.
 
 1. Scale your NICs back to just ONE Pod, and check again with Chrome. Now there is only one Nginx Ingress Controller IP being used, as when you started.
 
-**NOTE:**  It is considered a Best Practice, to run at least THREE Nginx Ingress Controllers for Production workloads, to provide High Availability and additional traffic processing power for your Applications' Pods and Services. Nginx for Azure can work with your Nginx Ingress Controllers nicely to achieve this requirement, as shown here.
+    **NOTE:**  It is considered a Best Practice, to run at least THREE Nginx Ingress Controllers for Production workloads, to provide High Availability and additional traffic processing power for your Applications' Pods and Services. Nginx for Azure can work with your Nginx Ingress Controllers nicely to achieve this requirement, as shown here.
 
-**Optional Exercise:** Install a DNS testing Pod in your Cluster, like busy-box or Ubuntu, and use `dig or nslookup` to query the A records from Kube-DNS.
+    **Optional Exercise:** Install a DNS testing Pod in your Cluster, like busy-box or Ubuntu, and use `dig or nslookup` to query the A records from Kube-DNS.
 
 ## Wrap Up
 

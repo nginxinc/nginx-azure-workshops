@@ -74,8 +74,8 @@ NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis
 ### Lab 7: Azure Key Vault / TLS Essentials
 - [Lab 7: Azure Key Vault / TLS Essentials](lab7/readme.md)
 
-### Lab 8: Nginx Garage Demo
-- [Lab 8: Nginx Garage Demo](lab8/readme.md)
+### Lab 8: Nginx for Azure with Entra ID / Azure AD
+- [Lab 8: Nginx for Azure with Entra ID / Azure AD](lab8/readme.md)
 
 ### Lab 9: Nginx Caching / Rate Limits / Juiceshop
 - [Lab9: Nginx Caching / Rate Limits / Juiceshop](lab9/readme.md)
