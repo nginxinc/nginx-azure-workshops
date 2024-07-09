@@ -18,7 +18,7 @@ The data for these will be based on the work done in previous labs.
 
 NGINXaaS for Azure | Grafana
 :-------------------------:|:-------------------------:
-![N4A](media/NGINXaaS-icon.png) | ![Grafana](media/grafana-icon.png)
+![N4A](media/nginx-azure-icon.png) | ![Grafana](media/grafana-icon.png)
   
 ## Learning Objectives
 

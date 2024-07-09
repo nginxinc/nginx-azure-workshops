@@ -4,13 +4,13 @@
 
 ## Introduction
 
-As your company builds and deploys different applications on VMs, AKS clusters, and other Azure Resources, you will likely be required to control user access to these important Applications.  These applications and web content should be Publicly available, but also require restricted access for employees, business partners, executives, and other groups.  
+As your company builds and deploys different applications on VMs, AKS clusters, and other Azure Resources, you will likely be required to control user access to these important Applications. These applications and web content should be Publicly available, but also require restricted access for employees, business partners, executives, and other groups.  
 
-As you have successfully deployed the Nginx Cafe for coffee and tea applications to the Public, you have been asked to create similar applications for beer and wine tasting at the Cafe in the evenings. The company has decided to extend the business and operating hours - expanding the business at the Cafe is good news!  However, the access to beer and wine content cannot be Public - you have be tasked with restricting access to these applications to users over the age of 21.  This lab exercise will show you how to use Azure Entra ID to control access: visitors to the Cafe's beer and wine content will need to have a valid Entra ID login to view it.  As you already have an Entra ID being used for accessing the Azure Portal and this workshop's Resources, you will extend that access to Nginx Cafe beer/wine running behind Nginx for Azure.
+You have successfully deployed the Nginx Cafe for coffee and tea applications to the Public. You haveve been asked to create similar applications for beer and wine tasting at the Cafe in the evenings. The company has decided to extend the business and operating hours - expanding the business at the Cafe is good news! However, the access to beer and wine content cannot be Public - you have be tasked with restricting access to these applications to users over the age of 21. This lab exercise will show you how to use Azure Entra ID to control access: visitors to the Cafe's beer and wine content will need to have a valid Entra ID login to view it. You already have an Entra ID being used for accessing the Azure Portal and this workshop's Resources and will extend that access to Nginx Cafe beer/wine running behind Nginx for Azure.
 
-Great news, Nginx already has all the components needed to create an Enforcement point for access to website content.  Using the modern protocols and standards of OIDC (openid connect), Oauth2.0, JSON Web Tokens (JWT), and Nginx Java Script (NJS), you will set up Nginx for Azure to do exactly this.  As Nginx for Azure is running Nginx Plus, this solution also makes use of 2 very important features, the `auth_jwt_module` for JWT token validation, and `ngx_http_keyval_module` for Key-Value storage, used to cache the users' valid tokens for subsequent visits.  Caching of these tokens eliminates repeated Auth requests/responses and network round trips, **greating improving the user experience**.
+Great news, Nginx already has all the components needed to create an Enforcement point for access to website content. Using the modern protocols and standards of OIDC (OpenID Connect), OAuth 2.0, JSON Web Tokens (JWT), and Nginx Java Script (NJS), you will set up Nginx for Azure to do exactly this. Nginx for Azure is running Nginx Plus and this solution also makes use of 2 very important features. The `auth_jwt_module` will be used for JWT token validation and `ngx_http_keyval_module` for Key-Value storage which is used to cache the users' valid tokens for subsequent visits. Caching of these tokens eliminates repeated Auth requests/responses and network round trips, **greatly improving the user experience**.
 
-Better news, Azure Entra ID / Azure AD is the second half of this Solution, providing the Identity Provider (IDP) services, where you can use existing Azure users/credentials/access controls and Nginx to determine if someone should be granted access to the beer and wine applications.  Visitors to beer/wine applications will be challenged to enter their valid Entra ID credentials before they are granted access.
+Better news, Azure Entra ID / Azure AD is the second half of this Solution, providing the Identity Provider (IDP) services where you can use existing Azure users/credentials/access controls and Nginx to determine if someone should be granted access to the beer and wine applications. Visitors to beer/wine applications will be challenged to enter their valid Entra ID credentials before they are granted access.
 
 <br/>
 
@@ -18,13 +18,13 @@ Better news, Azure Entra ID / Azure AD is the second half of this Solution, prov
 
 NGINXaaS Azure | Entra ID | Cafe App
 :-----------------:|:-----------------:|:-----------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![Entra ID](media/entra-id-icon.png) |![Nginx Cafe App](media/cafe-icon.png) 
+![NGINXaaS](media/nginx-azure-icon.png)  |![Entra ID](media/entra-id-icon.png) |![Nginx Cafe App](media/cafe-icon.png) 
 
 <br/>
 
 ## Learning Objectives
 
-- Register a new application with Entra ID / Azure AD 
+- Register a new application with Entra ID / Azure AD
 - Creating Client Credentials
 - Configure Nginx 4 Azure for OIDC/JWT/NJS
 - Testing user access to Beer and Wine Applications
@@ -75,7 +75,7 @@ To enable an application to use Entra ID / Azure AD for authentication, you will
 
 ## Creating N4A Client Credentials
 
-You will need to create a new `Client credentials secret` that will be used by NGINXaaS to make use of Entra ID as an IDP - Identity Provider.  This Secret is only used by Nginx for Azure, not the actual users.
+You will need to create a new `Client credentials secret` that will be used by NGINXaaS to make use of Entra ID as an IDP - Identity Provider. This Secret is only used by Nginx for Azure, not the actual users.
 
 1. Within your new App Registration, click on `Certificates & Secrets` option from left menu. This should open the `Certificate & Secrets` section.
 
@@ -93,7 +93,7 @@ You will need to create a new `Client credentials secret` that will be used by N
    
    ![Post Secret Creation](media/Post_Secret_Creation.png)
 
-6. Copy the the `Value` portion of the client secret to the clipboard, and also save it on your computer, as you will use it in next section of this lab.  **NOTE:** It is important that you have a backup of this `client secret Value`, *as it is only shown here at creation time.*  If you lose the Client Secret, you can easily create a new one in this same Azure Portal page. and you will have to update your N4A configuration as well.
+6. Copy the `Value` portion of the client secret to the clipboard, and also save it on your computer as you will use it in next section of this lab.  **NOTE:** It is important that you have a backup of this `Client Secret Value`, *as it is only shown here at creation time.*  If you lose the Client Secret, you can easily create a new one in this same Azure Portal page and you will have to update your N4A configuration.
 
 7. Copy and set the following ENVIRONMENT variable for the Client Secret, to be used in the next section:
 
@@ -194,20 +194,20 @@ Examples as follows:
 
 ## Setting up NGINXaaS with OIDC for Entra ID
 
-Now that the Azure Entra ID configurations are complete, you will configure Nginx for Azure to use those Resources to control access to /beer and /wine paths on cafe.example.com.  There are only a few steps required:
+Now that the Azure Entra ID configurations are complete, you will configure Nginx for Azure to use those Resources to control access to /beer and /wine paths on cafe.example.com. There are only a few steps required:
 
-- Enable Zone Sync for Nginx's shared memory (Not required for Nginx4Azure Basic Subscription)
+- Enable Zone Sync for Nginx's shared memory *(Not required for Nginx4Azure Basic Subscription)*
 - Customize the OpenID Connect Server file for your Azure Subscription, Resource, and Application
 - Add the Nginx OpenID Connect files to your N4A environment
 - Enable OpenID for the /beer and /wine URL paths
 
 ### Enable Zone Sync on NGINXaaS deployment instances
 
-As there are 2 Active/Active instances of Nginx `under the hood` of an N4A deployment, synchronizing the KeyValue shared memory zone used for OIDC tokens is required.  This NginxPlus feature uses a module called `ngx_stream_zone_sync_module`.  This module uses a dedicated TCP connection between N4A pairs to send updates of the shared memory to each other.  For the Nginx OIDC solution, the shared memory is used to cache the users' Auth Tokens, so that subsequent requests do NOT have to be validated with the IDP.  Caching these Auth Tokens provides a large performance improvement to users accessing OIDC protected content.  Without this Nginx caching feature, `every request would suffer the Round Trip delay` of going back and forth to the Identity provider, slowing your application Response Time to a dismal crawl, and potentially prompting for user credentials repeatedly. 
+As there are 2 Active/Active instances of Nginx `under the hood` of an N4A deployment, synchronizing the KeyValue shared memory zone used for OIDC tokens is required. This NginxPlus feature uses a module called `ngx_stream_zone_sync_module`. The module uses a dedicated TCP connection between N4A pairs to send updates of the shared memory to each other. For the Nginx OIDC solution, the shared memory is used to cache the users' Auth Tokens, so that subsequent requests do NOT have to be validated with the IDP. Caching these Auth Tokens provides a large performance improvement to users accessing OIDC protected content. Without this Nginx caching feature, `every request would suffer the Round Trip delay` of going back and forth to the Identity provider, slowing your application Response Time to a dismal crawl, and potentially prompting for user credentials repeatedly.
 
 << N4A zone sync diagram here >>
 
-1. Using the N4A console, create a new `/etc/nginx/stream/zonesync.conf` file in the `stream context`.  Use the example file provided, just copy/paste:
+1. Using the N4A console, create a new `/etc/nginx/stream/zonesync.conf` file in the `stream context`. Use the example file provided, just copy/paste:
 
 ```nginx
 # Nginx for Azure Zone Sync config
@@ -233,7 +233,7 @@ Submit your Nginx Configuration.
 
 ### Customize the Nginx OpenID Connect files
 
-1. Copy the three `openid_connect` files from the /lab8 folder, to your Nginx for Azure `/etc/nginx/oidc` folder.  You will have to create each file and copy/paste the contents from the examples provided in the lab8 folder.
+1. Copy the three `openid_connect` files from the /lab8 folder, to your Nginx for Azure `/etc/nginx/oidc` folder. You will have to create each file and copy/paste the contents from the examples provided in the lab8 folder.
 
 1. Modify the `/etc/nginx/oidc/openid_connect_configuration.conf` file as follows:
 
@@ -301,9 +301,9 @@ Submit your Nginx Configuration.
 
 1. There are no changes needed for the `/etc/nginx/oidc/openid_connect.server_conf`.
 
-1. There are no changes needed for the `/etc/nginx/oidc/openid_connect.js` Javascript file.  This is the core Nginx Javascript code that gets executed for this OIDC Solution.
+1. There are no changes needed for the `/etc/nginx/oidc/openid_connect.js` Javascript file. This is the core Nginx Javascript code that gets executed for this OIDC Solution.
 
-1. Copy the `cafe.example.com.conf` file provided to `/etc/nginx/conf.d/cafe.example.com.conf`.  Notice the new /location block with a REGEX that captures the `/beer and /wine` URIs.  This new location block will be protected by Azure Entra ID using OIDC.  
+1. Copy the `cafe.example.com.conf` file provided to `/etc/nginx/conf.d/cafe.example.com.conf`. Notice the new /location block with a REGEX that captures the `/beer and /wine` URIs. This new location block will be protected by Azure Entra ID using OIDC.  
 
 ### Update Nginx.conf
 
@@ -395,25 +395,25 @@ Submit your Nginx Configuration.
 
 ## Test Nginx 4 Azure with Entra ID
 
-1. You can now test your Azure Entra ID with OIDC config with NGINXaaS. To test open up your browser, open Dev Tools, and try `https://cafe.example.com/beer`.  **NOTE:** You will likely have to use a new `Chrome Incognito` browser, because it is caching and using your current credentials, *and you need to start with fresh browser.*
+1. You can now test your Azure Entra ID with OIDC config with NGINXaaS. To test open up your browser, open Dev Tools, and try `https://cafe.example.com/beer`. **NOTE:** You will likely have to use a new `Chrome Incognito` browser, because it is caching and using your current credentials, *and you need to start with fresh browser.*
 
-   If everything has been configured correctly, you should see the browser Redirect you to Entra ID for an Azure user authentication logon prompt, and Dev Tools should show you the details of the Redirect to `microsoftonline.com`, highlighted below.  Take a moment to look as some of the other objects/headers in the Dev Tools, it should look familiar if you have used OpenID before.
+   If everything has been configured correctly, you should see the browser Redirect you to Entra ID for an Azure user authentication logon prompt, and Dev Tools should show you the details of the Redirect to `microsoftonline.com`, highlighted below. Take a moment to look as some of the other objects/headers in the Dev Tools, it should look familiar if you have used OpenID before.
 
    ![AzureAD redirect!](media/lab8_azuread_redirect.png)
 
-   After entering your Azure creds, you should be able to see the /beer webpage:
+   After entering your Azure creds, you should be able to see the /beer web page:
 
    ![AzureAD success!](media/lab8_azuread_success.png)
 
-1. Once your credentials have been successfully verified by Microsoft Entra ID, NGINXaaS will allow your request to the backend resource.  And it will cache your Auth Token in memory on Nginx for subsequent requests.  If you click Refresh several times, you will note that you do not have to login again.
+1. Once your credentials have been successfully verified by Microsoft Entra ID, NGINXaaS will allow your request to the backend resource. It will cache your Auth Token in memory on Nginx for subsequent requests. If you click Refresh several times, you will note that you do not have to login again.
 
-1. Open a new Chrome Incognito browser, and test again for `https://cafe.example.com/wine`.  Does it work as expected?
+1. Open a new Chrome Incognito browser, and test again for `https://cafe.example.com/wine`. Does it work as expected?
 
 < Maybe - You can see the Nginx Zone Sync metrics, and caching of user Auth Tokens in the N4A Metrics, as shown here: >
 
 < Azure monitor ss here >
 
->Notice how easy it was, to configure Nginx to protect a hostname/location in the configuration?  It only required obtaining a few settings from Entra ID, and then using those settings in the Nginx configuration.
+>Notice how easy it was, to configure Nginx to protect a hostname/location in the configuration? It only required obtaining a few settings from Entra ID, and then using those settings in the Nginx configuration.
 
 <br/>
 
@@ -421,11 +421,11 @@ Submit your Nginx Configuration.
 
 There are additional applications that are running on the Docker containers, Nginx Cafe.
 
-1. Can you find out what are the other `over 21 beverages` that should be Protected with Entra ID?
+1. Can you find out what the other `over 21 beverages` are that should be protected with Entra ID?
 
-<Hint here - Docker exec into one of the ingress-demo containers on the Ubuntu VM, and review the Nginx configurations.  You should discover there are 5 over-21 beverages.  Beer, wine, cosmo, daiquiri, mojito.>
+<Hint here - Docker exec into one of the ingress-demo containers on the Ubuntu VM, and review the Nginx configurations. You should discover there are 5 `over 21 beverages`. Beer, wine, cosmo, daiquiri, mojito.>
 
-1. Now that you have a list of the beverages, can you modify the `/beer location block` to add all of those `over 21 beverages`?  How many location blocks will you need - will it require a block for each beverage, or can you do it with just ONE?
+1. Now that you have a list of the beverages, can you modify the `/beer location block` to add all of those `over 21 beverages`? How many location blocks will you need - will it require a block for each beverage, or can you do it with just ONE?
 
 <Hint here - Use this Regular Expression: >
 
