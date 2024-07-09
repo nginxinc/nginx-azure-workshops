@@ -1,4 +1,4 @@
-# Lab 8: NGINXaaS with Entra ID / Azure AD
+# Lab 8: Nginx for Azure with Entra ID / Azure AD
 
 <br/>
 
