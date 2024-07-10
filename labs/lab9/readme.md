@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In this lab, you will deploy an image rich application, and use Nginx Caching to cache images to improve performance and provide a better user experience.  This will offload the image delivery workload from your applications, saving resources.  You will also explore, configure, and test Rate Limits with Nginx for Azure, allowing you to control incoming request levels for different applications.
+In this lab, you will deploy an image rich application, and use Nginx Caching to cache images to improve performance and provide a better user experience. This will offload the image delivery workload from your applications, saving resources. You will also explore, configure, and test Rate Limits with Nginx for Azure, allowing you to control incoming request levels for different applications.
 
 <br/>
 
@@ -42,11 +42,11 @@ Lab9 Diagram
 
 <br/>
 
-In this exercise, you will deploy the demo Juiceshop application to AKS1.  Juiceshop is a demo application example of a Retail store, selling different juices, smoothies, and snacks.  The images used on the various web pages make ideal candidates for image caching. You will also configure Nginx Ingress Controller for this application.    
+In this exercise, you will deploy the demo Juiceshop application to AKS1.  Juiceshop is a demo application example of a Retail store, selling different juices, smoothies, and snacks.  The images used on the various web pages make ideal candidates for image caching. You will also configure Nginx Ingress Controller for this application.
 
-1. Inspect the `lab9/juiceshop.yaml` and then `lab9/juiceshop-vs.yaml` manifests.  You will see definitions for three Juiceshop application pods being deployed, and a new VirtualServer being added to Nginx Ingress to expose the app outside the Cluster.
+1. Inspect the `lab9/juiceshop.yaml` and then `lab9/juiceshop-vs.yaml` manifests. You will see definitions for three Juiceshop application pods being deployed, and a new VirtualServer being added to Nginx Ingress to expose the app outside the Cluster.
 
-1. Using your Terminal, create a new namespace `juice` and deploy the Juiceshop application to AKS1.  Also deploy the Nginx Ingress VirtualServer, to create the Service and VirtualServer for `juiceshop.example.com`.  Use the Manifests provided in the `lab9` folder:
+1. Using your Terminal, create a new namespace `juice` and deploy the Juiceshop application to AKS1. Also deploy the Nginx Ingress VirtualServer, to create the Service and VirtualServer for `juiceshop.example.com`. Use the Manifests provided in the `lab9` folder:
 
     ```bash
     kubectl config use-context n4a-aks1
@@ -85,6 +85,9 @@ worker_processes auto;
 worker_rlimit_nofile 8192;
 pid /run/nginx/nginx.pid;
 
+# Load Modules
+load_module modules/ngx_http_js_module.so;    #Added for OIDC
+
 events {
     worker_connections 4000;
 }
@@ -114,11 +117,12 @@ http {
                             'upstream_header_time="$upstream_header_time", '
                             'upstream_response_time="$upstream_response_time", '
                             'upstream_response_length="$upstream_response_length", '
-                            'cachestatus=“$upstream_cache_status“, '
-                            'limitstatus=“$limit_req_status“ ';
+                            'cachestatus="$upstream_cache_status", '
+                            'limitstatus="$limit_req_status" ';
                       
     access_log off;
     server_tokens "";
+
     server {
         listen 80 default_server;
         server_name localhost;
@@ -129,14 +133,22 @@ http {
             index index.html;
         }
     }
-
+    include /etc/nginx/oidc/openid_connect_configuration.conf;
     include /etc/nginx/conf.d/*.conf;
     include /etc/nginx/includes/*.conf;    # shared files
-   
+
 }
 
 stream {
-    
+    resolver 127.0.0.1:49153 valid=20s;
+
+    server {
+        listen 9000; # should match the port specified with zone_sync_server
+
+        zone_sync;
+        zone_sync_server internal.nginxaas.nginx.com:9000 resolve;
+    }
+
     include /etc/nginx/stream/*.conf;          # Stream TCP nginx files
 
 }
@@ -308,7 +320,7 @@ Here is a hint:
 
 *Knowledge Test*
 
-Find the `carrot_juice` and `melon_bike` objects.  What are different about them?  Can you figure out what's going on?
+Find the `carrot_juice` and `melon_bike` objects. What are different about them? Can you figure out what's going on?
 
 >Provide your Answer via Private Zoom Chat if you figure it out *and fix it!*
 
@@ -316,7 +328,7 @@ Find the `carrot_juice` and `melon_bike` objects.  What are different about them
 
 ## Nginx for Azure Caching Wrap Up
 
-Notice that is was pretty easy to define, and enable Nginx Caching for images and even other static page objects.  Also notice that you set the Valid time = 60 seconds.  This was intentional so you can see objects Expire quickly.  However, in Production, you will coordinate with your app team to determine the proper Cache age timer for different object types.  You can create multiple caches, with different names and Regex's, to have granular control over type, age time, size, etc.  It's EASY with Nginx for Azure!
+Notice that is was pretty easy to define, and enable Nginx Caching for images and even other static page objects. Also notice that you set the Valid time = 60 seconds. This was intentional so you can see objects Expire quickly. However, in Production, you will coordinate with your app team to determine the proper Cache age timer for different object types. You can create multiple caches, with different names and Regex's, to have granular control over type, age time, size, etc. It's EASY with Nginx for Azure!
 
 <br/>
 
@@ -324,15 +336,15 @@ Notice that is was pretty easy to define, and enable Nginx Caching for images an
 
 ![Nginx Rate Limits](media/speedometer-icon.jpeg)
 
-In this exercise, Nginx HTTP Request Rate Limiting will be explored.  You will configure some Limits, apply them to the Juiceshop application, and see the results of introducing various Limits.  Rate Limiting has many practical use cases - limiting attacks, limiting bots, protecting request load sensitive URLs/APIs, classes of service, and others.
+In this exercise, Nginx HTTP Request Rate Limiting will be explored. You will configure some Limits, apply them to the Juiceshop application, and see the results of introducing various Limits. Rate Limiting has many practical use cases - limiting attacks, limiting bots, protecting request load sensitive URLs/APIs, classes of service, and others.
 
-1. Inspect the `lab9/rate-limits.conf` file.  You will see 4 different Rate Limits defined, using the `limit_req_zone` directive.  This directive creates an Nginx memory zone where the limit Keys and counters are stored.  When a request matches a Key, the counter is incremented.  If no key exists, it is added to the zone and the counter is incremented, as you would expect.  Keys are ephemeral, they are lost if you restart Nginx, but are preserved during an Nginx Reload.
+1. Inspect the `lab9/rate-limits.conf` file.  You will see 4 different Rate Limits defined, using the `limit_req_zone` directive. This directive creates an Nginx memory zone where the limit Keys and counters are stored. When a request matches a Key, the counter is incremented. If no key exists, it is added to the zone and the counter is incremented, as you would expect. Keys are ephemeral, they are lost if you restart Nginx, but are preserved during an Nginx Reload.
 
     **Example:  limit_req_zone $binary_remote_addr zone=limitone:10m rate=1r/s;**
 
-    A. The first parameter, `$binary_remote_addr` is the Key used in the memory zone for tracking.  In this example, the client's IP Address in binary format is used.  Binary being shorter, using less memory, than a dot.ted.dec.imal IP Address string.  You can use whatever Key $variable you like, as long as it is an Nginx $variable available when Nginx receives an HTTP request - like a cookie, URL argument, HTTP Header, TLS Serial Number, etc.  There are literally hundreds of request $variables you could use, and you can combine multiple $variables together.
+    A. The first parameter, `$binary_remote_addr` is the Key used in the memory zone for tracking. In this example, the client's IP Address in binary format is used. Binary being shorter, using less memory, than a dot.ted.dec.imal IP Address string. You can use whatever Key $variable you like, as long as it is an Nginx $variable available when Nginx receives an HTTP request - like a cookie, URL argument, HTTP Header, TLS Serial Number, etc. There are literally hundreds of request $variables you could use, and you can combine multiple $variables together.
 
-    B. The second parmater, `zone=limitXYZ:10m`, is the name of the zone, and the size is 10MB.  You can define larger memory zones if needed, 10MB is a good starting point. Each zone must have a unique name, which matches the actual limit being defined in this example.  The size needed depends on how many Keys are stored.
+    B. The second parmater, `zone=limitXYZ:10m`, is the name of the zone, and the size is 10MB. You can define larger memory zones if needed, 10MB is a good starting point. Each zone must have a unique name, which matches the actual limit being defined in this example. The size needed depends on how many Keys are stored.
 
     - - limitone is the zone for 1 request/second
     - - limit10 is the zone for 10 requests/second
@@ -341,7 +353,7 @@ In this exercise, Nginx HTTP Request Rate Limiting will be explored.  You will c
 
     C. The third parameter is the actual Rate Limit Value, expressed as `r/s` for `requests/second`.
 
-    - You can define as many zones as you need, as long as you have enough memory for it.  You can use a zone more than once in an Nginx configuration.  You can see the number of requests that are being counted in each limit zone with Azure Monitoring.  You can also use Nginx Logging $variables to track when Limits are being counted and used for the request.  You will create an HTTP Header that will also show you the limit status of the request when Nginx sends back the response.  *So you will have very good visibility into how/when the limits are being used.*
+    - You can define as many zones as you need, as long as you have enough memory for it. You can use a zone more than once in an Nginx configuration. You can see the number of requests that are being counted in each limit zone with Azure Monitoring. You can also use Nginx Logging $variables to track when Limits are being counted and used for the request. You will create an HTTP Header that will also show you the limit status of the request when Nginx sends back the response. *So you will have very good visibility into how/when the limits are being used.*
 
 1. Using the Nginx for Azure Console, create a new file called `/etc/nginx/includes/rate-limits.conf`.  You can use the example file provided, just Copy/Paste.
 
@@ -358,7 +370,7 @@ In this exercise, Nginx HTTP Request Rate Limiting will be explored.  You will c
 
     ```
 
-1. Enable the Rate Limit section of the `/etc/nginx/conf.d/juiceshop.example.com.conf` file, by removing the comments - these have already been provided for this exercise.  You will test them all, but one at a time, starting with `limit100`, 100 reqs/second:
+1. Enable the Rate Limit section of the `/etc/nginx/conf.d/juiceshop.example.com.conf` file, by removing the comments - these have already been provided for this exercise. You will test them all, but one at a time, starting with `limit100`, 100 reqs/second:
 
     ```nginx
     ...
@@ -382,22 +394,22 @@ In this exercise, Nginx HTTP Request Rate Limiting will be explored.  You will c
 
 Notice the 2 directives enabled:
 
-- `limit_req` sets the active zone being used, in this example, limit100, meaning 100 requests/second.  `Burst` is optional, allowing you to define an overage, allowing for some elasticity in the limit enforcement.
+- `limit_req` sets the active zone being used, in this example, limit100, meaning 100 requests/second. `Burst` is optional, allowing you to define an overage, allowing for some elasticity in the limit enforcement.
 - `add_header` creates a Custom Header, and adds the `limit_req_status $variable`, so you can see it with Chrome Dev Tools or curl.
 
 Submit your Nginx Configuration.
 
 ### Test Rate Limit on Juiceshop application
 
-1. Using Chrome, navigate to `http://juiceshop.example.com`, and open the Chrome Dev Tools.  You previously added the Nginx Custom Headers to the display, so you should already have a Header Column labeled `X-Ratelimit-Status`.  Click Refresh Several times, what do you see?
+1. Using Chrome, navigate to `http://juiceshop.example.com`, and open the Chrome Dev Tools. You previously added the Nginx Custom Headers to the display, so you should already have a Header Column labeled `X-Ratelimit-Status`. Click Refresh Several times, what do you see?
 
     ![Nginx Limit 100](media/lab9_rate-100.png)
 
-    You will see a partial Juiceshop webpage, as Nginx is only allowing your computer to send 100 req/s.  You see the Header status set to PASSED for requests that were allowed.  Other requests were stopped for `Exceeding the Rate Limit`. Check the HTTP Status Code on an item that failed, you will find the `503 Service Temporarily Unavailable`.  Well, this is not actually the real situation, right?  You have set a limit, not turned off the Service.  So you will `change the HTTP Status code`, using the `limit_req_status` directive, which lets you set a custom HTTP Status code.  The HTTP standard for "excessive requests" is normally `429.`  So you will change it to that.
+    You will see a partial Juiceshop webpage, as Nginx is only allowing your computer to send 100 req/s.  You see the Header status set to PASSED for requests that were allowed.  Other requests were stopped for `Exceeding the Rate Limit`. Check the HTTP Status Code on an item that failed, you will find the `503 Service Temporarily Unavailable`. Well, this is not actually the real situation, right? You have set a limit, not turned off the Service. So you will `change the HTTP Status code`, using the `limit_req_status` directive, which lets you set a custom HTTP Status code. The HTTP standard for "excessive requests" is normally `429.` So you will change it to that.
 
     ![Nginx Limit 503](media/lab9_ratelimit-503.png)
 
-1. Using the Nginx for Azure Console, uncomment the  `limit_req_status 429`, as shown.  This will change the 503 Status Code to a more friendly HTTP Status Code of 429, which means `Too Many Requests`.  This could be useful for clients that can use this 429 code to perform a back-off of the Requests, and try again after a time delay.  (Most Browsers do not do this).
+1. Using the Nginx for Azure Console, uncomment the  `limit_req_status 429`, as shown. This will change the 503 Status Code to a more friendly HTTP Status Code of 429, which means `Too Many Requests`. This could be useful for clients that can use this 429 code to perform a back-off of the Requests, and try again after a time delay. (Most Browsers do not do this).
 
     ```nginx
     ...
@@ -424,7 +436,7 @@ Submit your Nginx Configuration.
 
     ![Nginx Limit 429](media/lab9_ratelimit-429.png)
 
-    Ater consulation with your Dev team and testing different limits, you decide to change the limit to `1,000 Requests/Second`, to accommodate the normal traffic profile of the Juiceshop application.  *This is likely an exercise you will have to do for every application using limits - determine normal traffic patterns and backend system performance, and set limits appropriately.*
+    Ater consulation with your Dev team and testing different limits, you decide to change the limit to `1,000 Requests/Second`, to accommodate the normal traffic profile of the Juiceshop application. *This is likely an exercise you will have to do for every application using limits - determine normal traffic patterns and backend system performance, and set limits appropriately.*
 
 1. Using the Nginx for Azure Console, change the `req_limit` to the `limit1000` zone as shown (and change Burst value if using it):
 
@@ -480,17 +492,17 @@ To make it easier to `fine-tune and test` your Rate Limits, Nginx provides the `
 
     Submit your Nginx Configuration.
 
-1. Test again with Chrome and Dev Tools.  What do you see?  You should see the `X-RateLimit-Status` Header now have some more metadata, like `REJECTED_DRY_RUN` - which means, this request exceeded the limit and `would be dropped` if Dry Run is disabled.  You will also find this info in your Enhanced Logging format, using the $limit_req_status logging variable.
+1. Test again with Chrome and Dev Tools.  What do you see?  You should see the `X-RateLimit-Status` Header now have some more metadata, like `REJECTED_DRY_RUN` - which means, this request exceeded the limit and `would be dropped` if Dry Run is disabled. You will also find this info in your Enhanced Logging format, using the $limit_req_status logging variable.
 
     ![Nginx Limit Dry Run](media/lab9_ratelimit-dry-run.png)
 
->**IMPORTANT NOTE:** The Rate Limit does NOT apply to the Regex location block for Juiceshop Images, WHY?  Because you enabled the limit in the `/  location` block.  As image requests do NOT match that location block REGEX, the Rate Limit (limit1000) does not apply, and the X-RateLimit-Status is not set.  That is pretty cool, you can be very exact in where, how, and at what rate you apply Request Limits with Nginx!
+>**IMPORTANT NOTE:** The Rate Limit does NOT apply to the Regex location block for Juiceshop Images, WHY? Because you enabled the limit in the `/  location` block. As image requests do NOT match that location block REGEX, the Rate Limit (limit1000) does not apply, and the X-RateLimit-Status is not set. That is pretty cool, you can be very exact in where, how, and at what rate you apply Request Limits with Nginx!
 
 <br/>
 
 ## Nginx Rate Limit Wrap Up
 
-During these exercises, you configured, enabled various Request Limit directives, and tested them with an example application. You improved the information for your Dev team to help tune the Limits to match the application.  Nginx can also set headers and logging values to monitor how your Requests Limits work.
+During these exercises, you configured, enabled various Request Limit directives, and tested them with an example application. You improved the information for your Dev team to help tune the Limits to match the application. Nginx can also set headers and logging values to monitor how your Requests Limits work.
 
 As a side note, NGINX also provides Limit directives for TCP, and for Bandwidth:
 
