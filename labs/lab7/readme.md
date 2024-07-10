@@ -286,7 +286,7 @@ Now that you have a self signed TLS certificate for testing, you will configure 
 
     ![Browser Cert Invalid](media/lab7_browser_cert_invalid.png)
 
-1. You can use browser's built-in certificate viewer to look at the details of the TLS certificate that was sent from NGINX to your browser. In address bar, click on the `Not Secure` icon, then click on `Certificate is not valid`. This will display the certificate. You can verify looking at the `Comman Name` field that this is the same certificate that you provided to NGINX for Azure resource.
+1. You can use browser's built-in certificate viewer to look at the details of the TLS certificate that was sent from NGINX to your browser. In the address bar, click on the `Not Secure` icon, then click on `Certificate is not valid`. This will display the certificate. You can verify looking at the `Common Name` field that this is the same certificate that you provided to NGINX for Azure resource.
 
     ![Browser Cert Details](media/lab7_browser_cert_details.png)
 
