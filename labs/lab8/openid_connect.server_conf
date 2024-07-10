@@ -1,15 +1,10 @@
-# Nginx for Azure / OpenID Connect configuration
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-#
-# Advanced configuration START
+    # Advanced configuration START
     set $internal_error_message "NGINX / OpenID Connect login failure\n";
     set $pkce_id "";
     resolver 8.8.8.8; # For DNS lookup of IdP endpoints;
     subrequest_output_buffer_size 32k; # To fit a complete tokenset response
     gunzip on; # Decompress IdP responses if necessary
     # Advanced configuration END
-
-    js_import oidc from /etc/nginx/oidc/openid_connect.js;
 
     location = /_jwks_uri {
         internal;
@@ -34,9 +29,9 @@
         # This location is called by the IdP after successful authentication
         status_zone "OIDC code exchange";
         js_content oidc.codeExchange;
-        error_page 500 502 504 @oidc_error;
+        error_page 500 502 504 @oidc_error; 
     }
-
+   
     location = /_token {
         # This location is called by oidcCodeExchange(). We use the proxy_ directives
         # to construct the OpenID Connect token request, as per:
@@ -90,3 +85,5 @@
         default_type text/plain;
         return 500 $internal_error_message;
     }
+
+# vim: syntax=nginx

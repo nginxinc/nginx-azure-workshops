@@ -34,43 +34,38 @@ NGINXaaS Azure | Entra ID | Cafe App
 To enable an application to use Entra ID / Azure AD for authentication, you will need to create a new `app registration` from within the Azure Entra ID Portal.
 
 1. Login into Microsoft Azure Portal and navigate to `App registrations`.
-2. CLick the `+` button at the top for `New registration`
+2. Click the `+` button at the top for `New registration`
+
+   ![Redirect URI setup!](media/lab8_app-registrations.png)
 3. Fill out the name your application registration.
    For this workshop we provided the name of `example.com`.
-4. Select the necessary account types based on who would be using this application.  For this lab exercise, you will select *"Accounts in this organizational directory only (<name> - Single tenant)"*, which means users of your current Subscription. (Using other Account types is not covered in this workshop).
-5. Click `+ Platform`, and select `Web` for the Platform.
-
-   On the `Configure Web` panel, you will need to provide a `redirect URI`. You can optionally also provide a  `Front-channel logout URL`. For the `redirect URI`, you will want to fill in with the hostname of the application you want to Protect, including the port number, with `/_codexch`.
+4. Select the necessary account types based on who would be using this application. For this lab exercise, you will select *"Accounts in this organizational directory only (<name> - Single tenant)"*, which means users of your current Subscription. (Using other Account types is not covered in this workshop).
+5. In the Redirect URI (optional) section, select `Web` and provide a `redirect URI`. For the `redirect URI`, you will want to fill in with the hostname of the application you want to Protect, including the port number, with `/_codexch`.
 
    For example, in this workshop, NGINXaaS will be configured for OIDC to access `cafe.example.com`. So the `redirect URI` for the workshop will be the following:
 
    ```bash
    https://cafe.example.com:443/_codexch
-
    ```
 
-   Click `Configure` on the bottom of the Configure Web panel.
-
-   ![Redirect URI setup!](media/redirect_url_setup.png)
 
    >**Note:** Make sure you are specifing `HTTPS` and port 443. This is a required setting.
 
 6. Click on `Register` to register your application.
    
-    ![App registration](media/App_Registration.png)
+    ![App registration](media/lab8_example-register.png)
 
 7. Once the application has been registered you will be redirected to the `Overview` page of the newly created application.
 
-    ![Post App registration](media/Post_App_Registration.png)
+    ![Post App registration](media/lab8_overview.png)
 
     Take note of the `Application (client) ID` and `Directory (tenant) ID`.
 
 8. Copy and set the following ENVIRONMENT variables for the Client and Tenant IDs, to be used in the next section:
 
    ```bash
-   export $MY_CLIENT_ID=<ApplicationClientID>
-   export $MY_TENANT_ID=<DirectoryTenantID>
-
+   export MY_CLIENT_ID="<ApplicationClientID>"
+   export MY_TENANT_ID="<DirectoryTenantID>"
    ```
 
 ## Creating N4A Client Credentials
@@ -81,25 +76,24 @@ You will need to create a new `Client credentials secret` that will be used by N
 
 2. Click the `+ New client secret` button within the `Client Secrets` tab to create a new client secret that will be used by NGINXaaS. This secret will be used in the Nginx config as part of the Auth workflow.
    
-   ![New Secret Creation](media/New_Secret_Creation.png)
+   ![New Secret Creation](media/lab8_new-secret-creation.png)
 
 3. Fill out the description for the client secret. For this workshop we provided the name as `example.com`.
 
-4. You can also change the Duration for the client secret expiriration or keep the default recommended value. Click on `Add` to generate the new client secret.
+4. You can also change the Duration for the client secret expiration or keep the default recommended value. Click on `Add` to generate the new client secret.
    
-   ![Fill Secret Details](media/Fill_Secret_details.png)
+   ![Fill Secret Details](media/lab8_fill-secret-details.png)
 
 5. Once you click on the `Add` button, you will see the secret within the `Client Secrets` tab as seen in below screenshot. The `Value` column will be the field you want to look for and copy. This Client Secret will be used by Nginx to communicate with Entra ID.
    
-   ![Post Secret Creation](media/Post_Secret_Creation.png)
+   ![Post Secret Creation](media/lab8_post-secret-creation.png)
 
-6. Copy the `Value` portion of the client secret to the clipboard, and also save it on your computer as you will use it in next section of this lab.  **NOTE:** It is important that you have a backup of this `Client Secret Value`, *as it is only shown here at creation time.*  If you lose the Client Secret, you can easily create a new one in this same Azure Portal page and you will have to update your N4A configuration.
+6. Copy the `Value` portion of the client secret to the clipboard, and also save it on your computer as you will use it in next section of this lab.  **NOTE:** It is important that you have a backup of this `Client Secret Value`, *as it is only shown here at creation time.* If you lose the Client Secret, you can easily create a new one in this same Azure Portal page and you will have to update your N4A configuration.
 
 7. Copy and set the following ENVIRONMENT variable for the Client Secret, to be used in the next section:
 
    ```bash
-   export $MY_CLIENT_SECRET=<Client Secret Value>
-
+   export MY_CLIENT_SECRET="<Client Secret Value>"
    ```
 
 ### Collecting the Required URLs
@@ -108,7 +102,6 @@ You will need to create a new `Client credentials secret` that will be used by N
 
 ```bash
 curl https://login.microsoftonline.com/$MY_TENANT_ID/v2.0/.well-known/openid-configuration | jq
-
 ```
 
 There are three URLs required, which you will use in your Nginx for Azure configuration:
@@ -205,37 +198,12 @@ Now that the Azure Entra ID configurations are complete, you will configure Ngin
 
 As there are 2 Active/Active instances of Nginx `under the hood` of an N4A deployment, synchronizing the KeyValue shared memory zone used for OIDC tokens is required. This NginxPlus feature uses a module called `ngx_stream_zone_sync_module`. The module uses a dedicated TCP connection between N4A pairs to send updates of the shared memory to each other. For the Nginx OIDC solution, the shared memory is used to cache the users' Auth Tokens, so that subsequent requests do NOT have to be validated with the IDP. Caching these Auth Tokens provides a large performance improvement to users accessing OIDC protected content. Without this Nginx caching feature, `every request would suffer the Round Trip delay` of going back and forth to the Identity provider, slowing your application Response Time to a dismal crawl, and potentially prompting for user credentials repeatedly.
 
-<< N4A zone sync diagram here >>
-
-1. Using the N4A console, create a new `/etc/nginx/stream/zonesync.conf` file in the `stream context`. Use the example file provided, just copy/paste:
-
-```nginx
-# Nginx for Azure Zone Sync config
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-#
-# zonesync.conf
-#
-resolver 127.0.0.1:49153 valid=20s;
-  
-server {
-
-  listen 9000; # should match the port specified with zone_sync_server
-  status_zone n4a-zonesync;
-
-  zone_sync;
-  zone_sync_server internal.nginxaas.nginx.com:9000 resolve;
-
-}
-
-```
-
-Submit your Nginx Configuration.
 
 ### Customize the Nginx OpenID Connect files
 
 1. Copy the three `openid_connect` files from the /lab8 folder, to your Nginx for Azure `/etc/nginx/oidc` folder. You will have to create each file and copy/paste the contents from the examples provided in the lab8 folder.
 
-1. Modify the `/etc/nginx/oidc/openid_connect_configuration.conf` file as follows:
+1. Create and modify the `/etc/nginx/oidc/openid_connect_configuration.conf` file as follows:
 
    There are 5 lines to edit in this configuration file, shown as follows:
 
@@ -246,9 +214,14 @@ Submit your Nginx Configuration.
    3. Line #28, change the `jwks_uri` to your URL
 
    4. Line #33, change the `client_id` to your Value
-
+   ```bash
+   echo $MY_CLIENT_ID
+   ```
    5. Line #42, change the `client_secret` to your Value
-
+   ```bash
+   echo $MY_CLIENT_SECRET
+   ```
+   Take those values and put them into the file mentioned above (/etc/nginx/oidc/openid_connect_configuration.conf).
    ```nginx
    # Nginx for Azure / OpenID Connect configuration
    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
@@ -299,9 +272,9 @@ Submit your Nginx Configuration.
    ```
 
 
-1. There are no changes needed for the `/etc/nginx/oidc/openid_connect.server_conf`.
+1. There are no changes needed for the `/etc/nginx/oidc/openid_connect.server_conf` - just copy and paste it.
 
-1. There are no changes needed for the `/etc/nginx/oidc/openid_connect.js` Javascript file. This is the core Nginx Javascript code that gets executed for this OIDC Solution.
+1. There are no changes needed for the `/etc/nginx/oidc/openid_connect.js` Javascript file - just copy and paste it. This is the core Nginx Javascript code that gets executed for this OIDC Solution. Once the three files are created/modified, click `Submit` to have them loaded into the N4A instance.
 
 1. Copy the `cafe.example.com.conf` file provided to `/etc/nginx/conf.d/cafe.example.com.conf`. Notice the new /location block with a REGEX that captures the `/beer and /wine` URIs. This new location block will be protected by Azure Entra ID using OIDC.  
 
@@ -395,7 +368,7 @@ Submit your Nginx Configuration.
 
 ## Test Nginx 4 Azure with Entra ID
 
-1. You can now test your Azure Entra ID with OIDC config with NGINXaaS. To test open up your browser, open Dev Tools, and try `https://cafe.example.com/beer`. **NOTE:** You will likely have to use a new `Chrome Incognito` browser, because it is caching and using your current credentials, *and you need to start with fresh browser.*
+1. You can now test your Azure Entra ID with OIDC config with NGINXaaS. To test, open up your browser, open Dev Tools, and try `https://cafe.example.com/beer`. **NOTE:** You will likely have to use a new `Chrome Incognito` browser, because it is caching and using your current credentials, *and you need to start with fresh browser.*
 
    If everything has been configured correctly, you should see the browser Redirect you to Entra ID for an Azure user authentication logon prompt, and Dev Tools should show you the details of the Redirect to `microsoftonline.com`, highlighted below. Take a moment to look as some of the other objects/headers in the Dev Tools, it should look familiar if you have used OpenID before.
 
