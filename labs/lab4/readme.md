@@ -147,7 +147,7 @@ The Cafe application that you will deploy looks like the following diagram below
 
     ![Cafe Upstreams](media/lab4_cafe-upstreams-2.png)
 
-    >**NOTE:** You should see two Coffee/Tea pods in Cluster 1.
+    >**NOTE:** You should see two each Coffee/Tea pods in Cluster AKS1.
 
 <br/>
 
@@ -168,12 +168,12 @@ If you have completed the Optional deployment of a Second AKS Cluster (n4a-aks2)
 
 2. Use the same /lab4 `cafe` and `cafe-vs` manifests.  
 
-    >*However - do not Scale down the coffee and tea replicas, leave three of each pod running in AKS2.*
-
     ```bash
     kubectl apply -f lab4/cafe.yaml
     kubectl apply -f lab4/cafe-vs.yaml
     ```
+
+    >*However - do not Scale down the coffee and tea replicas, leave three of each pod running in AKS2.*
 
 3. Check your Second Nginx Plus Ingress Controller Dashboard, at http://dashboard.example.com:9002/dashboard.html.  You should find the same HTTP Zones, and 3 each of the coffee and tea pods for HTTP Upstreams.
 
@@ -181,7 +181,7 @@ If you have completed the Optional deployment of a Second AKS Cluster (n4a-aks2)
 
 <br/>
 
-## Optional: Deploy Redis In Memory Caching in AKS Cluster 2 (n4a-aks2)
+## Optional: Deploy Redis In Memory Caching in Cluster AKS2 (n4a-aks2)
 
 Azure | Redis
 :--------------:|:--------------:
@@ -307,6 +307,34 @@ In this exercise, you will deploy Redis in your second cluster (`n4a-aks2`), and
     
     ```
 
+1. Inspect the Nginx TransportServer manifests for Redis Leader and Redis Follower, `redis-leader-ts.yaml` and `redis-follower-ts.yaml` respectively.  Take note you are creating a Layer4, TCP Transport Server, listening on the Redis standard port 6379.  You are limiting the active connections to 100, and using the `Least Time Last Byte` Nginx Plus load balancing algorithm - telling Nginx to pick the *fastest* Redis pod based on Response Time for new TCP connections!
+
+```nginx
+# NIC Plus TransportServer file
+# Add ports 6379 for Redis Leader
+# Chris Akker, Jan 2024
+#
+apiVersion: k8s.nginx.org/v1alpha1
+kind: TransportServer
+metadata:
+  name: redis-leader-ts
+spec:
+  listener:
+    name: redis-leader-listener 
+    protocol: TCP
+  upstreams:
+  - name: redis-upstream
+    service: redis-leader
+    port: 6379
+    maxFails: 3
+    maxConns: 100
+    failTimeout: 10s
+    loadBalancingMethod: least_time last_byte    # use fastest pod
+  action:
+    pass: redis-upstream
+
+```
+
 1. Create the Nginx Ingress Transport Servers, for Redis Leader and Follow traffic, using the Transport Server CRD:
 
     ```bash
@@ -417,7 +445,7 @@ Service Port | External NodePort | Name
 6380 | 32380 | redis follower
 9000 | 32090 | dashboard
 
-You will use these new Redis NodePorts for your Nginx for Azure upstreams in the next Lab.
+You will use these new Redis NodePorts for your Nginx for Azure upstreams in an Optional Lab Exercise.
 
 <br/>
 

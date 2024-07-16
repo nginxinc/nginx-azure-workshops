@@ -17,6 +17,6 @@ spec:
     maxFails: 3
     maxConns: 100
     failTimeout: 10s
-    loadBalancingMethod: least_time last_byte
+    loadBalancingMethod: least_time last_byte   # use fastest pod
   action:
     pass: redis-upstream
