@@ -322,6 +322,8 @@ Just a quick test, is your Nginx Plus Ingress Controller running, and can you se
 
    You should see the Nginx Plus Dashboard. This dashboard would provide more metrics as you progress through the workshop.
 
+   ![Nic Dashboard](media/lab3_nic-dashboard.png)
+
    Type `Ctrl+C` within your terminal to stop the Port-Forward when you are finished.
 
 <br/>
@@ -530,11 +532,11 @@ So why use ports 9001 for the NIC Dashboard?  Will this work on port 80/443?  Ye
    where
    - `11.22.33.44` replace with your `n4a-publicIP` resource IP address.
 
-1. Use Chrome or other browser to test remote access to your NIC Dashboards.  Create a new Tab or Window for each Dashboard.
+1. Use Chrome or other browser to test remote access to your NIC Dashboard.  Create a new Tab or Window for the Dashboard.
 
    http://dashboard.example.com:9001/dashboard.html   > AKS1-NIC
 
-   Bookmark this page, and leave this browser Tab or Window open during the Workshop, you will be using them often in the next Lab Exercises, watching what Nginx Ingress is doing in the Cluster.
+   Bookmark this page, and leave this browser Tab or Window open during the Workshop, you will be using it often in the next Lab Exercises, watching what Nginx Ingress is doing inside the Cluster.
 
    If you are not familiar with the Nginx Plus Dashboard, you can find a link to more information in the References Section.
 
@@ -544,7 +546,7 @@ So why use ports 9001 for the NIC Dashboard?  Will this work on port 80/443?  Ye
 
 ![AKS Icon](media/aks-icon.png)
 
-These are the steps needed to deploy a second AKS cluster with Nginx Ingress Contoller.  If you are interested in the `Multi Cluster Load Balancing Solution and Lab Exercises`, or the `Redis Caching Lab Exercises`, you will need to build a second AKS cluster with Nginx Ingress deployed.  *The process is identical to the creating the first cluster, you just change the cluster name*.
+If you are interested in the `Multi Cluster Load Balancing Solution and Lab Exercises`, or the `Redis Caching Lab Exercises`, you will need to build a second AKS cluster with Nginx Ingress deployed.  *The process is identical to the creating the first cluster, you just change the cluster name*. These are the steps needed to deploy a second AKS cluster with Nginx Ingress Contoller.  
 
 In this section, similar to how you deployed the first AKS cluster, you will deploy a second AKS cluster named `n4a-aks2` which has `4 nodes`, uses the `aks2-subnet` and `azure` CNI.
 
@@ -768,6 +770,8 @@ Just a quick test, is your Nginx Plus Ingress Controller running, and can you se
 
    You should see the Nginx Plus Dashboard. This dashboard would provide more metrics as you progress through the workshop.
 
+   ![Nic Dashboard](media/lab3_nic-dashboard.png)
+
    Type `Ctrl+C` within your terminal to stop the Port-Forward when you are finished.
 
 ### Expose NGINX Plus Ingress Controller Dashboard using Virtual Server within second cluster
@@ -852,7 +856,7 @@ You will deploy a `Service` and a `VirtualServer` resource to provide access to 
 
 ## Expose the NGINX Plus Ingress Dashboard with Nginx for Azure
 
-Being able to see your NGINX Plus Ingress Dashboards remotely will be a big help in observing your traffic metrics and patterns within each AKS cluster.  It will require only two Nginx for Azure configuration items for each cluster - a new Nginx Server block and a new Upstream block.
+Being able to see *both* of your NGINX Plus Ingress Dashboards remotely will be a big help in observing your traffic metrics and patterns within each AKS cluster.  It will require only two Nginx for Azure configuration items for each cluster - a new Nginx Server block and a new Upstream block.
 
 This will be the logical network diagram for accessing the Nginx Ingress Dashboards.
 
