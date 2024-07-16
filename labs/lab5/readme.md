@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In this lab, you will configure Nginx4Azure to Proxy and Load Balance several different backend systems, including Nginx Ingress Controllers in AKS, and a Windows VM. You will create and configure the needed Nginx config files, and then verify access to these systems. The Docker containers, VMs, or AKS Pods are running simple websites that represent web applications. You will also configure and load balance traffic to a Redis in-memory cache running in the AKS cluster. The AKS Clusters and Nginx Ingress Controllers provide access to these various K8s workloads.
+In this lab, you will configure NGINXaaS to Proxy and Load Balance several different backend systems, including Nginx Ingress Controllers in AKS, and a Windows VM. You will create and configure the needed Nginx config files, and then verify access to these systems. The Docker containers, VMs, or AKS Pods are running simple websites that represent web applications. You will also optionally configure and load balance traffic to a Redis in-memory cache running in the AKS cluster. The AKS Clusters and Nginx Ingress Controllers provide access to these various Kubernetes workloads.
 
 NGINX aaS | AKS | Nginx Ingress | Redis
 :-----------------:|:-----------------:|:-----------------:|:-----------------:
@@ -12,34 +12,32 @@ NGINX aaS | AKS | Nginx Ingress | Redis
 
 By the end of the lab you will be able to:
 
-- Configure Nginx4Azure to Proxy and Load balance AKS workloads
-- Configure Nginx4Azure to Proxy a Windows Server VM
+- Configure NGINXaaS to Proxy and Load balance AKS workloads
+- Configure NGINXaaS to Proxy a Windows Server VM
 - Test access to your N4A configurations with Curl and Chrome
 - Inspect the HTTP content coming from these systems
 - Run an HTTP Load Test on your systems
 - Enable HTTP Split Clients for Blue/Green, A/B Testing
-- Configure Nginx4Azure for Redis Cluster
-- Configure Nginx4Azure to Proxy to Nginx Ingress Headless
+- Optional: Configure NGINXaaS for Redis Cluster
+- Optional: Configure NGINXaaS to Proxy to Nginx Ingress Headless
 
 ## Pre-Requisites
 
-- You must have your Nginx4Azure instance up and running
+- You must have your NGINXaaS instance up and running
 - You must access to the N4A Configuration Panel in Azure Portal
-- You must have both AKS Clusters with Nginx Ingress Controllers running
-- You must have the sample application running in both clusters
+- You must have at least one AKS Cluster with Nginx Ingress Controller running
+- You must have the sample application running in the cluster
 - You must have curl and a modern Browser installed on your system
-- You should have Redis Client Tools installed on your local system
+- Optional: You should have Redis Client Tools installed on your local system
 - See `Lab0` for instructions on setting up your system for this Workshop
-
 
 ![lab5 diagram](media/lab5_diagram.png)
 
+## NGINXaaS Proxy to AKS Clusters
 
-### Nginx 4 Azure Proxy to AKS Clusters
+This exercise will create Nginx Upstream configurations for the AKS Clusters. You will use the Nodepool node names, and you will add the port number `32080` from the Static NodePort of the Nginx Ingress Controllers running in Cluster AKS1, (and optional Cluster AKS2). These were previously deployed and configured in a previous lab. Now the fun part, sending traffic to them!
 
-This exercise will create Nginx Upstream configurations for the AKS Clusters. You will use the Nodepool node names, and you will add the port number `32080` from the NodePort of the Nginx Ingress Controllers running in AKS cluster 1, and AKS Cluster 2. These were previously deployed and configured in a previous lab. Now the fun part, sending traffic to them!
-
-Configure the Upstream for AKS Cluster1.
+Create and Configure the Upstream for AKS Cluster1.
 
 1. Using kubectl, get the Nodepool nodes for AKS Cluster1:  (You can also find these in your Azure Portal - AKS Nodepool definitions.)
 
@@ -55,7 +53,7 @@ Configure the Upstream for AKS Cluster1.
     aks-nodepool1-76919110-vmss000003  #aks1 node3
     ```
 
-1. Using the Nginx4Azure configuration tool, create a new file called `/etc/nginx/conf.d/aks1-upstreams.conf`. Copy and Paste the contents of the provided file. You will have to EDIT this example config file, and change the `server` entries to match your AKS Cluster1 Nodepool node names. You can find your AKS1 nodepool nodenames from `kubectl get nodes` or the Azure Portal. Make sure you use `:32080` for the port number, this is the static `nginx-ingress NodePort Service` for HTTP traffic that was defined earlier.
+1. Using the NGINXaaS configuration tool, create a new file called `/etc/nginx/conf.d/aks1-upstreams.conf`. Copy and Paste the contents of the provided file. You will have to EDIT this example config file, and change the `server` entries to match your AKS Cluster1 Nodepool node names. You can find your AKS1 nodepool nodenames from `kubectl get nodes` or the Azure Portal. Make sure you use `:32080` for the port number, this is the static `nginx-ingress NodePort Service` for HTTP traffic that was defined earlier.
 
     ```nginx
     # Nginx 4 Azure to NIC, AKS Nodes for Upstreams
@@ -84,11 +82,11 @@ Configure the Upstream for AKS Cluster1.
 
     >**Important!**  If you stop then re-start your AKS cluster, or scale the Nodepool up/down, or add/remove nodes in the AKS NodePools, this Upstream list `WILL have to be updated to match!`. Any changes to the Worker nodes in the Cluster will need to be matched exactly, as it is a static Nginx configuration that must match the Kubernetes workers -  Nodes:NodePort definition in your AKS cluster. If you change the static nginx-ingress NodePort Service Port number, you will have to match it here as well.
 
-    *Currently, there is no auto-magic way to synchronize the Nginx for Azure upstream list with the AKS node list, but don't worry - Nginx Devs are working on that!*
+    *Currently, there is no auto-magic way to synchronize the Nginx for Azure upstream list with the AKS node list, but don't worry - Nginx4Azure Devs are working on that!*
 
-Configure the Upstream for AKS Cluster2.
+Optional: If you have a second AKS cluster, Configure the Upstream for AKS Cluster2.
 
-1. Repeat the previous Step, using the Nginx4Azure configuration tool, create a new file called `/etc/nginx/conf.d/aks2-upstreams.conf`. Copy and Paste the contents of the provided file. You will have to EDIT this example config file and change the `server` entries to match your AKS Cluster2 Nodepool node names. You can find your AKS2 nodepool nodenames from `kubectl get nodes` or the Azure Portal. Make sure you use `:32080` for the port number; this is the static `nginx-ingress NodePort Service` for HTTP traffic that was defined earlier.
+1. Repeat the previous Step, using the NGINXaaS configuration tool, create a new file called `/etc/nginx/conf.d/aks2-upstreams.conf`. Copy and Paste the contents of the provided file. You will have to EDIT this example config file and change the `server` entries to match your AKS Cluster2 Nodepool node names. You can find your AKS2 nodepool nodenames from `kubectl get nodes` or the Azure Portal. Make sure you use `:32080` for the port number; this is the static `nginx-ingress NodePort Service` for HTTP traffic that was defined earlier.
 
 1. Using kubectl, get the Nodepool nodes for AKS Cluster2: (You can also find these in your Azure Portal - AKS Nodepool definitions.)
 
@@ -131,13 +129,13 @@ Configure the Upstream for AKS Cluster2.
 
 Note that there are 4 upstreams, matching the 4 Nodepool nodes in AKS2 cluster.
 
-Submit your Nginx Configuration. If you have the Server name:port correct, Nginx4Azure will validate and return a Success message.
+Submit your Nginx Configuration. If you have the Server name:port correct, NGINXaaS will validate and return a Success message.
 
 **Warning:**  The same warning applies to Upstream configuration for AKS2, *if you make any Nodepool changes, Nginx must be updated to match those changes.*
 
 ### Update Nginx Config and add HTTP/1.1 Keepalive
 
-In order for Nginx 4 Azure and Nginx Ingress to work correctly, the HTTP Host Headers, and perhaps other headers, will need to be passed. This is done by changing the HTTP Version to 1.1, so that the Host Header can be included.
+In order for Nginx 4 Azure and Nginx Ingress to work correctly, the HTTP Host Headers, and perhaps other headers, will need to be passed. This is done by changing the HTTP Version to 1.1, so that the Host Header can be included.  *NOTE:  By default, Nginx uses HTTP/1.0 for all upstream/backend communications for backward compatibility with older web servers.*
 
 1. Inspect the `lab5/keepalive.conf`. This is where the HTTP Protocol and Headers are set for proxied traffic. This is a common requirement so it is shared among all the different Nginx configurations.
 
@@ -267,7 +265,7 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
 
 1. Test your change in proxy_pass with Chrome at http://cafe.example.com/coffee, hitting Refresh several times - what do you see - Docker Containers or AKS1 Pods?
     
-    Cafe Docker | Cafe AKS1
+    Cafe from Docker | Cafe from AKS1
     :-----------------:|:-----------------:
     ![Cafe Docker](media/lab5_cafe-docker.png) | ![Cafe AKS1](media/lab5_cafe-aks1.png)
 
@@ -341,7 +339,9 @@ And your Nginx Ingress Dashboard should show similar stats. How many requests di
 
 ![Cafe AKS1 loadtest](media/lab5_cafe-aks1-loadtest.png)
 
-### Test Nginx 4 Azure to AKS2 Cluster Nginx Ingress Controller
+<br/>
+
+### Optional:  Test NGINXaaS Proxy to Cluster AKS2 Nginx Ingress Controller
 
 Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
@@ -446,12 +446,11 @@ Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
     You should see a list of the (3) POD IPs for the coffee Service.
 
-**TAKE NOTE:** The Pod IPs are on a completely different IP subnet, from Docker or the first and second AKS cluster, which was configured using the Azure CNI - did you catch that distinction? Understanding the Backend IP/networking is critical to configuring your Nginx for Azure Upstreams properly.  
+**TAKE NOTE:** The Pod IPs are on a completely different IP subnet, from Docker or the first or second AKS cluster, which was configured using the Azure CNI - did you catch that difference? *Understanding the Backend IP/networking is critical to configuring your Nginx for Azure Upstreams properly.*  
 
 You built and used different CNIs and subnets so that you can see the differences. Nginx for Azure can work with `any` of these different backend applications and networks, as long as there is an IP Path to the Upstreams. 
 
-(Yes, if you add the appropriate routing with VNet Gateways, you can use Upstreams in other Regions/Clusters/VMs.)
-
+(And YES, if you add the appropriate routing with VNet Gateways, you can use Upstreams in other Regions/Clusters/VMs.)
 
 
 Platform | Docker | AKS1 | AKS2
@@ -491,12 +490,13 @@ You can also see this list, using the Nginx Plus Dashboard for the Ingress Contr
 
     ![Cafe AKS2 loadtest](media/lab5_cafe-aks2-loadtest.png)
 
-### Nginx for Azure, Upstream Configuration Recap
+### NGINXaaS Azure, Upstream Configuration Recap
 
-During this lab exercise, you created and tested THREE different Upstream configurations to use with Nginx for Azure.  This demonstrates how easy it is to have different platforms for your backend applications, and Nginx can easily be configured to change where it sends the Requests with `proxy_pass`. You can use Azure VMs, Docker, Containers, AKS Clusters, and/or Windows VMs for your apps. You also added a custom HTTP Header, to help you track which Upstream block is being used.
+During this lab exercise, you created and tested different Upstream configurations to use with Nginx for Azure.  This demonstrates how easy it is to have different platforms for your backend applications, and Nginx can easily be configured to change where it sends the Requests with `proxy_pass`. You can use Azure VMs, Docker, Containers, multiple AKS Clusters, and/or Windows VMs for your apps. You also added a custom HTTP Header, to help you track which Upstream block is being used.
 
+<br/>
 
-## Nginx for Azure Split Clients for Blue/Green, A/B, Canary Testing
+## NGINXaaS Split Clients for Blue/Green, A/B, Canary Testing
 
 ![Blue-Green icon](media/bluegreen-icon.jpg)
 
@@ -507,7 +507,6 @@ This concept of using `Live Traffic`, to test a new version or release of an app
 Docker | NGINXaaS | Kubernetes
 :-----------------:|:-----------------:|:-----------------:
 ![Docker](media/docker-icon.png)  |![N4A](media/nginx-azure-icon.png) |![K8s](media/kubernetes-icon.png) 
-
 
 As your team is diligently working towards all applications being developed and tested in Kubernetes, you could really use a process to make the migration from old Legacy Docker VMs to Kubernetes MicroServices easier. Wouldn't it be nice if you could test and migrate Live Traffic with NO DOWNTIME?  `(Service Outages and Tickets are a DRAG... ugh!)`
 
@@ -683,9 +682,12 @@ Looking pretty good, traffic is even, no logging errors or tickets, no whining a
 99% Split
 
 <br/>
+
 Now that you get the concept and the configuration steps, you can see how EASY it is with Nginx Split Clients to route traffic to different backend applications, including different versions of apps - it's as easy as creating a new Upstream block, and determining the Split Ratio. Consider this not so subtle point - *you did not have to create ONE ticket, change a single DNS record and WAIT, change any firewall rules, update cloud XYZ devices - nothing!*  All you did was tell Nginx to Split existing Live traffic, accelerating your app development velocity into OverDrive.
 
->The Director of Development has heard about your success with Nginx for Azure Split Clients, and now also wants a small percentage of Live Traffic for the next App version, but this Alpha version is `running in AKS Cluster2`.  Oh NO!! - Success usually does mean more work.  But lucky for you, Split clients can work with many Upstreams.  So after several beers, microwaved pizza and intense discussions, your QA team decides on the following Splits:
+### Optional Exercise:  Split Traffic 3 ways - Docker, AKS1, and AKS2
+
+>The Director of Development has heard about your success with Nginx for Azure Split Clients, and now also wants a small percentage of Live Traffic for the next App version, but this Alpha version is `running in AKS Cluster2`.  Oh NO!! - Success usually does mean more work.  But lucky for you, Split clients can work with many Upstreams.  So after `several beers, microwaved pizza and intense discussions`, your QA team decides on the following Splits:
 
 - AKS2 will get 1% traffic - for the Dev Director's request
 - AKS1 will get 80% traffic - for new version
@@ -740,9 +742,9 @@ Cafe Nginx - Split 3 ways: DockerVM, AKS1, AKS2
 
 No worries, you comment out the `aks2_ingress` in the Split Config, and his 1% Live traffic is now going somewhere safe, as soon as you Submit your Nginx Configuration!
 
-But don't be surprised - in a few days he will ask again to send traffic to AKS2, and you can begin the Split migration process, this time from AKS1 to AKS2.  
+But don't be surprised - in a few days he will ask you again to send some live traffic to AKS2, and you can begin the Split migration process, this time from AKS1 >> AKS2.  
 
->>Now you've reached the Ultimate Kubernetes Application Solution, `Mutli Cluster Load Balancing, Active/Active, with Dynamic Split Ratios.` No one else can do this for your app team this easily, it's just Nginx!  
+>>Now you've reached the Ultimate Kubernetes Application Solution, `Nginx Mutli Cluster Load Balancing, Active/Active, with Dynamic Split Ratios.` No one else can do this for your app team this easily, it's just Nginx!  
 
 >Cherry on top - not only can you do Split Client `outside` the Cluster with Nginx for Azure, but Nginx Ingress Controller can also do Split Clients `inside` the cluster, ratios between different Services. You can find that example in `Lab10 of the Nginx Plus Ingress Workshop` :-)
 
@@ -760,13 +762,15 @@ Using the HTTP Split Clients module from Nginx can provide multiple traffic mana
 - - ^^ With NO downtime or reloads
 - API Gateway testing/upgrades/migrations
 
-## Configure Nginx for Azure for Redis traffic
+<br/>
+
+## Optional: Configure NGINXaaS for Azure for Redis traffic
 
 NGINXaaS | Redis
 :-------:|:------:
 ![Redis](media/nginx-azure-icon.png)| ![Redis](media/redis-icon.png)
 
-In this exerices, you will use Nginx for Azure to expose the `Redis Leader Service` running in AKS Cluster #2. As Redis communicates with TCP instead of HTTP, the Nginx Stream Context will be used.  Following Nginx Best Practices, and standard Nginx folders/files layout, the `TCP Stream context` configuration files will be created in a new folder, called `/etc/nginx/stream/`.
+In this exerice, you will use Nginx for Azure to expose the `Redis Leader Service` running in AKS Cluster #2. As Redis communicates with TCP instead of HTTP, the Nginx Stream Context will be used.  Following Nginx Best Practices, and standard Nginx folders/files layout, the `TCP Stream context` configuration files will be created in a new folder, called `/etc/nginx/stream/`.
 
 1. Using the Nginx for Azure Console, modify the `nginx.conf` file, to enable the Stream Context, and include the appropriate config files.  Place this stanza at the bottom of your nginx.conf file:
 
@@ -896,8 +900,7 @@ where
 
 >**Note:** All hostnames are mapped to the same N4A External-IP.
 
-
-## Test Access to the Redis Leader with Redis Tools
+### Test Access to the Redis Leader with Redis Tools
 
 If you need to install redis and tools locally, you can follow the instructions on the official site: https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/
 
@@ -934,7 +937,7 @@ If you need to install redis and tools locally, you can follow the instructions 
     14) (empty array)
     ```
 
-Now how cool is that? A Redis Cluster running in AKS, exposed with Nginx Ingress and NodePort, with access provided by Nginx for Azure on the Internet, using a standard hostname and port to connect to.
+Now how cool is that? A Redis Cluster running in AKS, exposed with Nginx Ingress and NodePort, with access provided by Nginx for Azure on the Internet, using a `standard hostname and port` to connect to.
 
 **Optional:** Run Redis-benchmark on your new Leader, see what performance you can get. Watch your Nginx Ingress Dashboard to see the traffic inside the cluster. Watch your Nginx for Azure with Azure Monitoring as well.
 
@@ -971,7 +974,7 @@ docker run --rm -it redis:alpine redis-benchmark -h redis.example.com -c 50 -n 1
 
 ```
 
-Some screenshots for you:
+NIC Dashboard with Redis Leader and Follower screenshots for example:
 
 ![Redis NIC Dashboard](media/lab5_redis-bench.png)
 
@@ -979,13 +982,15 @@ You will likely find that the Redis performance is dimished by the Round trip la
 
 >**Security Warning!**  There is no Redis Authentication, or other protections in this Redis configuration, just your Azure NSG IP/port filters. Do NOT use this configuration for Production workloads. The example provided in the Workshop is to show that running Redis is easy, and Nginx makes it easy to access. Take appropriate measures to secure Redis data as needed.
 
-*NOTE:* You only exposed the `Redis Leader` Service with Nginx for Azure. As an Optional Exercise, you can also expose the `Redis Follower` Service with Nginx for Azure. Create a new Upstream block, and then update the `redis.example.com.conf` to add a listener on the Follower port and proxy_pass to the Followers in AKS2.  *Redis is not running in AKS1, only AKS2 (unless you want to add it).*
+*NOTE:* You only exposed the `Redis Leader` Service with Nginx for Azure. As another Optional Exercise, you can also expose the `Redis Follower` Service with Nginx for Azure. Create a new Upstream block, and then update the `redis.example.com.conf` to add a listener on the Follower port and proxy_pass to the Followers in AKS2.  *Redis is not running in AKS1, only AKS2 (unless you want to add it).*
 
 Nginx Split Clients is also available for the TCP Stream context. You can run Multiple Redis Clusters, and use Split Clients to control the Ratio of traffic between them, just like you did earlier for HTTP requests. Ever thought of `Active/Active Redis Clusters`, with Dynamic Split Ratios ... Nginx can do that!
 
+<br/>
+
 ## Optional - Nginx for Azure / Load Balancing the Nginx Ingress Headless Service
 
-This an Advanced 400 Level Lab Exercise, you will configure a Headless Kubernetes Service, and configure Nginx for Azure to load balance requests directly to the Nginx Ingress Controller(s) running in AKS2, leveraging the Azure CNI / Calico.  This architecture will `bypass NodePort` on the Kubernetes Nodes, allowing `Nginx 4 Azure to connect to Nginx Ingress Pod(s) directly on the same Subnet, n4a-aks2`. You will use the `Nginx Plus Resolver`, to dynamically create the Upstream list, by querying Kube-DNS for the Pod IPs.  
+This an Advanced 400 Level Lab Exercise, you will configure a Headless Kubernetes Service, and configure Nginx for Azure to load balance requests directly to the Nginx Ingress Controller(s) running in Cluster AKS2, leveraging the Azure CNI / Calico.  This architecture will `bypass NodePort` on the Kubernetes Nodes, allowing `Nginx 4 Azure to connect to Nginx Ingress Pod(s) directly on the same Subnet, n4a-aks2`. You will use the `Nginx Plus Resolver`, to dynamically create the Upstream list, by querying Kube-DNS for the NIC Pod IPs.  
 
 >**NOTE:** This exercise requires detailed understanding and expertise with Kubernetes networking/CNI, Kube-DNS, Nginx Ingress, and the Nginx Plus Resolver. The Nginx Plus DNS Resolver is *NOT* the same as a Linux OS DNS client, it is separate and built into Nginx Plus only. You will configure this Nginx Resolver to query Kube-DNS for the A records, Pod IP Addresses, of the Nginx Ingress Pods. These Pod IPs are `dynamically added to the Upstream block` by Nginx Plus.
 
@@ -1134,7 +1139,7 @@ You will use these two IP Addresses from DNS Service Endpoints in your Nginx for
 - The `ipv6=off` disables IPv6
 - The `status_zone=kube-dns` parameter collects the metrics for Nginx Resolver's queries, successes and failures, which can be seen in Azure Monitoring.
 - Notice the server `resolve` directive is added, to query `kube-dns` for the IP Address(es) of the Nginx Ingress Controller's Pod IP(s).
-- If there are more than 1 Nginx Ingress Controller running, a list IPs will be returned, and Nginx 4 Azure will load balance all of them.  You can see the list of Nginx Ingress Pod IPs in the Azure Monitor, in the `aks2_nic_headless` Upstream.
+- If there are more than 1 Nginx Ingress Controller running, a list of IPs will be returned, and Nginx 4 Azure will load balance all of them.  You can see the list of Nginx Ingress Pod IPs in the Azure Monitor, in the `aks2_nic_headless` Upstream.
 
 Now that the Nginx Headless Service has been configured, and you have the Kube-DNS Pod IP Addresses, you can configure Nginx for Azure.
 
@@ -1166,7 +1171,7 @@ Now that the Nginx Headless Service has been configured, and you have the Kube-D
 
 Submit your Nginx Configuration.
 
-### Test Nginx for Azure to NIC Headless
+### Optional: Test Nginx for Azure to NIC Headless
 
 1. Once again, change your `proxy_pass` directive in `/etc/nginx/conf.d/cafe.example.com.conf`, to use the new `aks2_nic_headless` upstream.
 
@@ -1259,9 +1264,11 @@ Submit your Nginx Configuration.
 
     **Optional Exercise:** Install a DNS testing Pod in your Cluster, like busy-box or Ubuntu, and use `dig or nslookup` to query the A records from Kube-DNS.
 
+<br/>
+
 ## Wrap Up
 
-As you have seen, using Nginx for Azure is quite easy to create various backend Systems, Services, platforms of different types and have Nginx Load Balance them through a single entry point. Using Advanced Nginx directives/configs with Resolver, Nginx Ingress Controllers, Headless, and even Split Clients help you control and manage dev/test/pre-prod and even Production workloads with ease. Dashboards and Monitoring give you insight with over 240 useful metrics, providing data needed for decisions based on both real time and historical metadata about your Apps and Traffic.
+As you have seen, using NGINXaaS for Azure is quite easy to create various backend Systems, Services, platforms of different types and have Nginx Load Balance them through a single entry point. Using Advanced Nginx directives/configs with Resolver, Nginx Ingress Controllers, Headless, and even Split Clients help you control and manage dev/test/pre-prod and even Production workloads with ease. Dashboards and Monitoring give you insight with over 240 useful metrics, providing data needed for decisions based on both real time and historical metadata about your Apps and Traffic.
 
 **This completes Lab5.**
 
