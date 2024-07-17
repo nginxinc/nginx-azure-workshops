@@ -20,8 +20,7 @@ NGINX aaS | Ubuntu | Docker | Windows
 
 By the end of the lab you will be able to:
 
-- Deploy Ubuntu VM with Docker and Docker-Compose preinstalled using Azure CLI
-- Run Nginx demo application containers
+- Deploy Ubuntu VM with Docker and Docker-Compose preinstalled and Nginx Demo containers running using Azure CLI
 - Configure Nginx for Azure to Load Balance Docker containers
 - Test and validate your lab environment
 - Deploy Windows VM with Azure CLI
@@ -42,7 +41,7 @@ By the end of the lab you will be able to:
 
 <br/>
 
-## Deploy Ubuntu VM with Docker and Docker-Compose preinstalled using Azure CLI
+## Deploy Ubuntu VM with Docker and Docker-Compose preinstalled and Nginx Demo containers running using Azure CLI
 
 1. In your local machine open terminal and make sure you are logged onto your Azure tenant. Set the following Environment variable which points to your Resource Group:
 
@@ -51,7 +50,11 @@ By the end of the lab you will be able to:
     export MY_RESOURCEGROUP=s.dutta-workshop
     ```
 
-    >*Make sure your Terminal is the `nginx-azure-workshops/labs` directory for all commands during this Workshop.*
+1. Make sure your Terminal is the `nginx-azure-workshops/labs` directory for all commands during this Workshop.
+
+    ```bash
+    cd labs
+    ```
 
 1. Create the Ubuntu VM that would be acting as your backend application server using below command:
 
@@ -97,6 +100,11 @@ By the end of the lab you will be able to:
       - **n4a-ubuntuvmNSG:** This is your network security group resource tied to the network interface of your vm.
       - **n4a-ubuntuvmPublicIP:** This is your public IP resource tied to your vm.
   
+    The `lab2/init.sh` script will perform several task as listed below:
+      - install docker and docker compose within the vm
+      - download the workshop docker-compose file that would build the backend containers
+      - Run the downloaded docker-compose file to build all the backend containers.
+
     This command will also generate a SSH key file named `id_rsa` under `~/.ssh` folder if you don't have one already.
 
     **SECURITY WARNING:** This new VM has SSH/port22 open to the entire Internet, and is only using an SSH Key file for security. Take appropriate steps to secure your VM if you will be using it for more than a couple hours!
@@ -116,7 +124,15 @@ By the end of the lab you will be able to:
     --source-address-prefix $MY_PUBLICIP
     ```
 
-1. Verify you have SSH access to the Ubuntu VM that you deployed in previous steps. Open a Terminal, and use your public IP tied to ubuntu vm, to start a new ssh session.
+    >Success!  You have an Ubuntu VM with Docker that is running Nginx Demo containers needed for future Lab exercises. Reminder: Don't forget to shutdown this VM when you are finished with it later, or set an Auto Shutdown policy using Azure Portal.
+
+<br/>
+
+### (Optional Section) SSH into the Ubuntu VM and test Nginx Demo containers
+
+In this section, you will ssh into the Ubuntu VM that you created in previous section. You will then inspect the docker containers and look into the three Nginx `ingress-demo` containers.  These containers will be your first group of `backends` that will be used for load balancing with Nginx for Azure.
+
+1. Verify you have SSH access to the Ubuntu VM that you deployed in previous section. Open a Terminal, and use your public IP tied to ubuntu vm, to start a new ssh session.
 
     ```bash
     ssh azureuser@<UBUNTU_VM_PUBLICIP>
@@ -134,47 +150,11 @@ By the end of the lab you will be able to:
 
     ![cloudshell](media/lab2-cloudshell.png)
 
-1. Within the Ubuntu VM, run below commands to validate docker and docker compose are installed as part of the `init.sh` script that you passed as one of the parameters to the `az vm create` command
+1. Within the Ubuntu VM, run below commands to validate docker and docker compose are installed as part of the `init.sh` script.
 
     ```bash
     docker version
     docker-compose version
-    ```
-
-1. Test and see if Docker will run the `Hello-World` container:
-
-    ```bash
-    sudo docker run hello-world
-    ```
-
-    ```bash
-    ##Sample Output##
-    Unable to find image 'hello-world:latest' locally
-    latest: Pulling from library/hello-world
-    c1ec31eb5944: Pull complete
-    Digest: sha256:53641cd209a4fecfc68e21a99871ce8c6920b2e7502df0a20671c6fccc73a7c6
-    Status: Downloaded newer image for hello-world:latest
-
-    Hello from Docker!
-    This message shows that your installation appears to be working correctly.
-
-    To generate this message, Docker took the following steps:
-    1. The Docker client contacted the Docker daemon.
-    2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
-        (amd64)
-    3. The Docker daemon created a new container from that image which runs the
-        executable that produces the output you are currently reading.
-    4. The Docker daemon streamed that output to the Docker client, which sent it
-        to your terminal.
-
-    To try something more ambitious, you can run an Ubuntu container with:
-    $ docker run -it ubuntu bash
-
-    Share images, automate workflows, and more with a free Docker ID:
-    https://hub.docker.com/
-
-    For more examples and ideas, visit:
-    https://docs.docker.com/get-started/
     ```
 
 1. Checkout a few Docker things:
@@ -183,57 +163,15 @@ By the end of the lab you will be able to:
     sudo docker images
     ```
 
-    ```bash
-    sudo docker ps -a
-    ```
+    You should find the `nginxinc/ingress-demo` image was pulled.
 
-    You should find the hello-world image was pulled, and that the container ran and exited.
-
-    >Success!  You have an Ubuntu VM with Docker that can run various containers needed for future Lab exercises. Reminder: Don't forget to shutdown this VM when you are finished with it later, or set an Auto Shutdown policy using Azure Portal.
-
-    Leave your SSH Terminal running, you will use it in the next section.
-
-<br/>
-
-### Deploy Nginx Demo containers
-
-You will now use Docker Compose to create and deploy three Nginx `ingress-demo` containers.  These will be your first group of `backends` that will be used for load balancing with Nginx for Azure.
-
-1. Inspect the `lab2/docker-compose.yml` file.  Notice you are pulling the `nginxinc/ingress-demo` image, and starting three containers.  The three containers are configured as follows:
+1. Inspect the `lab2/docker-compose.yml` file.  This file was pulled as part of the `init.sh` script. This docker compose file creates the three containers based on `nginxinc/ingress-demo` image, that you see running.  The three containers are configured as follows:
 
     Container Name | Name:port
     :-------------:|:------------:
     docker-web1 | ubuntuvm:81
     docker-web2 | ubuntuvm:82
     docker-web3 | ubuntuvm:83
-
-1. On the Ubuntu VM, create a new sub-directory in the `/home/azureuser` directory, call it `cafe`.
-
-      ```bash
-      cd $HOME
-      mkdir cafe
-      ```
-
-1. Within the `cafe` sub-directory, you will now add `docker-compose.yml`.
-    You can do this in two ways. You can create a new `docker-compose.yml` file and copy the contents from the `lab2/docker-compose.yml` file, into this new file on the Ubuntu VM using editor of your choice (Below example uses vi tool).
-
-      ```bash
-      cd cafe
-      vi docker-compose.yml
-      ```
-
-    Alternatively, you can get this file by running the `wget` command as shown below:
-
-    ```bash
-    cd cafe
-    wget https://raw.githubusercontent.com/nginxinc/nginx-azure-workshops/main/labs/lab2/docker-compose.yml
-    ```
-
-1. Start up the three Nginx demo containers using below command. This instructs Docker to read the compose file and start the three containers:
-
-    ```bash
-    sudo docker-compose up -d
-    ```
 
 1. Check the containers are running:
 
@@ -243,10 +181,10 @@ You will now use Docker Compose to create and deploy three Nginx `ingress-demo` 
 
     ```bash
     ##Sample Output##
-    CONTAINER ID   IMAGE                   COMMAND                  CREATED          STATUS                      PORTS                                                                        NAMES
-    33ca8329cece   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:82->80/tcp, :::82->80/tcp, 0.0.0.0:4432->443/tcp, :::4432->443/tcp   docker-web2
-    d3bf38f7b575   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:83->80/tcp, :::83->80/tcp, 0.0.0.0:4433->443/tcp, :::4433->443/tcp   docker-web3
-    1982b1a4356d   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:81->80/tcp, :::81->80/tcp, 0.0.0.0:4431->443/tcp, :::4431->443/tcp   docker-web1
+    CONTAINER ID  IMAGE                  COMMAND                 CREATED        STATUS         PORTS                                                                        NAMES
+    33ca8329cece  nginxinc/ingress-demo  "/docker-entrypoint.…"  2 minutes ago  Up 2 minutes   0.0.0.0:82->80/tcp, :::82->80/tcp, 0.0.0.0:4432->443/tcp, :::4432->443/tcp   docker-web2
+    d3bf38f7b575  nginxinc/ingress-demo  "/docker-entrypoint.…"  2 minutes ago  Up 2 minutes   0.0.0.0:83->80/tcp, :::83->80/tcp, 0.0.0.0:4433->443/tcp, :::4433->443/tcp   docker-web3
+    1982b1a4356d  nginxinc/ingress-demo  "/docker-entrypoint.…"  2 minutes ago  Up 2 minutes   0.0.0.0:81->80/tcp, :::81->80/tcp, 0.0.0.0:4431->443/tcp, :::4431->443/tcp   docker-web1
     ```
 
     Notice that each container is listening on a unique TCP port on the Docker host - Ports 81, 82, and 83 for docker-web1, docker-web2 and docker-web3, respectively.
@@ -317,8 +255,6 @@ You will now use Docker Compose to create and deploy three Nginx `ingress-demo` 
           <p class="smaller"><span>Server Name:</span> <span>docker-web3</span></p>
           <p class="smaller"><span>Server Address:</span> <span><font color="green">172.18.0.4:80</font></span></p>
     ```
-
-    If you able to see Responses from all THREE containers, you can continue.
 
 <br/>
 
