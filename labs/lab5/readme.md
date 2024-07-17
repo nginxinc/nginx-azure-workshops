@@ -744,7 +744,7 @@ No worries, you comment out the `aks2_ingress` in the Split Config, and his 1% L
 
 But don't be surprised - in a few days he will ask you again to send some live traffic to AKS2, and you can begin the Split migration process, this time from AKS1 >> AKS2.  
 
->>Now you've reached the Ultimate Kubernetes Application Solution, `Nginx Mutli Cluster Load Balancing, Active/Active, with Dynamic Split Ratios.` No one else can do this for your app team this easily, it's just Nginx!  
+>>Now you've reached the Ultimate Kubernetes Application Solution, `Nginx Multi Cluster Load Balancing, Active/Active, with Dynamic Split Ratios.` No one else can do this for your app team this easily, it's just Nginx!  
 
 >Cherry on top - not only can you do Split Client `outside` the Cluster with Nginx for Azure, but Nginx Ingress Controller can also do Split Clients `inside` the cluster, ratios between different Services. You can find that example in `Lab10 of the Nginx Plus Ingress Workshop` :-)
 
@@ -770,7 +770,7 @@ NGINXaaS | Redis
 :-------:|:------:
 ![Redis](media/nginx-azure-icon.png)| ![Redis](media/redis-icon.png)
 
-In this exerice, you will use Nginx for Azure to expose the `Redis Leader Service` running in AKS Cluster #2. As Redis communicates with TCP instead of HTTP, the Nginx Stream Context will be used.  Following Nginx Best Practices, and standard Nginx folders/files layout, the `TCP Stream context` configuration files will be created in a new folder, called `/etc/nginx/stream/`.
+In this exercise, you will use Nginx for Azure to expose the `Redis Leader Service` running in AKS Cluster #2. As Redis communicates with TCP instead of HTTP, the Nginx Stream Context will be used.  Following Nginx Best Practices, and standard Nginx folders/files layout, the `TCP Stream context` configuration files will be created in a new folder, called `/etc/nginx/stream/`.
 
 1. Using the Nginx for Azure Console, modify the `nginx.conf` file, to enable the Stream Context, and include the appropriate config files.  Place this stanza at the bottom of your nginx.conf file:
 

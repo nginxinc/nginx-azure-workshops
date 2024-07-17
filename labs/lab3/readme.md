@@ -902,7 +902,7 @@ So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 8
       access_log off;
       
       location = /dashboard.html {
-      #return 200 "You have reached /nic1dashboard.";
+      #return 200 "You have reached /nic2dashboard.";
 
       proxy_pass http://nic2_dashboard;
 
