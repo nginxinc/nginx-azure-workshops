@@ -1,14 +1,14 @@
-# Cafe Demo / Redis Deployment
+# Cafe Demo Deployment
 
 ## Introduction
 
-In this lab, you will deploy the Nginx Cafe Demo, and Redis In Memory cache applications to your AKS Clusters.  You will configure Nginx Ingress to expose these applications external to the Clusters. You will use the Nginx Plus Dashboard to watch the Ingress Resources.
+In this lab, you will deploy the Nginx Cafe Demo app to your AKS Cluster.  You will configure Nginx Ingress to expose this applications external to the Cluster. You will use the Nginx Plus Dashboard to watch the Kubernetes and Ingress Resources.
 
 <br/>
 
-Nginx Ingress | Cafe | Redis
-:--------------:|:--------------:|:--------------:
-![NIC](media/nginx-ingress-icon.png) |![Cafe](media/cafe-icon.png) |![Redis](media/redis-icon.png)
+Nginx Ingress | Cafe
+:--------------:|:--------------:
+![NIC](media/nginx-ingress-icon.png) |![Cafe](media/cafe-icon.png)
 
 <br/>
   
@@ -17,16 +17,17 @@ Nginx Ingress | Cafe | Redis
 By the end of the lab you will be able to:
 
 - Deploy the Cafe Demo application
-- Deploy the Redis In Memory Cache
 - Expose the Cafe Demo app with NodePort
-- Expose the Redis Cache with NodePort
 - Monitor with Nginx Plus Ingress dashboard
+- Optional: Deploy the Redis application
+- Optional: Expose the Redis Cache with NodePort
 
 ## Pre-Requisites
 
-- You must have both AKS Clusters up and running
-- You must have both Nginx Ingress Controllers running
-- You must have both the NIC Dashboards available
+- You must have your AKS Cluster up and running
+- You must have your Nginx Ingress Controller running
+- You must have your NIC Dashboard available
+- Optional:  You must have your Second AKS cluster, Nginx Ingress, and Dashboard running
 - Familiarity with basic Linux commands and commandline tools
 - Familiarity with basic Kubernetes concepts and commands
 - Familiarity with Kubernetes NodePort
@@ -36,7 +37,7 @@ By the end of the lab you will be able to:
 
 <br/>
 
-## Deploy the Nginx Cafe Demo app
+## Deploy the Nginx Cafe Demo app in AKS1 Cluster
 
 ![Cafe App](media/cafe-icon.png)
 
@@ -46,15 +47,15 @@ In this section, you will deploy the "Cafe Nginx" Ingress Demo, which represents
 - Matching coffee and tea services
 - Cafe VirtualServer
 
-The Cafe application that you will deploy looks like the following diagram below. *BOTH* AKS clusters will have the Coffee and Tea pods and services, with NGINX Ingress routing the traffic for /coffee and /tea routes, using the `cafe.example.com` Hostname. There is also a third hidden service, more on that later!
+The Cafe application that you will deploy looks like the following diagram below. The AKS cluster will have the Coffee and Tea pods and services, with NGINX Ingress routing the traffic for /coffee and /tea routes, using the `cafe.example.com` Hostname. There is also a third hidden service, more on that later!
 
 ![Lab4 diagram](media/lab4_diagram.png)
 
 1. Inspect the `lab4/cafe.yaml` manifest.  You will see we are deploying 3 replicas of each the coffee and tea Pods, and create a matching Service for each.  
 
-2. Inspect the `lab4/cafe-vs.yaml` manifest.  This is the Nginx Ingress VirtualServer CRD (Custom Resource Definition) used by Nginx Ingress to expose these apps, using the `cafe.example.com` Hostname.  You will also see that active healthchecks are enabled, and the /coffee and /tea routes are being used. (NOTE: The VirtualServer CRD from Nginx is an `upgrade` to the standard Kubernetes Ingress object).
+2. Inspect the `lab4/cafe-vs.yaml` manifest.  This is the Nginx Ingress VirtualServer CRD (Custom Resource Definition) used by Nginx Ingress to expose these apps, using the `cafe.example.com` Hostname.  You will also see that active healthchecks are enabled, and the /coffee and /tea routes are being used. (NOTE: The VirtualServer CRD from Nginx unlocks all the Plus features of Nginx, and is an `upgrade` to the standard Kubernetes Ingress object).
 
-3. Deploy the Cafe application by applying these two manifests in first cluster:
+3. Deploy the Cafe application by applying these two manifests in the first cluster:
 
    > Make sure your Terminal is the `nginx-azure-workshops/labs` directory for all commands during this Workshop.
 
@@ -140,15 +141,19 @@ The Cafe application that you will deploy looks like the following diagram below
 
     >**NOTE:** The `STATE` should be `Valid`. If it is not, then there is an issue with your yaml manifest file (cafe-vs.yaml). You could also use `kubectl describe vs cafe-vs` to get more information about the VirtualServer you just created.
 
-7. Check your Nginx Plus Ingress Controller Dashboard for first cluster(`n4a-aks1`), at http://dashboard.example.com:9001/dashboard.html.  You should now see `cafe.example.com` in the **HTTP Zones** tab, and 2 each of the coffee and tea Pods in the **HTTP Upstreams** tab.  Nginx is health checking the Pods, so they should show a Green status.
+7. Check your Nginx Plus Ingress Controller Dashboard for first cluster(`n4a-aks1`), at http://dashboard.example.com:9001/dashboard.html.  You should now see `cafe.example.com` in the **HTTP Zones** tab, and 2 each of the coffee and tea Pods in the **HTTP Upstreams** tab.  Nginx is health checking the Pods, so they should show a Green status, and the successfull Health Checks counter increasing.
 
     ![Cafe Zone](media/lab4_http-zones.png)
 
     ![Cafe Upstreams](media/lab4_cafe-upstreams-2.png)
 
-    >**NOTE:** You should see two Coffee/Tea pods in Cluster 1.
+    >**NOTE:** You should see two each Coffee/Tea pods in Cluster AKS1.
 
-## Deploy the Nginx Cafe Demo app in the 2nd cluster
+<br/>
+
+## Optional: Deploy the Nginx Cafe Demo app in the 2nd cluster
+
+If you have completed the Optional deployment of a Second AKS Cluster (n4a-aks2), running with the Nginx Ingress Controller and the Dashboard, you can use the following steps to deploy the Nginx Cafe Demo app to your Second cluster.
 
 1. Repeat the previous section to deploy the Cafe Demo app in your second cluster (`n4a-aks2`), don't forget to change your Kubectl Context using below command.
 
@@ -163,12 +168,12 @@ The Cafe application that you will deploy looks like the following diagram below
 
 2. Use the same /lab4 `cafe` and `cafe-vs` manifests.  
 
-    >*However - do not Scale down the coffee and tea replicas, leave three of each pod running in AKS2.*
-
     ```bash
     kubectl apply -f lab4/cafe.yaml
     kubectl apply -f lab4/cafe-vs.yaml
     ```
+
+    >*However - do not Scale down the coffee and tea replicas, leave three of each pod running in AKS2.*
 
 3. Check your Second Nginx Plus Ingress Controller Dashboard, at http://dashboard.example.com:9002/dashboard.html.  You should find the same HTTP Zones, and 3 each of the coffee and tea pods for HTTP Upstreams.
 
@@ -176,7 +181,7 @@ The Cafe application that you will deploy looks like the following diagram below
 
 <br/>
 
-## Deploy Redis In Memory Caching in AKS Cluster 2 (n4a-aks2)
+## Optional: Deploy Redis In Memory Caching in Cluster AKS2 (n4a-aks2)
 
 Azure | Redis
 :--------------:|:--------------:
@@ -302,6 +307,34 @@ In this exercise, you will deploy Redis in your second cluster (`n4a-aks2`), and
     
     ```
 
+1. Inspect the Nginx TransportServer manifests for Redis Leader and Redis Follower, `redis-leader-ts.yaml` and `redis-follower-ts.yaml` respectively.  Take note you are creating a Layer4, TCP Transport Server, listening on the Redis standard port 6379.  You are limiting the active connections to 100, and using the `Least Time Last Byte` Nginx Plus load balancing algorithm - telling Nginx to pick the *fastest* Redis pod based on Response Time for new TCP connections!
+
+```nginx
+# NIC Plus TransportServer file
+# Add ports 6379 for Redis Leader
+# Chris Akker, Jan 2024
+#
+apiVersion: k8s.nginx.org/v1alpha1
+kind: TransportServer
+metadata:
+  name: redis-leader-ts
+spec:
+  listener:
+    name: redis-leader-listener 
+    protocol: TCP
+  upstreams:
+  - name: redis-upstream
+    service: redis-leader
+    port: 6379
+    maxFails: 3
+    maxConns: 100
+    failTimeout: 10s
+    loadBalancingMethod: least_time last_byte    # use fastest pod
+  action:
+    pass: redis-upstream
+
+```
+
 1. Create the Nginx Ingress Transport Servers, for Redis Leader and Follow traffic, using the Transport Server CRD:
 
     ```bash
@@ -412,7 +445,7 @@ Service Port | External NodePort | Name
 6380 | 32380 | redis follower
 9000 | 32090 | dashboard
 
-You will use these new Redis NodePorts for your Nginx for Azure upstreams in the next Lab.
+You will use these new Redis NodePorts for your Nginx for Azure upstreams in an Optional Lab Exercise.
 
 <br/>
 
