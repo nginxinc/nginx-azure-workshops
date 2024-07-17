@@ -47,7 +47,13 @@ By the end of the lab you will be able to:
     az --version
     ```
 
-    > NOTE: If this command throws an error then it means Azure CLI is not installed. Follow lab0 instructions to get it installed in your local machine.
+    > NOTE: If this command throws an error then it means Azure CLI is not installed. Follow lab0 instructions to get it installed in your local machine.  You must have Azure CLI version 2.61.0 or higher.
+
+    Make sure you have the Azure CLI `NGINX extension` installed by running below command.
+
+    ```bash
+    az extension add --name nginx
+    ```
 
 1. Create a new Azure Resource Group called `<name>-workshop` , where `<name>` is your last name (or any unique value).  This would hold all the Azure resources that you would create for this workshop.
 
