@@ -130,9 +130,9 @@ By the end of the lab you will be able to:
 
 ### (Optional Section) SSH into the Ubuntu VM and test Nginx Demo containers
 
-In this section, you will ssh into the Ubuntu VM that you created in previous section. You inspect the docker containers and look into the three Nginx `ingress-demo` containers.  These will be your first group of `backends` that will be used for load balancing with Nginx for Azure.
+In this section, you will ssh into the Ubuntu VM that you created in previous section. You will then inspect the docker containers and look into the three Nginx `ingress-demo` containers.  These containers will be your first group of `backends` that will be used for load balancing with Nginx for Azure.
 
-1. Verify you have SSH access to the Ubuntu VM that you deployed in previous steps. Open a Terminal, and use your public IP tied to ubuntu vm, to start a new ssh session.
+1. Verify you have SSH access to the Ubuntu VM that you deployed in previous section. Open a Terminal, and use your public IP tied to ubuntu vm, to start a new ssh session.
 
     ```bash
     ssh azureuser@<UBUNTU_VM_PUBLICIP>
@@ -181,10 +181,10 @@ In this section, you will ssh into the Ubuntu VM that you created in previous se
 
     ```bash
     ##Sample Output##
-    CONTAINER ID   IMAGE                   COMMAND                  CREATED          STATUS                      PORTS                                                                        NAMES
-    33ca8329cece   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:82->80/tcp, :::82->80/tcp, 0.0.0.0:4432->443/tcp, :::4432->443/tcp   docker-web2
-    d3bf38f7b575   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:83->80/tcp, :::83->80/tcp, 0.0.0.0:4433->443/tcp, :::4433->443/tcp   docker-web3
-    1982b1a4356d   nginxinc/ingress-demo   "/docker-entrypoint.…"   2 minutes ago    Up 2 minutes                0.0.0.0:81->80/tcp, :::81->80/tcp, 0.0.0.0:4431->443/tcp, :::4431->443/tcp   docker-web1
+    CONTAINER ID  IMAGE                  COMMAND                 CREATED        STATUS         PORTS                                                                        NAMES
+    33ca8329cece  nginxinc/ingress-demo  "/docker-entrypoint.…"  2 minutes ago  Up 2 minutes   0.0.0.0:82->80/tcp, :::82->80/tcp, 0.0.0.0:4432->443/tcp, :::4432->443/tcp   docker-web2
+    d3bf38f7b575  nginxinc/ingress-demo  "/docker-entrypoint.…"  2 minutes ago  Up 2 minutes   0.0.0.0:83->80/tcp, :::83->80/tcp, 0.0.0.0:4433->443/tcp, :::4433->443/tcp   docker-web3
+    1982b1a4356d  nginxinc/ingress-demo  "/docker-entrypoint.…"  2 minutes ago  Up 2 minutes   0.0.0.0:81->80/tcp, :::81->80/tcp, 0.0.0.0:4431->443/tcp, :::4431->443/tcp   docker-web1
     ```
 
     Notice that each container is listening on a unique TCP port on the Docker host - Ports 81, 82, and 83 for docker-web1, docker-web2 and docker-web3, respectively.
