@@ -182,7 +182,11 @@ cat <<EOT
 Usage:
         $NAME [-l <number>] [-a] [-d] [-h]
 Purpose:
-        In Azure, build the labs for the NGINXaaS workshop.
+        In Azure, build the labs for the NGINXaaS workshop. 
+        - Must have valid JWT in Lab 3 folder.
+        - Azure CLI must be installed and logged in.
+        - Currently tested on OS X
+
 Inputs:
       -l NUMBER
             This option allows you to choose which lab to build. Labs are built 
@@ -194,7 +198,6 @@ Inputs:
             Delete the whole resource group (will ask for confirmation)
       -h
             Display this usage help text
-Outputs:
 
 EOT
 }
