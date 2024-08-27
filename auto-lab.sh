@@ -14,7 +14,7 @@
 #-------------------------------------------------------------------------
 # Todo
 #-------------------------------------------------------------------------
-# Need to log things to track what is going on. USe Tee or redirects.
+# Need to log things to track what is going on. Use tee or redirects.
 # Could ask for owner and location values - add this via prompt.
 #
 
@@ -23,7 +23,7 @@
 #-------------------------------------------------------------------------
 NAME="auto-lab.sh"
 VERSION="1"
-LOG_FILE="autolab.log"
+LOG_FILE="autolab.log" # not used yet, but will be soon
 export LOCATION=eastus # can be changed to your location
 # On OS X, you can pull your username.  You can also set it yourself for use in the script:
 # export OWNER=<your name>
@@ -73,37 +73,19 @@ echo
 ## Lab 2
 function lab2(){
 cleanup
-create_resource_group
-create_vnet
-create_security_group
-create_security_group_rules
-create_subnets
-create_public_ip
-create_identity
-create_n4a_deployment
-create_analytics
 create_ubuntu_vm
 secure_port_22
 create_windows_vm
 secure_port_3389
 
 echo 
-echo "Lab1 & Lab2 infrastructure creation completed!"
+echo "Lab2 infrastructure creation completed!"
 echo 
 }
 
 ## Lab 3
 function lab3(){
 cleanup
-create_resource_group
-create_vnet
-create_security_group
-create_security_group_rules
-create_subnets
-create_public_ip
-create_identity
-create_n4a_deployment
-create_analytics
 create_ubuntu_vm
 secure_port_22
 create_windows_vm
@@ -121,12 +103,40 @@ kubectl_apply
 create_nsg_rule_aks
 
 echo 
-echo "Lab1, Lab2 & Lab3 infrastructure creation completed!"
+echo "Lab2 & Lab3 infrastructure creation completed!"
 echo 
 }
 
 ## Lab 4
 function lab4(){
+cleanup
+create_ubuntu_vm
+secure_port_22
+create_windows_vm
+secure_port_3389
+create_aks_cluster1
+clone_repo
+create_nic_resources1
+create_jwt1
+deploy_nic1
+create_aks_cluster2
+create_nic_resources2
+create_jwt2
+deploy_nic2
+kubectl_apply
+create_nsg_rule_aks
+deploy_apps
+get_node_ids
+create_archive
+upload_archive
+update_hosts_file
+
+echo 
+echo "Lab2, Lab3 & Lab4 infrastructure creation completed!"
+echo 
+}
+
+function lab99(){
 cleanup
 create_resource_group
 create_vnet
@@ -159,13 +169,13 @@ upload_archive
 update_hosts_file
 
 echo 
-echo "Lab1, Lab2, Lab3 & Lab4 infrastructure creation completed!"
+echo "All infrastructure creation completed!"
 echo 
 }
 
 # How to use the script
 DELETE=0
-OPTSTRING=":adhl:"
+OPTSTRING=":adehl:"
 
 function usage {
 cat <<EOT
@@ -203,6 +213,10 @@ while getopts ${OPTSTRING} opt; do
       echo "Option -d was triggered, running deletion"
       DELETE=1
       ;;
+    e)
+      echo "Option -e was triggered, building everything!"
+      LAB=99
+      ;;
      h)
       echo "Option -h was triggered, running usage"
       USAGE=1
@@ -237,6 +251,11 @@ function main() {
         clear
         setup
         lab4
+        display
+    elif [[ $LAB == 99 ]]; then
+        clear
+        setup
+        lab99
         display
     elif [[ $DELETE == 1 ]]; then
         clear
