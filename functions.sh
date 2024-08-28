@@ -745,7 +745,7 @@ MESSAGE="Creating the archive"
 LGTH=${#MESSAGE} 
 
 cd n4a-configs-staging
-COPYFILE_DISABLE=1 tar -czf ../n4a-configs.tar.gz *
+COPYFILE_DISABLE=1 tar --exclude='.DS_Store' -czf ../n4a-configs.tar.gz *
 cd ..
 rm -r n4a-configs-staging
 
