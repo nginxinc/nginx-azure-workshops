@@ -24,7 +24,7 @@
 NAME="auto-lab.sh"
 VERSION="1"
 LOG_FILE="autolab.log" # not used yet, but will be soon
-export LOCATION=eastus # can be changed to your location
+export LOCATION=centralus # can be changed to your location
 # On OS X, you can pull your username.  You can also set it yourself for use in the script:
 # export OWNER=<your name>
 export OWNER=$(whoami)
@@ -183,7 +183,7 @@ Usage:
         $NAME [-l <number>] [-a] [-d] [-h]
 Purpose:
         In Azure, build the labs for the NGINXaaS workshop. 
-        - Must have valid JWT in Lab 3 folder.
+        - Must have valid NGINX Plus JWT in Lab 3 folder.
         - Azure CLI must be installed and logged in.
         - Currently tested on OS X
 
@@ -193,7 +193,7 @@ Inputs:
             on top of each other (there are dependencies), so prior labs will be 
             built.
       -a
-            Build everything. All labs will be built sequentially.
+            Build lab2, 3 and 4. All labs will be built sequentially.
       -d
             Delete the whole resource group (will ask for confirmation)
       -h
