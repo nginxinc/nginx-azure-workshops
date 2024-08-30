@@ -24,3 +24,8 @@ Thumbs.db
 #Kubernetes-ingress#
 ####################
 kubernetes-ingress
+
+# Deployment Script Artifacts
+#############################
+n4a-configs.tar.gz
+package.json
