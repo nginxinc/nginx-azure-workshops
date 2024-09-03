@@ -22,10 +22,18 @@ By the end of the lab you will be able to:
 
 - Deploy Ubuntu VM with Docker and Docker-Compose preinstalled and Nginx Demo containers running using Azure CLI
 - Configure Nginx for Azure to Load Balance Docker containers
-- Test and validate your lab environment
 - Deploy Windows VM with Azure CLI
 - Configure Nginx for Azure to proxy to the Windows VM
-- Test your Nginx for Azure configs
+
+## Automation script to skip this lab
+
+- This lab focusses on various backend application creation in your Azure environment using Docker. If you are familiar with those concepts then you can skip through this lab by running the below command which would automate all the lab steps within this lab.
+
+    > Make sure your Terminal is the `nginx-azure-workshops` directory before running below command
+
+    ```bash
+    ./auto-lab.sh -l 2 
+    ```
 
 ## Pre-Requisites
 
@@ -40,6 +48,8 @@ By the end of the lab you will be able to:
 - See `Lab0` for instructions on setting up your system for this Workshop
 
 <br/>
+
+
 
 ## Deploy Ubuntu VM with Docker and Docker-Compose preinstalled and Nginx Demo containers running using Azure CLI
 
