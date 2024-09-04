@@ -64,13 +64,13 @@ By the end of the lab you will be able to:
     I am located in Chicago, Illinois so I will opt to use `Central US` as my Azure location.
 
     ```bash
-   az group create --name <name>-n4a-workshop --location <MY_Location>
+   az group create --name <name>-n4a-workshop --location <My_Location>
 
    ## example
-   export OWNER=$(whoami) 
-   export LOCATION=centralus
+   export MY_NAME=$(whoami) 
+   export MY_LOCATION=centralus
 
-   az group create --name ${OWNER}-n4a-workshop --location ${LOCATION}
+   az group create --name ${MY_NAME}-n4a-workshop --location ${MY_LOCATION}
    ```
 
 1. Make sure the new Azure Resource Group has been created by running below command.
@@ -100,7 +100,7 @@ aks2-subnet | 172.16.20.0/23 | AKS Cluster #2
 
     ```bash
     ## Set environment variables
-    export MY_RESOURCEGROUP=${OWNER}-n4a-workshop
+    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
     export MY_PUBLICIP=$(curl ipinfo.io/ip)
     ```
 
@@ -393,7 +393,7 @@ Your completed Vnet/Subnets should look similar to this:
 
     ```bash
     ## Set environment variables
-    export MY_RESOURCEGROUP=${OWNER}-n4a-workshop
+    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
     export MY_SUBSCRIPTIONID=$(az account show --query id -o tsv)
     ```
 
