@@ -22,10 +22,9 @@ NGINXaaS | AKS | Nginx Plus Ingress
 - Expose the Nginx Ingress Dashboard with Nginx for Azure.
 - Optional: Create second AKS Cluster and deploy Nginx Ingress.
 
+## Automation script to build this lab
 
-## Automation script to skip this lab
-
-This lab focusses on building out two AKS Kubernetes cluster in your Azure environment using Azure CLI. Once the cluster are built, this lab guides you how to install NGINX Plus Ingress Controller and expose Nginx Plus Ingress Dashboard. If you are familiar with those concepts then you can skip through this lab by running the below commands which would automate all the lab steps within this lab.
+This lab focuses on building out two AKS Kubernetes clusters in your Azure environment using Azure CLI. Once the cluster are built, this lab guides you how to install NGINX Plus Ingress Controller and expose Nginx Plus Ingress Dashboard. If you are familiar with those concepts then you can build this lab by running the below commands which would automate all the lab steps within this lab.
 
 - To deploy NGINX Plus Ingress Controller, you must have a software subscription license – download the NGINX Plus Ingress Controller license JWT Token file (`nginx-repo.jwt`) from your account on [MyF5](https://my.f5.com/).
 
@@ -42,7 +41,7 @@ This lab focusses on building out two AKS Kubernetes cluster in your Azure envir
     ./auto-lab.sh -l 3 
     ```
 
-- Once the script has completed its execution, you can skip rest of this lab guide and move to the next lab. The testing of all the resources that the script automatically creates would be done in later labs.
+- Once the script has completed its execution, you can skip rest of this lab guide and move to the next lab. The testing of all the resources that the script automatically creates would be done in later labs. If you want to see what the script is doing, the individual build steps are provided in below sections.
 
 - For additional information on the script you can run the same command with `-h` flag as shown below
 

@@ -22,6 +22,24 @@ By the end of the lab you will be able to:
 - Optional: Deploy the Redis application
 - Optional: Expose the Redis Cache with NodePort
 
+## Automation script to build this lab
+
+This lab focuses on deploying backend cafe application within the two AKS Kubernetes clusters in your Azure environment. It also deploys a redis application to the second cluster. If you are familiar with those concepts then you can build this lab by running the below command which would automate all the build steps within this lab.
+
+> **Note:** Make sure your Terminal is the `nginx-azure-workshops` directory before running below command
+
+```bash
+./auto-lab.sh -l 4 
+```
+
+Once the script has completed its execution, you can skip rest of this lab guide and move to the next lab. The testing of all the resources that the script automatically creates will be done in later labs. If you want to see what the script is doing, the individual build steps are provided in below sections.
+
+For additional information on the script you can run the same command with `-h` flag as shown below
+
+```bash
+./auto-lab.sh -h
+```
+
 ## Pre-Requisites
 
 - You must have your AKS Cluster up and running
