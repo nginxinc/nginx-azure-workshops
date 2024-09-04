@@ -35,6 +35,14 @@ By the end of the lab you will be able to:
     ./auto-lab.sh -l 2 
     ```
 
+- Once the script has completed its execution, you can skip rest of this lab guide and move to the next lab. The testing of all the resources that the script automatically creates would be done within lab 5.
+
+- For additional information on the script you can run the same command with `-h` flag as shown below
+
+    ```bash
+    ./auto-lab.sh -h
+    ```
+
 ## Pre-Requisites
 
 - You must have Azure Networking configured for this Workshop
@@ -48,8 +56,6 @@ By the end of the lab you will be able to:
 - See `Lab0` for instructions on setting up your system for this Workshop
 
 <br/>
-
-
 
 ## Deploy Ubuntu VM with Docker and Docker-Compose preinstalled and Nginx Demo containers running using Azure CLI
 
@@ -274,7 +280,6 @@ In this section, you will ssh into the Ubuntu VM that you created in previous se
 
 In this exercise, you will create your first Nginx config files, for the Nginx Server, Location, and Upstream blocks, to load balance your three Docker containers running on the Ubuntu VM.
 
-
 ![Lab2 Cafe diagram](media/lab2_cafe-diagram.png)
 
 <br/>
@@ -316,7 +321,7 @@ NGINX aaS | Docker | Cafe Demo
 
     Click `Submit` to save your Nginx configuration.
 
-1. Click the ` + New File` again, and create a second Nginx config file, using the same Nginx for Azure Configuration editor tool. Name the second file `/etc/nginx/conf.d/cafe.example.com.conf`.
+1. Click the `+ New File` again, and create a second Nginx config file, using the same Nginx for Azure Configuration editor tool. Name the second file `/etc/nginx/conf.d/cafe.example.com.conf`.
 
 1. Copy and paste the contents of the matching file present in `lab2` directory from Github, into the Configuration Edit window, shown here:
 

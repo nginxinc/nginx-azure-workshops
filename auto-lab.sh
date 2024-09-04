@@ -2,12 +2,12 @@
 
 ##########################################################################
 #                                                                        #
-# Id: auto-lab.sh Release 0.9.0 2024/08/09  09:00:00 acurrier            #
+# Id: n4a-auto-lab.sh Release 0.9.0 2024/09/03  09:00:00 acurrier        #
 # (C) Copyright F5, Inc. 2024                                            #
 #                                                                        #
-# auto-lab.sh - Pre-build environments for Azure labs on OS X            #
+# n4a-auto-lab.sh - Pre-build environments for Azure labs on OS X        #
 # Author:  Adam Currier <a.currier@f5.com>                               #
-# Version: 0.6.0,  Date: 2024/08/09 09:00:00                             #
+# Version: 0.9.0,  Date: 2024/09/03 09:00:00                             #
 #                                                                        #
 ##########################################################################
 
@@ -21,11 +21,10 @@
 #-------------------------------------------------------------------------
 # Set Variables
 #-------------------------------------------------------------------------
-NAME="auto-lab.sh"
+NAME="n4a-auto-lab.sh"
 VERSION="1"
-LOG_FILE="autolab.log" # not used yet, but will be soon
-#export LOCATION=centralus # can be changed to your location
-export LOCATION=eastus # can be changed to your location
+LOG_FILE="n4a-autolab.log" # not used yet, but will be soon
+export LOCATION=centralus # can be changed to your location
 
 # On OS X, you can pull your username.  You can also set it yourself for use in the script:
 # export OWNER=<your name>
@@ -88,10 +87,6 @@ echo
 ## Lab 3
 function lab3(){
 cleanup
-create_ubuntu_vm
-secure_port_22
-create_windows_vm
-secure_port_3389
 create_aks_cluster1
 clone_repo
 create_nic_resources1
@@ -112,21 +107,6 @@ echo
 ## Lab 4
 function lab4(){
 cleanup
-create_ubuntu_vm
-secure_port_22
-create_windows_vm
-secure_port_3389
-create_aks_cluster1
-clone_repo
-create_nic_resources1
-create_jwt1
-deploy_nic1
-create_aks_cluster2
-create_nic_resources2
-create_jwt2
-deploy_nic2
-kubectl_apply
-create_nsg_rule_aks
 deploy_apps
 get_node_ids
 create_archive
