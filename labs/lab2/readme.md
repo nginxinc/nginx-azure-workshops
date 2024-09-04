@@ -27,21 +27,21 @@ By the end of the lab you will be able to:
 
 ## Automation script to skip this lab
 
-- This lab focusses on various backend application creation in your Azure environment using Docker. If you are familiar with those concepts then you can skip through this lab by running the below command which would automate all the lab steps within this lab.
+This lab focusses on various backend application creation in your Azure environment using Docker. If you are familiar with those concepts then you can skip through this lab by running the below command which would automate all the lab steps within this lab.
 
-    > Make sure your Terminal is the `nginx-azure-workshops` directory before running below command
+> **Note:** Make sure your Terminal is the `nginx-azure-workshops` directory before running below command
 
-    ```bash
-    ./auto-lab.sh -l 2 
-    ```
+```bash
+./auto-lab.sh -l 2 
+```
 
-- Once the script has completed its execution, you can skip rest of this lab guide and move to the next lab. The testing of all the resources that the script automatically creates would be done within lab 5.
+Once the script has completed its execution, you can skip rest of this lab guide and move to the next lab. The testing of all the resources that the script automatically creates would be done in later labs.
 
-- For additional information on the script you can run the same command with `-h` flag as shown below
+For additional information on the script you can run the same command with `-h` flag as shown below
 
-    ```bash
-    ./auto-lab.sh -h
-    ```
+```bash
+./auto-lab.sh -h
+```
 
 ## Pre-Requisites
 
