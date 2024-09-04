@@ -24,11 +24,11 @@
 NAME="n4a-auto-lab.sh"
 VERSION="1"
 LOG_FILE="n4a-autolab.log" # not used yet, but will be soon
-export LOCATION=centralus # can be changed to your location
+export MY_LOCATION=centralus # can be changed to your location
 
 # On OS X, you can pull your username.  You can also set it yourself for use in the script:
 # export OWNER=<your name>
-export OWNER=$(whoami)
+export MY_NAME=$(whoami)
 
 #-------------------------------------------------------------------------
 # Sourced files

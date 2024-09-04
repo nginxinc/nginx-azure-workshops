@@ -64,19 +64,19 @@ padding $LGTH
 # Removing this lock at the start makes things run smoother.
 # If you changed the username for Owner you may need to edit this path.
 
-rm -rf /Users/${OWNER}/.kube/config.lock
+rm -rf /Users/${MY_NAME}/.kube/config.lock
 # Workaround on OS X for permissions for kubectl
 export KUBECONFIG="~/.kube/config"
 
 # Set some system variables for use in the script.
 # you should be logged into azure cli before running this script
 
-export MY_RESOURCEGROUP=${OWNER}-n4a-workshop
+export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
 export MY_AZURE_PUBLIC_IP_NAME=n4a-publicIP # we chose this to standardize names for the workshop
 export MY_PUBLICIP=$(curl -s ipinfo.io/ip)
 export MY_SUBSCRIPTIONID=$(az account show --query id -o tsv)
 
-if [[ -z "$OWNER" || -z "$MY_RESOURCEGROUP" || -z "$MY_PUBLICIP" || -z "$MY_SUBSCRIPTIONID" ]]; then
+if [[ -z "$MY_NAME" || -z "$MY_RESOURCEGROUP" || -z "$MY_PUBLICIP" || -z "$MY_SUBSCRIPTIONID" ]]; then
     cfail
     exit 1
 else
@@ -88,9 +88,9 @@ fi
 YELLOW='\033[01;33m'
 ENDCOLOR='\033[00;00m'
 
-echo -e "\t${YELLOW}OWNER:${ENDCOLOR} $OWNER"
+echo -e "\t${YELLOW}MY_NAME:${ENDCOLOR} $MY_NAME"
 echo -e "\t${YELLOW}MY_RESOURCEGROUP:${ENDCOLOR} $MY_RESOURCEGROUP"
-echo -e "\t${YELLOW}LOCATION:${ENDCOLOR} $LOCATION"
+echo -e "\t${YELLOW}MY_LOCATION:${ENDCOLOR} $MY_LOCATION"
 echo -e "\t${YELLOW}MY_PUBLICIP:${ENDCOLOR} $MY_PUBLICIP"
 echo -e "\t${YELLOW}MY_SUBSCRIPTIONID:${ENDCOLOR} $MY_SUBSCRIPTIONID"
 
@@ -117,7 +117,7 @@ LGTH=${#MESSAGE}
 echo -ne $MESSAGE
 padding $LGTH
 
-CREATE_RESOURCE_GROUP=`az group create --name $MY_RESOURCEGROUP --location $LOCATION --tags owner="$OWNER"`
+CREATE_RESOURCE_GROUP=`az group create --name $MY_RESOURCEGROUP --location $MY_LOCATION --tags owner="$MY_NAME"`
 
 if [[ -z "$CREATE_RESOURCE_GROUP" ]]; then
 	cfail
@@ -210,7 +210,7 @@ LGTH=${#MESSAGE}
 echo -ne $MESSAGE
 padding $LGTH
 
-CREATE_PUBLIC_IP=`az network public-ip create --name $MY_AZURE_PUBLIC_IP_NAME --resource-group $MY_RESOURCEGROUP --allocation-method Static --sku Standard --location $LOCATION --tags owner="$OWNER" --zone 1`
+CREATE_PUBLIC_IP=`az network public-ip create --name $MY_AZURE_PUBLIC_IP_NAME --resource-group $MY_RESOURCEGROUP --allocation-method Static --sku Standard --location $MY_LOCATION --tags owner="$MY_NAME" --zone 1`
 
 export MY_AZURE_PUBLIC_IP=$(az network public-ip show --resource-group $MY_RESOURCEGROUP --name $MY_AZURE_PUBLIC_IP_NAME --query ipAddress --output tsv)
 
@@ -400,7 +400,7 @@ function create_aks_cluster1(){
 # Set some variables to use with this part of the lab setup
 export MY_AKS1=n4a-aks1
 export MY_AKS2=n4a-aks2
-export MY_NAME=${OWNER:-$(whoami)}
+export MY_NAME=${MY_NAME:-$(whoami)}
 export K8S_VERSION=1.29
 export MY_SUBNET1=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks1-subnet --vnet-name n4a-vnet --only-show-errors --query id -o tsv)
 export MY_SUBNET2=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks2-subnet --vnet-name n4a-vnet --only-show-errors --query id -o tsv)
@@ -710,7 +710,7 @@ kubectl describe gc nginx-configuration -n nginx-ingress > /dev/null 2>&1 &
 kubectl apply -f labs/lab4/redis-leader-ts.yaml > /dev/null 2>&1 &
 kubectl apply -f labs/lab4/redis-follower-ts.yaml > /dev/null 2>&1 &
 kubectl apply -f labs/lab4/nodeport-static-redis.yaml > /dev/null 2>&1 &
-rm -rf /Users/${OWNER}/.kube/config.lock
+rm -rf /Users/${MY_NAME}/.kube/config.lock
 
     echo -ne $MESSAGE
     padding $LGTH
@@ -817,9 +817,9 @@ export MY_N4A_ID=$MY_N4A_ID
 export MY_LOG_ANALYTICS_ID=$MY_LOG_ANALYTICS_ID
 export AKS1_NIC=$AKS1_NIC
 export AKS2_NIC=$AKS2_NIC
-export OWNER=$OWNER
+export MY_NAME=$MY_NAME
 export MY_RESOURCEGROUP=$MY_RESOURCEGROUP
-export LOCATION=$LOCATION
+export MY_LOCATION=$MY_LOCATION
 export MY_PUBLICIP=$MY_PUBLICIP
 export MY_SUBSCRIPTIONID=$MY_SUBSCRIPTIONID
 export MY_AZURE_PUBLIC_IP=$MY_AZURE_PUBLIC_IP
