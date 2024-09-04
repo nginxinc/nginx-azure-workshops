@@ -29,7 +29,7 @@ This lab focusses on building out two AKS Kubernetes cluster in your Azure envir
 
 - To deploy NGINX Plus Ingress Controller, you must have a software subscription license – download the NGINX Plus Ingress Controller license JWT Token file (`nginx-repo.jwt`) from your account on [MyF5](https://my.f5.com/).
 
-   > **NOTE:**  If you do not have a license, you can request a 30-day Trial key from [here](https://www.nginx.com/free-trial-connectivity-stack-kubernetes/).  
+   > **NOTE:**  If you do not have a license, you can request a 30-day Trial key from [here](https://www.f5.com/trials/free-trial-connectivity-stack-kubernetes).  
    An email will arrive in your Inbox in a few minutes, with links to download the license files.
 
    However, for this workshop, **a Trial License will be provided to you**, so you can pull and run the Nginx Plus Commercial version of the Ingress Controller.  This is NOT the same Ingress Controller provided by the Kubernetes Community.  (If you are unsure which Ingress Controller you are using in your other Kubernetes environments, you can find a link to the Blog from Nginx that explains the differences in the References Section).
@@ -211,7 +211,7 @@ In this section, you will be installing NGINX Plus Ingress Controller in your fi
 
 1. To deploy NGINX Plus Ingress Controller, you must have a software subscription license – download the NGINX Plus Ingress Controller license JWT Token file (`nginx-repo.jwt`) from your account on [MyF5](https://my.f5.com/).
 
-   **NOTE:**  If you do not have a license, you can request a 30-day Trial key from [here](https://www.nginx.com/free-trial-connectivity-stack-kubernetes/).  
+   **NOTE:**  If you do not have a license, you can request a 30-day Trial key from [here](https://www.f5.com/trials/free-trial-connectivity-stack-kubernetes).  
    An email will arrive in your Inbox in a few minutes, with links to download the license files.
 
    However, for this workshop, **a Trial License will be provided to you**, so you can pull and run the Nginx Plus Commercial version of the Ingress Controller.  This is NOT the same Ingress Controller provided by the Kubernetes Community.  (If you are unsure which Ingress Controller you are using in your other Kubernetes environments, you can find a link to the Blog from Nginx that explains the differences in the References Section).
