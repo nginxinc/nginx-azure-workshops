@@ -2,7 +2,11 @@
 
 ## Introduction
 
-In this lab, you will configure NGINXaaS to Proxy and Load Balance several different backend systems, including Nginx Ingress Controllers in AKS, and a Windows VM. You will create and configure the needed Nginx config files, and then verify access to these systems. The Docker containers, VMs, or AKS Pods are running simple websites that represent web applications. You will also optionally configure and load balance traffic to a Redis in-memory cache running in the AKS cluster. The AKS Clusters and Nginx Ingress Controllers provide access to these various Kubernetes workloads.
+In this lab, you will configure NGINXaaS to Proxy and Load Balance several different backend systems, including Docker Containers, Nginx Ingress Controllers in AKS, and a Windows VM. You will create and configure the needed Nginx config files, and then verify access to these systems. These Docker containers, VMs, and AKS Pods are running simple websites that represent web applications. You will run an HTTP load test and watch how NGINXaaS and Nginx Ingress handle different workloads.  You will configure `Nginx for Split Clients`, and watch live as you direct your load test traffic to Docker containers and AKS clusters for `Blue/Green` testing. 
+
+You will also optionally configure Nginx to load balance connections, and benchmark a `Redis in-memory cache` running in the AKS cluster. The AKS Clusters and Nginx Ingress Controllers provide access to these various Kubernetes workloads. You will also monitor all this traffic using both Nginx and Azure systems.  
+
+<br/>
 
 NGINX aaS | AKS | Nginx Ingress | Redis
 :-----------------:|:-----------------:|:-----------------:|:-----------------:
@@ -12,8 +16,9 @@ NGINX aaS | AKS | Nginx Ingress | Redis
 
 By the end of the lab you will be able to:
 
+- Configure NGINXaaS to Proxy and Load balance Docker containers
+- Configure NGINXaaS to Proxy a Windows Server VM with IIS
 - Configure NGINXaaS to Proxy and Load balance AKS workloads
-- Configure NGINXaaS to Proxy a Windows Server VM
 - Test access to your N4A configurations with Curl and Chrome
 - Inspect the HTTP content coming from these systems
 - Run an HTTP Load Test on your systems
@@ -28,14 +33,312 @@ By the end of the lab you will be able to:
 - You must have at least one AKS Cluster with Nginx Ingress Controller running
 - You must have the sample application running in the cluster
 - You must have curl and a modern Browser installed on your system
+- You must have Docker Desktop or similar software to run local containers
 - Optional: You should have Redis Client Tools installed on your local system
 - See `Lab0` for instructions on setting up your system for this Workshop
 
 ![lab5 diagram](media/lab5_diagram.png)
 
-## NGINXaaS Proxy to AKS Clusters
+## Testing NGINXaaS to different backend systems
 
-This exercise will create Nginx Upstream configurations for the AKS Clusters. You will use the Nodepool node names, and you will add the port number `32080` from the Static NodePort of the Nginx Ingress Controllers running in Cluster AKS1, (and optional Cluster AKS2). These were previously deployed and configured in a previous lab. Now the fun part, sending traffic to them!
+In the following sections, you will configure and test that N4A can Proxy and Load balance to the different backend systems that you created in the previous labs.
+
+Specifically, you will create and test Nginx configs for the following:
+
+- Ubuntu VM running 3 Docker Cafe-Nginx containers
+- Windows VM running IIS
+- AKS Cluster #1, running Nginx Cafe Demo pods
+- AKS Cluster #2, running Nginx Cafe Demo pods
+- Optional - Redis In Memory caching in AKS Cluster #2
+
+### NGINXaaS Proxy to Ubuntu Docker containers
+
+In this exercise, you will create your first Nginx config files, for the Nginx Server, Location, and Upstream blocks, to load balance your three Docker containers running on the Ubuntu VM.
+
+![Lab2 Cafe diagram](media/lab2_cafe-diagram.png)
+
+<br/>
+
+NGINX aaS | Docker | Cafe Demo
+:-------------------------:|:-------------------------:|:-------------------------:
+![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)  |![Nginx Cafe](media/cafe-icon.png)
+
+1. Open Azure portal within your browser and then open your Resource Group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under Settings.
+
+1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/cafe-docker-upstreams.conf`.
+
+    **Important:** You must use the full Linux /directory/filename path for every Nginx config file, for it to be properly created and placed in the correct directory.  If you forget, you can delete it and must re-create it.  The Azure Portal Text Edit panels do not let you move files or directories.  You can `rename` a file by clicking the Pencil icon, and `delete` a file by clicking the Trashcan icon at the top.
+
+1. Copy and paste the contents from the matching file present in `lab5` directory, into the Configuration Edit window, shown here:
+
+    ```nginx
+    # Nginx 4 Azure, Cafe Nginx Demo Upstreams
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    # cafe-nginx servers
+    #
+    upstream cafe_nginx {
+        zone cafe_nginx 256k;
+        
+        # from docker compose
+        server n4a-ubuntuvm:81;
+        server n4a-ubuntuvm:82;
+        server n4a-ubuntuvm:83;
+
+        keepalive 32;
+
+    }
+    ```
+
+    ![N4A Config Edit](media/lab2_cafe-docker-upstreams.png)
+
+    This creates an Nginx Upstream Block, which defines the backend server group that Nginx will load balance traffic to.
+
+    Click `Submit` to save your Nginx configuration.
+
+1. Click the ` + New File` again, and create a second Nginx config file, using the same Nginx for Azure Configuration editor tool. Name the second file `/etc/nginx/conf.d/cafe.example.com.conf`.
+
+1. Copy and paste the contents of the matching file present in `lab5` directory, into the Configuration Edit window, shown here:
+
+    ```nginx
+    # Nginx 4 Azure - Cafe Nginx HTTP
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    server {
+        
+        listen 80;      # Listening on port 80 on all IP addresses on this machine
+
+        server_name cafe.example.com;   # Set hostname to match in request
+        status_zone cafe.example.com;   # Metrics zone name
+
+        access_log  /var/log/nginx/cafe.example.com.log main;
+        error_log   /var/log/nginx/cafe.example.com_error.log info;
+
+        location / {
+            #
+            # return 200 "You have reached cafe.example.com, location /\n";
+            
+            proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
+            add_header X-Proxy-Pass cafe_nginx;  # Custom Header
+
+            # proxy_pass http://windowsvm;        # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass windowsvm;  # Custom Header
+
+        }
+
+    }
+
+    ```
+
+    Click `Submit` to save your Nginx configuration.
+
+1. Now you need to instruct Nginx to `include these new files` into your main `nginx.conf` file within your `nginx4a` resource. Inspect the contents of the `nginx.conf` file present in `lab5` directory, line #34 shows the Nginx `include` directive for all files in the `/etc/nginx/conf.d/` folder.  Make this same update to your `nginx.conf` file using Configuration Edit window, as shown here:
+
+    ```nginx
+    # Nginx 4 Azure - Default - Updated Nginx.conf
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    user nginx;
+    worker_processes auto;
+    worker_rlimit_nofile 8192;
+    pid /run/nginx/nginx.pid;
+
+    events {
+        worker_connections 4000;
+    }
+
+    error_log /var/log/nginx/error.log error;
+
+    http {
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+                      
+        access_log off;
+        server_tokens "";
+        server {
+            listen 80 default_server;
+            server_name localhost;
+            location / {
+                # Points to a directory with a basic html index file with
+                # a "Welcome to NGINX as a Service for Azure!" page
+                root /var/www;
+                index index.html;
+            }
+        }
+
+        include /etc/nginx/conf.d/*.conf;
+        # include /etc/nginx/includes/*.conf;    # shared files
+    
+    }
+
+    # stream {
+        
+    #     include /etc/nginx/stream/*.conf;          # Stream TCP nginx files
+
+    # }
+    ```
+
+    Notice that the Nginx standard / Best Practice of placing the HTTP Context config files in the `/etc/nginx/conf.d` folder is being followed, and the `include` directive is being used to read these files at Nginx configuration load time.
+
+1. Click the `Submit` Button above the Editor.  Nginx will validate your configurations, and if successful, will reload Nginx with your new configurations.  If you receive an error, you will need to fix it before you proceed.
+
+<br/>
+
+### Test your Nginx for Azure Docker VM load balancing
+
+1. For easy access your new website, update your local system's DNS `/etc/hosts` file. You will add the hostname `cafe.example.com` and the Nginx for Azure Public IP address, to your local system DNS hosts file for name resolution.  Your Nginx for Azure Public IP address can be found in your Azure Portal, under `n4a-publicIP`.  Use the vi tool or any other text editor to add an entry to `/etc/hosts` as shown below:
+
+    ```bash
+    cat /etc/hosts
+
+    127.0.0.1 localhost
+    ...
+
+    # Nginx for Azure testing
+    11.22.33.44 cafe.example.com
+
+    ...
+    ```
+
+    where
+   - `11.22.33.44` replace with your `n4a-publicIP` resource IP address.
+
+1. Once you have updated the host your /etc/hosts file, save it and quit vi tool.
+
+1. Using a new Terminal, send a curl command to `http://cafe.example.com`, what do you see ?
+
+    ```bash
+    curl -I http://cafe.example.com
+    ```
+
+    ```bash
+    ##Sample Output##
+    HTTP/1.1 200 OK
+    Date: Thu, 04 Apr 2024 21:36:30 GMT
+    Content-Type: text/html; charset=utf-8
+    Connection: keep-alive
+    Expires: Thu, 04 Apr 2024 21:36:29 GMT
+    Cache-Control: no-cache
+    X-Proxy-Pass: cafe_nginx
+    ```
+
+    Try the coffee and tea URLs, at http://cafe.example.com/coffee and http://cafe.example.com/tea.
+
+    You should see a 200 OK Response.  Did you see the `X-Proxy-Pass` header - set to the Upstream block name?  
+
+1. Now try access to your cafe application with a Browser. Open Chrome, and nagivate to `http://cafe.example.com`. You should see an `Out of Stock` image, with a gray metadata panel, filled with names, IP addresses, URLs, etc. This panel comes from the Docker container, using Nginx $variables to populate the gray panel fields. If you Right+Click, and Inspect to open Chrome Developer Tools, and look at the Response Headers, you should be able to see the `X-Proxy-Pass Header` set correctly.
+
+![Cafe Out of Stock](media/lab2_cafe-out-of-stock.png)
+
+Click Refresh serveral times.  You will notice the `Server Name` and `Server Ip` fields changing, as N4A is round-robin load balancing the three Docker containers - docker-web1, 2, and 3 respectively.  If you open Chrome Developer Tools, and look at the Response Headers, you should be able to see the X-Proxy-Pass Header value.
+
+![Cafe Inspect](media/lab2_cafe-inspect.png)
+
+Try http://cafe.example.com/coffee and http://cafe.example.com/tea in Chrome, refreshing several times.  You should find Nginx for Azure is load balancing these Docker web containers as expected.
+
+>**Congratulations!!**  You have just completed launching a simple web application with Nginx for Azure, running on the Internet, with just a VM, Docker, and 2 config files for Nginx for Azure.  That pretty easy, not so hard now, was it?
+
+<br/>
+
+### NGINXaaS Proxy to Windows VM with IIS
+
+In this exercise, you will create another Nginx config file, for the Windows VM Upstream block, to proxy your IIS Server running on the Windows VM.
+
+![Lab2 diagram](media/lab2_diagram.png)
+
+<br/>
+
+NGINXaaS | Windows VM / IIS
+:-------------------------:|:-------------------------:
+![NGINX aaS](media/nginx-azure-icon.png) | ![Windows](media/windows-icon.png)
+
+<br/>
+
+1. Open Azure portal within your browser and then open your Resource Group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under settings.
+
+1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/windows-upstreams.conf`.
+
+    **Important:** You must use the full Linux /folder/filename path for every Nginx config file, for it to be properly created and placed in the correct folder.  If you forget, you can delete it and must re-create it.  The Azure Portal Text Edit panels do not let you move files or folders.  You can `rename` a file by clicking the Pencil icon, and `delete` a file by clicking the Trashcan icon at the top.
+
+1. Copy and paste the contents from the matching file present in `lab5` directory, into the Configuration Edit window, shown here:
+
+    ```nginx
+    # Nginx 4 Azure, Windows IIS Upstreams
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    # windows IIS server
+    #
+    upstream windowsvm {
+    zone windowsvm 256k;
+    
+    server n4a-windowsvm:80;      # IIS Server
+
+    keepalive 32;
+
+    }
+    ```
+
+    ![Windows Upstreams](media/lab2_windows-upstreams.png)
+
+    Click `Submit` to save your Nginx configuration.
+    
+    This creates a new Nginx Upstream Block, which defines the Windows IIS backend server group that Nginx will load balance traffic to.
+
+1. Edit the comment characters in `/etc/nginx/conf.d/cafe.example.com.conf`, to enable the `proxy_pass` to the `windowsvm`, and disable it for the `cafe-nginx`, as shown:
+
+    ```nginx
+    # Nginx 4 Azure - Cafe Nginx and Windows IIS HTTP
+    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+    #
+    server {
+        
+        listen 80;      # Listening on port 80 on all IP addresses on this machine
+
+        server_name cafe.example.com;   # Set hostname to match in request
+        status_zone cafe.example.com;   # Metrics zone name
+
+        access_log  /var/log/nginx/cafe.example.com.log main;
+        error_log   /var/log/nginx/cafe.example.com_error.log info;
+
+        location / {
+            #
+            # return 200 "You have reached cafe.example.com, location /\n";
+            
+            # proxy_pass http://cafe_nginx;        # Proxy AND load balance to a list of servers
+            # add_header X-Proxy-Pass cafe_nginx;  # Custom Header
+
+            proxy_pass http://windowsvm;        # Proxy AND load balance to a list of servers
+            add_header X-Proxy-Pass windowsvm;  # Custom Header
+
+        }
+
+    }
+    ```
+
+1. Click the `Submit` Button above the Editor.  Nginx will validate your configuration, and if successfull, will reload Nginx with your new configuration.  If you receive an error, you will need to fix it before you proceed.
+
+<br/>
+
+### Test your Nginx for Azure Windows IIS Proxy
+
+1. Test access again to http://cafe.example.com.  You will now see the `IIS default server page`, instead of the Cafe Out-of-Stock page.  If you check Chrome Dev Tools, the X-Proxy-Pass Header should now show `windowsvm`.  
+
+    *Note:  This lab exercise has only ONE Windows VM, so there is no load balancing - but you could easily add more IIS Servers, and add them to the `windows-upstreams.conf` file, and Nginx would load balance them.*
+
+    ![Cafe IIS](media/lab2_cafe-windows-iis.png)
+
+    >Notice how easy it was, to create a new backend server, and then tell Nginx to `proxy_pass` to a different Upstream. You used the same Hostname, DNS record, and Nginx Server block, but you just told Nginx to switch backends with a different `proxy_pass` directive.
+
+1. Edit the `cafe.example.com.conf` file again, and change the comments to disable `windowsvm`, and re-enable the `proxy_pass` for `cafe_nginx`, as you will use it again in a future lab exercise.
+
+1. Submit your Nginx changes, and re-test to verify that http://cafe.example.com works again for Cafe Nginx.  Don't forget to change the custom Header as well.
+
+<br>
+
+### NGINXaaS Proxy to AKS Clusters 1 & 2
+
+This exercise will create Nginx Upstream configurations for the AKS Clusters. You will use the Nodepool node names, and you will add the port number `32080` from the Static NodePort of the Nginx Ingress Controllers running in Cluster AKS1, and Cluster AKS2. These were previously deployed and configured in a previous lab. **Now the fun part, sending traffic to them!**
 
 Create and Configure the Upstream for AKS Cluster1.
 
@@ -66,7 +369,7 @@ Create and Configure the Upstream for AKS Cluster1.
 
       least_time last_byte;
     
-      # from nginx-ingress NodePort Service / aks Node names
+      # from aks Node names / nginx-ingress NodePort Service
       # Note: change servers to match
       #
       server aks-nodepool1-76919110-vmss000001:32080;    #aks1 node1
@@ -82,9 +385,9 @@ Create and Configure the Upstream for AKS Cluster1.
 
     >**Important!**  If you stop then re-start your AKS cluster, or scale the Nodepool up/down, or add/remove nodes in the AKS NodePools, this Upstream list `WILL have to be updated to match!`. Any changes to the Worker nodes in the Cluster will need to be matched exactly, as it is a static Nginx configuration that must match the Kubernetes workers -  Nodes:NodePort definition in your AKS cluster. If you change the static nginx-ingress NodePort Service Port number, you will have to match it here as well.
 
-    *Currently, there is no auto-magic way to synchronize the Nginx for Azure upstream list with the AKS node list, but don't worry - Nginx4Azure Devs are working on that!*
+    *Currently, there is no auto-magic way to synchronize the Nginx for Azure upstream list with the AKS node list, but don't worry - Nginx4Azure Devs are working on this!*
 
-Optional: If you have a second AKS cluster, Configure the Upstream for AKS Cluster2.
+For your second AKS cluster, Configure the Upstream for AKS Cluster2.
 
 1. Repeat the previous Step, using the NGINXaaS configuration tool, create a new file called `/etc/nginx/conf.d/aks2-upstreams.conf`. Copy and Paste the contents of the provided file. You will have to EDIT this example config file and change the `server` entries to match your AKS Cluster2 Nodepool node names. You can find your AKS2 nodepool nodenames from `kubectl get nodes` or the Azure Portal. Make sure you use `:32080` for the port number; this is the static `nginx-ingress NodePort Service` for HTTP traffic that was defined earlier.
 
@@ -114,7 +417,7 @@ Optional: If you have a second AKS cluster, Configure the Upstream for AKS Clust
 
       least_time last_byte;
     
-      # from nginx-ingress NodePort Service / aks Node names
+      # from aks Node names / nginx-ingress NodePort Service
       # Note: change servers to match
       #
       server aks-nodepool1-19485366-vmss000003:32080;    #aks2 node1
@@ -212,9 +515,9 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
 
 1. Inspect, then modify the `# comments for proxy_pass` in the `location /` block in the `/etc/nginx/conf.d/cafe.example.com.conf` file, making these changes as shown.
 
-    - Disable the proxy_pass to `cafe-nginx`
+    - Disable the proxy_pass to `cafe-nginx` , the Docker containers
     - Enable the proxy_pass to `aks1_ingress`  
-    - Change the comments for the X-Proxy-Pass Header as well.
+    - Change the comments for the `X-Proxy-Pass Header` as well.
 
     ```nginx
     ...
@@ -341,7 +644,7 @@ And your Nginx Ingress Dashboard should show similar stats. How many requests di
 
 <br/>
 
-### Optional:  Test NGINXaaS Proxy to Cluster AKS2 Nginx Ingress Controller
+### Test NGINXaaS Proxy to Cluster AKS2 Nginx Ingress Controller
 
 Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
@@ -389,7 +692,6 @@ Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
     ```bash
     HTTP/1.1 200 OK
-    Server: N4A-1.25.1-cakker
     Date: Fri, 05 Apr 2024 20:08:24 GMT
     Content-Type: text/html; charset=utf-8
     Connection: keep-alive
@@ -448,7 +750,7 @@ Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
 **TAKE NOTE:** The Pod IPs are on a completely different IP subnet, from Docker or the first or second AKS cluster, which was configured using the Azure CNI - did you catch that difference? *Understanding the Backend IP/networking is critical to configuring your Nginx for Azure Upstreams properly.*  
 
-You built and used different CNIs and subnets so that you can see the differences. Nginx for Azure can work with `any` of these different backend applications and networks, as long as there is an IP Path to the Upstreams. 
+You built and used different CNIs and subnets so that you can see the differences. Nginx for Azure can work with `any` of these different backend applications and networks, as long as there is an IP route to the Upstreams. 
 
 (And YES, if you add the appropriate routing with VNet Gateways, you can use Upstreams in other Regions/Clusters/VMs.)
 
