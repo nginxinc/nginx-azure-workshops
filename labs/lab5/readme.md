@@ -19,6 +19,7 @@ By the end of the lab you will be able to:
 - Configure NGINXaaS to Proxy and Load balance Docker containers
 - Configure NGINXaaS to Proxy a Windows Server VM with IIS
 - Configure NGINXaaS to Proxy and Load balance AKS workloads
+- Configure NGINXaaS to Proxy and view the Nginx Ingress Dashboards
 - Test access to your N4A configurations with Curl and Chrome
 - Inspect the HTTP content coming from these systems
 - Run an HTTP Load Test on your systems
@@ -269,12 +270,12 @@ NGINXaaS | Windows VM / IIS
     #
     # windows IIS server
     #
-    upstream windowsvm {
-    zone windowsvm 256k;
+      upstream windowsvm {
+      zone windowsvm 256k;
     
-    server n4a-windowsvm:80;      # IIS Server
+      server n4a-windowsvm:80;      # IIS Server
 
-    keepalive 32;
+      keepalive 32;
 
     }
     ```
@@ -330,7 +331,7 @@ NGINXaaS | Windows VM / IIS
 
     >Notice how easy it was, to create a new backend server, and then tell Nginx to `proxy_pass` to a different Upstream. You used the same Hostname, DNS record, and Nginx Server block, but you just told Nginx to switch backends with a different `proxy_pass` directive.
 
-1. Edit the `cafe.example.com.conf` file again, and change the comments to disable `windowsvm`, and re-enable the `proxy_pass` for `cafe_nginx`, as you will use it again in a future lab exercise.
+1. Edit the `cafe.example.com.conf` file again, and change the comments back to disable the `proxy_pass` to `windowsvm`, and re-enable the `proxy_pass` for `cafe_nginx`, as you will use it again in a future lab exercise.
 
 1. Submit your Nginx changes, and re-test to verify that http://cafe.example.com works again for Cafe Nginx.  Don't forget to change the custom Header as well.
 
@@ -509,7 +510,277 @@ In order for Nginx 4 Azure and Nginx Ingress to work correctly, the HTTP Host He
 
 Submit your Nginx Configuration.
 
-### Test Nginx 4 Azure to AKS1 Cluster Nginx Ingress Controller
+## Configure NGINXaaS to Proxy and view the Nginx Ingress Dashboards
+
+Nginx Plus has a web based Dashboard that displays real-time status and metrics information about the traffic flowing through Nginx.  This Dashboard is also running in the Nginx Plus Ingress Controller inside the AKS cluster.  You will create the necessary Nginx and Kubernetes files to expose the Dashboard to the Internet, so you can see it remotely.  This will be a helpful asset to see live, what is happening "inside the cluster" with traffic to/from Nginx Ingress and the K8s Pods/Services.
+
+This will require the following steps:
+- Check your NGINX Ingress Controller is running
+- Test Access to the Nginx Plus Ingress Dashboard
+- Verify the K8s Service for the NIC Dashboard is configured
+- Expose this NIC Dashboard Service outside the cluster with NodePort
+- Create Nginx for Azure Upstream for the Dashboard NodePort
+- Expose the NIC Dashboard to the Internet with Nginx for Azure 
+
+### Check NGINX Ingress Controller in first cluster
+
+1. Verify the NGINX Plus Ingress controller is up and running correctly in the Kubernetes cluster:
+
+   ```bash
+   kubectl get pods -n nginx-ingress
+   ```
+
+   ```bash
+   ##Sample Output##
+   NAME                            READY   STATUS    RESTARTS   AGE
+   nginx-ingress-5764ddfd78-ldqcs   1/1     Running   0          17s
+   ```
+
+   **Note**: You must use the `kubectl` "`-n`", namespace flag, followed by namespace name, to see pods that are not in the default namespace.
+
+2. Instead of remembering the unique pod name, `nginx-ingress-xxxxxx-yyyyy`, you can store the Ingress Controller pod name into the `$AKS1_NIC` variable to be used throughout the lab.
+
+   >**Note:** This variable is stored for the duration of the Terminal session, and so if you close the Terminal it will be lost. At any time you can refer back to this step to create the `$AKS1_NIC` variable again.
+
+   ```bash
+   export AKS1_NIC=$(kubectl get pods -n nginx-ingress -o jsonpath='{.items[0].metadata.name}')
+
+   ```
+
+   Verify the variable is set correctly.
+
+   ```bash
+   echo $AKS1_NIC
+   ```
+
+   **Note:** If this command doesn't show the name of the pod then run the previous command again.
+
+### Test Access to the Nginx Plus Ingress Dashboard within first cluster
+
+Just a quick test, is your Nginx Plus Ingress Controller running, and can you see the Dashboard?  Let's try it:
+
+1. Using Kubernetes Port-Forward, connect to the $AKS1_NIC pod:
+
+   ```bash
+   kubectl port-forward $AKS1_NIC -n nginx-ingress 9000:9000
+
+   ```
+
+1. Open your browser to http://localhost:9000/dashboard.html.
+
+   You should see the Nginx Plus Dashboard. This dashboard would provide more metrics as you progress through the workshop.
+
+   ![Nic Dashboard](media/lab3_nic-dashboard.png)
+
+   Type `Ctrl+C` within your terminal to stop the Port-Forward when you are finished.
+
+<br/>
+
+### Verify the K8s Service for the NIC Dashboard is configured
+
+1. Switch your context to point to first AKS cluster using below command:
+
+   ```bash
+   # Set context to 1st cluster(n4a-aks1)
+   kubectl config use-context n4a-aks1
+   ```
+
+   ```bash
+   ##Sample Output##
+   Switched to context "n4a-aks1". 
+   ```
+
+1. Verify the `dashboard-svc` Service and `dashboard-vs` Virtual Server were created in first cluster and are Valid:
+
+   ```bash
+   kubectl get svc,vs -n nginx-ingress
+   ```
+
+   ```bash
+   ##Sample Output##
+   NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+   service/dashboard-svc   ClusterIP   10.0.197.220   <none>        9000/TCP   4m55s
+
+   NAME                                       STATE   HOST                    IP    PORTS   AGE
+   virtualserver.k8s.nginx.org/dashboard-vs   Valid   dashboard.example.com                 4m54s
+   ```
+
+### Expose your Nginx Ingress Controller Dashboard with NodePort
+
+1. Inspect the `nginx-ingress` Service.  This is a NodePort Service defintion that will open high-numbered ports on the Kubernetes nodes, to expose several Services that are running on the Nginx Ingress.  The NodePorts are intentionally defined as static, because you will be using these port numbers with Nginx for Azure, and you don't want them to change.  (Note: If you use ephemeral NodePorts, you see **HTTP 502 Errors** when they change!) We are using the following table to expose different Services on different Ports:
+
+   Service Port | External NodePort | Name
+   |:--------:|:------:|:-------:|
+   80 | 32080 | http
+   443 | 32443 | https
+   9000 | 32090 | dashboard
+
+1. Verify the NodePort Service was created within first cluster:
+
+   ```bash
+   kubectl get svc nginx-ingress -n nginx-ingress
+   ```
+
+   ```bash
+   ##Sample Output##
+   NAME            TYPE       CLUSTER-IP    EXTERNAL-IP   PORT(S)                                     AGE
+   nginx-ingress   NodePort   10.0.211.17   <none>        80:32080/TCP,443:32443/TCP,9000:32090/TCP   14s
+   ```
+
+   Note there are THREE NodePorts open to the Ingress Controller - for port 80 HTTP traffic, port 443 for HTTPS traffic, and port 9000 for the Plus Dashboard.
+
+**QUESTION?** You are probably asking, why not use the AKS/Azure Loadbalancer Service to expose the Ingress Controller?  It will automatically give you an External-IP, right? You can certainly do that.  But if you do, you would need additional Public external IP addresses, one for each NIC that you have to manage.  Instead, you will be using your Nginx for Azure instance for your Public External-IP, thereby `simplifying your Architecture`, running on Nginx!  Nginx will use Host / Port / Path-based routing to forward the requests to the appropriate backends, including VMs, Docker containers, both AKS clusters, Ingress Controllers, Services, and Pods.  You will do ALL of this in the next.
+
+<br/>
+
+## Expose the NGINX Plus Ingress Dashboard with Nginx for Azure
+
+Being able to see your NGINX Plus Ingress Dashboard remotely will be a big help in observing your traffic metrics and patterns within each AKS cluster.  It will require only two Nginx for Azure configuration items for each cluster - a new Nginx Server block and a new Upstream block.
+
+This will be the logical network diagram for accessing the Nginx Ingress Dashboard.
+
+So why use ports 9001 for the NIC Dashboard?  Will this work on port 80/443?  Yes, it will, but separating this type of monitoring traffic from production traffic is generally considered a Best Practice.  It also demonstrates that Nginx for Azure is able to use any port for Port Based routing, it is not limited to just ports 80 and 443 like some cloud services.
+
+![Lab3 NIC Dashboards Diagrom](media/lab3_nic-dashboards-diagram.png)
+
+1. First, create the Upstream server block for AKS cluster #1.  You will need the AKS1 Node Names from the Node Pool.  Make sure your Kube Context is n4a-aks1:
+
+   ```bash
+   kubectl config use-context n4a-aks1
+   kubectl get nodes
+   ```
+
+   ```bash
+   ##Sample Output##
+   Switched to context "n4a-aks1".
+   NAME                                STATUS   ROLES   AGE     VERSION
+   aks-nodepool1-19055428-vmss000003   Ready    agent   4h32m   v1.27.9
+   aks-nodepool1-19055428-vmss000004   Ready    agent   4h31m   v1.27.9
+   aks-nodepool1-19055428-vmss000005   Ready    agent   4h32m   v1.27.9
+   ```
+
+1. Use the 3 Node Names as your Upstream Servers, and add `:32090` as your port number.  This matches the NodePort-Static that you configured in previous section.
+
+1. Open Azure portal within your browser and then open your resource group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under Settings.
+
+1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/nic1-dashboard-upstreams.conf`. You can use the example provided, just edit the Node Names to match your cluster:
+
+   ```nginx
+   # Nginx 4 Azure to NIC, AKS Node for Upstreams
+   # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+   #
+   # nginx ingress dashboard
+   #
+   upstream nic1_dashboard {
+   zone nic1_dashboard 256k;
+   
+   # from aks1 Node IPs / nginx-ingress NodePort Service
+   server aks-nodepool1-19055428-vmss000003:32090;    #aks1 node1
+   server aks-nodepool1-19055428-vmss000004:32090;    #aks1 node2
+   server aks-nodepool1-19055428-vmss000005:32090;    #aks1 node3
+
+   keepalive 8;
+
+   }
+   ```
+
+1. Click the `Submit` Button above the Editor. Nginx will validate your configurations, and if successful, will reload Nginx with your new configurations. If you receive an error, you will need to fix it before you proceed.
+
+1. Again using the NGINX for Azure **NGINX Configuration** pane, create a new file, called `/etc/nginx/conf.d/nic1-dashboard.conf`, using the example provided, just copy and paste the config content. This is the new Nginx Server block, with a hostname, port number 9001, and proxy_pass directive needed to route requests for the Dashboard to AKS Cluster1:NodePort where the Ingress Dashboard is listening:
+
+   ```nginx
+   # N4A NIC Dashboard config for AKS1
+   #
+   server {
+      listen 9001;
+      server_name dashboard.example.com;
+      access_log off;
+      
+      location = /dashboard.html {
+      #return 200 "You have reached /nic1dashboard.";
+
+      proxy_pass http://nic1_dashboard;
+
+      }
+
+      location /api/ {
+      
+      proxy_pass http://nic1_dashboard;
+      }
+
+   }
+
+   ```
+
+1. Click the `Submit` Button above the Editor to save and reload your new Nginx for Azure configuration.
+
+   You have just configured `Port-based routing with NGINX for Azure`, sending traffic on port 9001 to the AKS1 NIC Dashboard.
+
+1. Using the Azure CLI, add ports `9001-9002` to the NSG (`n4a-nsg`) for your VNET (`n4a-vnet`):
+
+   ```bash
+   ## Set environment variables
+   export MY_RESOURCEGROUP=s.dutta-workshop
+   export MY_PUBLICIP=$(curl ipinfo.io/ip)
+   ```
+
+   ```bash  
+   az network nsg rule create \
+   --resource-group $MY_RESOURCEGROUP \
+   --nsg-name n4a-nsg \
+   --name NIC_Dashboards \
+   --priority 330 \
+   --source-address-prefix $MY_PUBLICIP \
+   --source-port-range '*' \
+   --destination-address-prefix '*' \
+   --destination-port-range 9001-9002 \
+   --direction Inbound \
+   --access Allow \
+   --protocol Tcp \
+   --description "Allow traffic to NIC Dashboards"
+   ```
+
+   >**Security Warning!** These Nginx Ingress Dashboards are now exposed to the open Internet, with only your Network Security Group for protection.  This is probably fine for a few hours during the Workshop, but do NOT do this in Production, use appropriate Security measures to protect them (not covered in this Workshop).
+
+1. Update your local system DNS `/etc/hosts` file, to add `dashboard.example.com`, using the same public IP of your N4A instance.
+
+   ```bash
+   cat /etc/hosts
+
+   127.0.0.1 localhost
+   ...
+   # Nginx for Azure testing
+   11.22.33.44 cafe.example.com dashboard.example.com
+   ...
+   ```
+
+   where
+   - `11.22.33.44` replace with your `n4a-publicIP` resource IP address.
+
+1. Use Chrome or other browser to test remote access to your NIC Dashboard.  Create a new Tab or Window for the Dashboard.
+
+   http://dashboard.example.com:9001/dashboard.html   > AKS1-NIC
+
+   Bookmark this page, and leave this browser Tab or Window open during the Workshop, you will be using it often in the next Lab Exercises, watching what Nginx Ingress is doing inside the Cluster.
+
+   If you are not familiar with the Nginx Plus Dashboard, you can find a link to more information in the References Section.
+
+## Expose the Nginx Ingress Dashboard for second cluster
+
+Repeat the steps above to enable remote access to the NIC Dashboard running in the second cluster.  These are the steps:
+
+- Verify Nginx Ingress is running in the second cluster
+- Verify the Dashboard Service and Virtual Server are defined
+- Create the `nic2-dashboard-upstreams.conf`
+- Create the `nic2-dashboard.conf`
+- Test remote access, the second Cluster NIC dashboard is on http://dashboard.example.com:9002/dashboard.html
+
+- Notice the Port number is 9001 for AKS1 NIC Dashboard
+- Notice the Port number is 9002 for AKS2 NIC Dashboard
+
+<br/>
+
+### Test Nginx 4 Azure to Nginx Cafe in first cluster
 
 Now that you have these new Nginx Upstream blocks created, you can test them.
 
@@ -638,13 +909,13 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
     Transfer/sec:      3.36MB
     ```
 
-And your Nginx Ingress Dashboard should show similar stats. How many requests did you get in 1 minute?  Post your AKS1 Loadtest Results in Zoom Chat!
+And your Nginx Ingress Dashboard should show similar stats. How many requests did you get in 1 minute?  Post your AKS1 Loadtest Results in Chat!
 
 ![Cafe AKS1 loadtest](media/lab5_cafe-aks1-loadtest.png)
 
 <br/>
 
-### Test NGINXaaS Proxy to Cluster AKS2 Nginx Ingress Controller
+### Test Nginx 4 Azure to Nginx Cafe in second cluster
 
 Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
@@ -748,7 +1019,7 @@ Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
     You should see a list of the (3) POD IPs for the coffee Service.
 
-**TAKE NOTE:** The Pod IPs are on a completely different IP subnet, from Docker or the first or second AKS cluster, which was configured using the Azure CNI - did you catch that difference? *Understanding the Backend IP/networking is critical to configuring your Nginx for Azure Upstreams properly.*  
+>**TAKE NOTE:** The Pod IPs are on a completely different IP subnet, from Docker or the first or second AKS cluster, which was configured using the Azure CNI - did you catch that difference? *Understanding the Backend IP/networking is critical to configuring your Nginx for Azure Upstreams properly.*  
 
 You built and used different CNIs and subnets so that you can see the differences. Nginx for Azure can work with `any` of these different backend applications and networks, as long as there is an IP route to the Upstreams. 
 
@@ -788,7 +1059,7 @@ You can also see this list, using the Nginx Plus Dashboard for the Ingress Contr
     Transfer/sec:      2.95MB
     ```
 
-1. Your Nginx Ingress Dashboard should show similar stats. How many requests did you get in 1 minute? Post your Results in the Zoom Chat!
+1. Your Nginx Ingress Dashboard should show similar stats. How many requests did you get in 1 minute? Post your Results in the Chat!
 
     ![Cafe AKS2 loadtest](media/lab5_cafe-aks2-loadtest.png)
 
