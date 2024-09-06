@@ -22,10 +22,26 @@ By the end of the lab you will be able to:
 
 - Deploy Ubuntu VM with Docker and Docker-Compose preinstalled and Nginx Demo containers running using Azure CLI
 - Configure Nginx for Azure to Load Balance Docker containers
-- Test and validate your lab environment
 - Deploy Windows VM with Azure CLI
 - Configure Nginx for Azure to proxy to the Windows VM
-- Test your Nginx for Azure configs
+
+## Automation script to build this lab
+
+This lab focuses on various backend application creation in your Azure environment using Docker. If you are familiar with those concepts then you can build this lab by running the below command which would automate all the build steps within this lab.
+
+> **Note:** Make sure your Terminal is the `nginx-azure-workshops` directory before running below command
+
+```bash
+./auto-lab.sh -l 2 
+```
+
+Once the script has completed its execution, you can skip rest of this lab guide and move to the next lab. The testing of all the resources that the script automatically creates will be done in later labs. If you want to see what the script is doing, the individual build steps are provided in below sections.
+
+For additional information on the script you can run the same command with `-h` flag as shown below
+
+```bash
+./auto-lab.sh -h
+```
 
 ## Pre-Requisites
 
@@ -264,7 +280,6 @@ In this section, you will ssh into the Ubuntu VM that you created in previous se
 
 In this exercise, you will create your first Nginx config files, for the Nginx Server, Location, and Upstream blocks, to load balance your three Docker containers running on the Ubuntu VM.
 
-
 ![Lab2 Cafe diagram](media/lab2_cafe-diagram.png)
 
 <br/>
@@ -306,7 +321,7 @@ NGINX aaS | Docker | Cafe Demo
 
     Click `Submit` to save your Nginx configuration.
 
-1. Click the ` + New File` again, and create a second Nginx config file, using the same Nginx for Azure Configuration editor tool. Name the second file `/etc/nginx/conf.d/cafe.example.com.conf`.
+1. Click the `+ New File` again, and create a second Nginx config file, using the same Nginx for Azure Configuration editor tool. Name the second file `/etc/nginx/conf.d/cafe.example.com.conf`.
 
 1. Copy and paste the contents of the matching file present in `lab2` directory from Github, into the Configuration Edit window, shown here:
 

@@ -22,6 +22,33 @@ NGINXaaS | AKS | Nginx Plus Ingress
 - Expose the Nginx Ingress Dashboard with Nginx for Azure.
 - Optional: Create second AKS Cluster and deploy Nginx Ingress.
 
+## Automation script to build this lab
+
+This lab focuses on building out two AKS Kubernetes clusters in your Azure environment using Azure CLI. Once the cluster are built, this lab guides you how to install NGINX Plus Ingress Controller and expose Nginx Plus Ingress Dashboard. If you are familiar with those concepts then you can build this lab by running the below commands which would automate all the lab steps within this lab.
+
+- To deploy NGINX Plus Ingress Controller, you must have a software subscription license – download the NGINX Plus Ingress Controller license JWT Token file (`nginx-repo.jwt`) from your account on [MyF5](https://my.f5.com/).
+
+   > **NOTE:**  If you do not have a license, you can request a 30-day Trial key from [here](https://www.f5.com/trials/free-trial-connectivity-stack-kubernetes).  
+   An email will arrive in your Inbox in a few minutes, with links to download the license files.
+
+   However, for this workshop, **a Trial License will be provided to you**, so you can pull and run the Nginx Plus Commercial version of the Ingress Controller.  This is NOT the same Ingress Controller provided by the Kubernetes Community.  (If you are unsure which Ingress Controller you are using in your other Kubernetes environments, you can find a link to the Blog from Nginx that explains the differences in the References Section).
+
+- Once your Workshop Instructor has provided the JWT file, copy the `nginx-repo.jwt` file provided in the `/labs/lab3` directory within your cloned workshop repository.
+
+- In your terminal, navigate back to the cloned workshop repository directory (`nginx-azure-workshops`)  and run below command
+
+    ```bash
+    ./auto-lab.sh -l 3 
+    ```
+
+- Once the script has completed its execution, you can skip rest of this lab guide and move to the next lab. The testing of all the resources that the script automatically creates would be done in later labs. If you want to see what the script is doing, the individual build steps are provided in below sections.
+
+- For additional information on the script you can run the same command with `-h` flag as shown below
+
+    ```bash
+    ./auto-lab.sh -h
+    ```
+
 ## Prerequisites
 
 - You must have Azure Networking configured for this Workshop
@@ -183,7 +210,7 @@ In this section, you will be installing NGINX Plus Ingress Controller in your fi
 
 1. To deploy NGINX Plus Ingress Controller, you must have a software subscription license – download the NGINX Plus Ingress Controller license JWT Token file (`nginx-repo.jwt`) from your account on [MyF5](https://my.f5.com/).
 
-   **NOTE:**  If you do not have a license, you can request a 30-day Trial key from [here](https://www.nginx.com/free-trial-connectivity-stack-kubernetes/).  
+   **NOTE:**  If you do not have a license, you can request a 30-day Trial key from [here](https://www.f5.com/trials/free-trial-connectivity-stack-kubernetes).  
    An email will arrive in your Inbox in a few minutes, with links to download the license files.
 
    However, for this workshop, **a Trial License will be provided to you**, so you can pull and run the Nginx Plus Commercial version of the Ingress Controller.  This is NOT the same Ingress Controller provided by the Kubernetes Community.  (If you are unsure which Ingress Controller you are using in your other Kubernetes environments, you can find a link to the Blog from Nginx that explains the differences in the References Section).
