@@ -337,7 +337,7 @@ NGINXaaS | Windows VM / IIS
 
 <br>
 
-### NGINXaaS Proxy to AKS Clusters 1 & 2
+## NGINXaaS Proxy to AKS Clusters 1 & 2
 
 This exercise will create Nginx Upstream configurations for the AKS Clusters. You will use the Nodepool node names, and you will add the port number `32080` from the Static NodePort of the Nginx Ingress Controllers running in Cluster AKS1, and Cluster AKS2. These were previously deployed and configured in a previous lab. **Now the fun part, sending traffic to them!**
 
@@ -773,16 +773,83 @@ Repeat the steps above to enable remote access to the NIC Dashboard running in t
 - Verify the Dashboard Service and Virtual Server are defined
 - Create the `nic2-dashboard-upstreams.conf`
 - Create the `nic2-dashboard.conf`
-- Test remote access, the second Cluster NIC dashboard is on http://dashboard.example.com:9002/dashboard.html
+- Test remote access, the second Cluster NIC dashboard is at http://dashboard.example.com:9002/dashboard.html
 
 - Notice the Port number is 9001 for AKS1 NIC Dashboard
 - Notice the Port number is 9002 for AKS2 NIC Dashboard
 
 <br/>
 
-### Test Nginx 4 Azure to Nginx Cafe in first cluster
+### Verify Nginx Cafe in first cluster
 
-Now that you have these new Nginx Upstream blocks created, you can test them.
+Before you can test the Cafe Nginx application in AKS, you should verify that the Kubernetes manifests for the application were properly deployed.  You will need to only check a few things:
+
+- Verify the Cafe Nginx coffee and tea pods are running
+- Verify the matching coffee-svc and tea-svc Services are running
+- Verify the Nginx Ingress Controller's `cafe-vs` Virtual Server is running
+
+1. Check that all Cafe Nginx pods and services are running within first cluster, you should see `two Coffee and two Tea pods`, and the `coffee-svc and tea-svc` Services.
+
+    ```bash
+    # Set context to 1st cluster(n4a-aks1)
+    kubectl config use-context n4a-aks1
+
+    kubectl get pods,svc
+    ```
+
+    ```bash
+    ##Sample Output##
+    NAME                      READY   STATUS    RESTARTS   AGE
+    coffee-56b7b9b46f-9ks7w   1/1     Running   0             28s
+    coffee-56b7b9b46f-mp9gs   1/1     Running   0             28s
+    tea-568647dfc7-54r7k      1/1     Running   0             27s
+    tea-568647dfc7-9h75w      1/1     Running   0             27s
+
+    NAME                     TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
+    service/kubernetes       ClusterIP   10.0.0.1      <none>        443/TCP    34d
+    service/coffee-svc       ClusterIP   None          <none>        80/TCP     34d
+    service/tea-svc          ClusterIP   None          <none>        80/TCP     34d
+    ```
+
+1. Check that the Cafe VirtualServer (`cafe-vs`), is running and the STATE is `Valid`:
+
+    ```bash
+    kubectl get virtualserver cafe-vs
+    ```
+
+    ```bash
+    ##Sample Output##
+    NAME      STATE   HOST               IP    PORTS   AGE
+    cafe-vs   Valid   cafe.example.com                 4m6s
+    ```
+
+    >**NOTE:** The `STATE` should be `Valid`. If it is not, then there is an issue with your yaml manifest file (cafe-vs.yaml). You could also use `kubectl describe vs cafe-vs` to get more information about the VirtualServer.
+
+1. Check your Nginx Plus Ingress Controller Dashboard for first cluster(`n4a-aks1`), at http://dashboard.example.com:9001/dashboard.html.  You should see `cafe.example.com` in the **HTTP Zones** tab, and 2 each of the coffee and tea Pods in the **HTTP Upstreams** tab.  Nginx is health checking the Pods, so they should show a Green status, and the successfull Health Checks counter increasing.
+
+    ![Cafe Zone](media/lab4_http-zones.png)
+
+    ![Cafe Upstreams](media/lab4_cafe-upstreams-2.png)
+
+    >**NOTE:** You should see two each Coffee/Tea pods in Cluster AKS1.
+
+<br/>
+
+### Verify Nginx Cafe in second cluster
+
+1. Repeat the same verification checks above for your second AKS2 cluster.
+
+You also see the same HTTP Zones and Upstreams in your Nginx Ingress Dashboard for Cluster AKS2, at http://dashboard.example.com:9002/dashboard.html
+
+*With one difference - there THREE coffee and THREE tea pods.  This is intentional so there is difference between your two clusters.*
+
+<br/>
+
+## Testing Nginx Cafe in AKS Cluster 1
+
+Now that you have the Nginx Ingress Dashboards to watch, you will now send traffic to Nginx for Azure, which will load balance to the the Nginx Ingress Controller's `cafe-vs` Virtual Server, and it will load balance to the coffee and test pods.  
+
+>*So Yes! You are doing 2 levels of Nginx Load Balancing - using Nginx for Azure `outside` the cluster, and using Nginx Ingress `inside` the cluster!*
 
 1. Inspect, then modify the `# comments for proxy_pass` in the `location /` block in the `/etc/nginx/conf.d/cafe.example.com.conf` file, making these changes as shown.
 
@@ -858,7 +925,7 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
     ...
     ```
 
-    Notice the Names of the `coffee` pods.  For the coffee Pod IPs, check the `coffee-svc` Endpoints:
+    Notice the Server Names are the `coffee` pod names.  For the coffee Pod IPs, check the `coffee-svc` Endpoints:
 
     ```bash
     kubectl describe svc coffee-svc
@@ -915,9 +982,9 @@ And your Nginx Ingress Dashboard should show similar stats. How many requests di
 
 <br/>
 
-### Test Nginx 4 Azure to Nginx Cafe in second cluster
+### Testing Nginx Cafe in AKS Cluster 2
 
-Repeat the last procedure, to test access to the AKS2 Cluster and pods.
+Repeat the last procedure, to test access to Nginx Cafe in the AKS2 Cluster.
 
 1. Change the `# comments for proxy_pass` in the `location /` block in the `/etc/nginx/conf.d/cafe.example.com.conf` file.
 
@@ -973,9 +1040,9 @@ Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
 1. Test your change in Upstreams with Chrome, hitting Refresh several times - what do you see ?
 
-    The Server Name and IP address should now match PODS running in your AKS2 cluster!  (they were AKS1 names before) But how do you verify this ?  Observe again, the Server name is a Kubernetes assigned POD name, and the Server IP address is the POD IP address, also assiged by Kubernetes.  
+    The Server Name and IP address should now match PODS running in your AKS2 cluster!  (they were AKS1 names before) But how do you verify this?  Observe again, the Server name is a Kubernetes assigned POD name, and the Server IP address is the POD IP address, also assiged by Kubernetes.  
 
-    Verify this with `kubectl`.  Set your Kubectl Config Context to aks2:
+    Verify this with `kubectl`.  Set your Kubectl Config Context to n4a-aks2:
 
     ```bash
     kubectl config use-context n4a-aks2
@@ -1019,25 +1086,25 @@ Repeat the last procedure, to test access to the AKS2 Cluster and pods.
 
     You should see a list of the (3) POD IPs for the coffee Service.
 
->**TAKE NOTE:** The Pod IPs are on a completely different IP subnet, from Docker or the first or second AKS cluster, which was configured using the Azure CNI - did you catch that difference? *Understanding the Backend IP/networking is critical to configuring your Nginx for Azure Upstreams properly.*  
+    You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller, check the HTTP Upstreams Tab as before, you should see the Pod IPs for both the coffee-svc and tea-svc.
 
-You built and used different CNIs and subnets so that you can see the differences. Nginx for Azure can work with `any` of these different backend applications and networks, as long as there is an IP route to the Upstreams. 
+    ![Cafe NIC Upstreams](media/lab5_cafe-nic2-upstreams.png)
 
-(And YES, if you add the appropriate routing with VNet Gateways, you can use Upstreams in other Regions/Clusters/VMs.)
+    >**TAKE NOTE:** The Pod IPs are on a completely different IP subnet, from Docker or the first or second AKS cluster, which was configured using the Azure CNI - did you catch that difference? *Understanding the Backend IP/networking is critical to configuring your Nginx for Azure Upstreams properly.*  
+
+    You built and used different CNIs and subnets so that you can see the differences. Nginx for Azure can work with `any` of these different backend applications and networks, as long as there is an IP route to the Upstreams. 
+
+    (And YES, if you add the appropriate routing with VNet Gateways, you can use Upstreams in other Regions/Clusters/VMs.)
 
 
-Platform | Docker | AKS1 | AKS2
-:--------------:|:--------------:|:-----------------:|:-----------------:
-Network Type | Docker | Kubenet | Azure CNI
-POD IP Subnet | 172.18.x.y | 10.244.x.y | 172.16.20.y
+    Platform | Docker | AKS1 | AKS2
+    :--------------:|:--------------:|:-----------------:|:-----------------:
+    Network Type | Docker | Kubenet | Azure CNI
+    POD IP Subnet | 172.18.x.y | 10.244.x.y | 172.16.20.y
 
-AKS1 Pod Network | AKS2 Pod Network 
-:--------------:|:--------------:
-![aks1-kubenet](media/lab5_aks1-kubenet.png) | ![aks2-azurecni](media/lab5_aks2-azurecni.png)
-
-You can also see this list, using the Nginx Plus Dashboard for the Ingress Controller in AKS2 - check the HTTP Upstreams, you should see the Pod IPs for both the coffee-svc and tea-svc.
-
-![Cafe NIC2 Upstreams](media/lab5_cafe-nic2-upstreams.png)
+    AKS1 Pod Network | AKS2 Pod Network 
+    :--------------:|:--------------:
+    ![aks1-kubenet](media/lab5_aks1-kubenet.png) | ![aks2-azurecni](media/lab5_aks2-azurecni.png)
 
 1. **Loadtest Time!**  While you are in the Nginx Ingress Dashboard watching the coffee upstreams, throw some load at them:
 
@@ -1063,13 +1130,13 @@ You can also see this list, using the Nginx Plus Dashboard for the Ingress Contr
 
     ![Cafe AKS2 loadtest](media/lab5_cafe-aks2-loadtest.png)
 
-### NGINXaaS Azure, Upstream Configuration Recap
+### Nginx for Azure, Upstream Configuration Recap
 
-During this lab exercise, you created and tested different Upstream configurations to use with Nginx for Azure.  This demonstrates how easy it is to have different platforms for your backend applications, and Nginx can easily be configured to change where it sends the Requests with `proxy_pass`. You can use Azure VMs, Docker, Containers, multiple AKS Clusters, and/or Windows VMs for your apps. You also added a custom HTTP Header, to help you track which Upstream block is being used.
+During this lab exercise, you created and tested different Upstream configurations to use with Nginx for Azure.  This demonstrates how easy it is to have different platforms for your backend applications, and Nginx can easily be configured to change where it sends the Requests with `proxy_pass`. You can use Azure VMs, Docker, Containers, multiple AKS Clusters, and Windows VMs for your backend apps. You also added a custom HTTP Header, to help you track which Upstream block is being used.
 
 <br/>
 
-## NGINXaaS Split Clients for Blue/Green, A/B, Canary Testing
+## NGINX Split Clients for Blue/Green, A/B, Canary Testing
 
 ![Blue-Green icon](media/bluegreen-icon.jpg)
 
@@ -1081,11 +1148,11 @@ Docker | NGINXaaS | Kubernetes
 :-----------------:|:-----------------:|:-----------------:
 ![Docker](media/docker-icon.png)  |![N4A](media/nginx-azure-icon.png) |![K8s](media/kubernetes-icon.png) 
 
-As your team is diligently working towards all applications being developed and tested in Kubernetes, you could really use a process to make the migration from old Legacy Docker VMs to Kubernetes MicroServices easier. Wouldn't it be nice if you could test and migrate Live Traffic with NO DOWNTIME?  `(Service Outages and Tickets are a DRAG... ugh!)`
+As your team is diligently working towards all applications being developed and tested in Kubernetes, you could really use a process to make the migration from old Legacy Docker VMs to Kubernetes MicroServices easier. Wouldn't it be nice if you could test and migrate Live Traffic with NO DOWNTIME?  `(Service Outages and Tickets are a DRAAAAG... ugh!)`
 
-You will start with the Nginx Cafe Demo, and your Docker VMs, as the current running Version of your application.  
+You will start with the Nginx Cafe Demo, and your Docker VMs, as the *current running Version* of your application.  
 
-Also using Cafe Demo, you decide that AKS Cluster1 is your Pre-Production test environment, where final QA checks of software releases are `signed-off` before being rolled out into Production.
+Also using Cafe Demo, you decide that *AKS Cluster1 is your Pre-Production* test environment, where final QA checks of software releases are `signed-off` before being rolled out into Production.
 
 - As the software QA tests in your pipeline continue to pass, you will incrementally `increase the split ratio to AKS1`, and eventually migrate ALL 100% of your Live Traffic to the AKS1 Cluster - `with NO DOWNTIME, lost packets, connections, or user disruption.` No WAY - it can't be that EASY?
 - Just as importantly, if you do encounter any serious application bugs or even infrastructure problems, you can just as quickly `roll-back` sending 100% of the traffic to the Docker VMs.  *You just might be an NGINXpert HERO.*
@@ -1094,12 +1161,12 @@ Your first CI/CD test case is taking just 1% of your Live incoming traffic and s
 
 To accomplish the Split Client functionality with Nginx, you only need 3 things.  
 - The `split_clients directive`
-- A Map block to configure the incoming request object of interest (a cookie name, cookie value, Header, or URL, etc)
-- The destination Upstream Blocks, with percentages declared for the split ratios, with a new `$upstream` variable
--- As you want 1% traffic for AKS1, leaving 99% for Docker, that is the configuration you will start with
--- The other ratios are provided, but commented out, you will use them as more of the QA tests pass
+- A Map block to configure the incoming request HTTP object of interest (a cookie name, cookie value, Header, or URL, etc)
+- The destination Upstreams, with percentages declared for the split ratios, with a new `$upstream` variable
+- As you want 1% traffic for AKS1, leaving 99% for Docker, that is the configuration you will start with
+- The other ratios are provided, but commented out, you will use them as more of the QA tests pass
 
-1. Inspect the `/lab5/split-clients.conf` file. This is the Map Block you will use, configured to look at the `$request_id` Nginx variable. As you should already know, the $request_id is a unique 64-bit number assigned to every incoming request by Nginx. You are telling Nginx to look at `every single request` when performing the Split hash algorithm. You can use any Nginx Request $variable that you choose, and combinations of $variables are supported as well. You can find more details on the http_split_clients module in the References section.
+1. Inspect the `/lab5/split-clients.conf` file. This is the Map Block you will use, configured to look at the `$request_id` Nginx variable. As you should already know, the $request_id is a unique 64-bit number assigned to every incoming request by Nginx. You are telling Nginx to look at `every single request` when performing the Split hash function. You can use any Nginx Request $variable that you choose, and combinations of $variables are supported as well. You can find more details on the http_split_clients module in the References section.
 
 1.  Create a new Nginx config file for the Split Clients directive and Map Block, called `/etc/nginx/includes/split-clients.conf`.  You can use the example provided, just Copy/Paste:
 
