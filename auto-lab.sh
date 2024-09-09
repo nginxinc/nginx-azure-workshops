@@ -100,7 +100,7 @@ kubectl_apply
 create_nsg_rule_aks
 
 echo 
-echo "Lab2 & Lab3 infrastructure creation completed!"
+echo "Lab3 infrastructure creation completed!"
 echo 
 }
 
@@ -114,7 +114,7 @@ upload_archive
 update_hosts_file
 
 echo 
-echo "Lab2, Lab3 & Lab4 infrastructure creation completed!"
+echo "Lab4 infrastructure creation completed!"
 echo 
 }
 
@@ -155,14 +155,25 @@ echo "All infrastructure creation completed!"
 echo 
 }
 
+## LabTest
+function labtest(){
+azcli_test
+nginx_ext_test
+nginx_jwt_test
+
+echo 
+echo "Testing of lab conditions completed."
+echo 
+}
+
 # How to use the script
 DELETE=0
-OPTSTRING=":adehl:"
+OPTSTRING=":adehtl:n:"
 
 function usage {
 cat <<EOT
 Usage:
-        $NAME [-l <number>] [-a] [-d] [-h]
+        $NAME [-l <number>] [-n MY_NAME][-a] [-d] [-h]
 Purpose:
         In Azure, build the labs for the NGINXaaS workshop. 
         - Must have valid NGINX Plus JWT in Lab 3 folder.
@@ -175,11 +186,13 @@ Inputs:
             on top of each other (there are dependencies), so prior labs will be 
             built.
       -a
-            Build lab2, 3 and 4. All labs will be built sequentially.
+            Build lab2, 3 or 4. All labs should be built sequentially.
       -d
             Delete the whole resource group (will ask for confirmation)
       -h
             Display this usage help text
+      -t
+            Test basic environment setup to be sure the script can run.
 
 EOT
 }
@@ -202,9 +215,13 @@ while getopts ${OPTSTRING} opt; do
       echo "Option -e was triggered, building everything!"
       LAB=99
       ;;
-     h)
+    h)
       echo "Option -h was triggered, running usage"
       USAGE=1
+      ;;
+    t)
+      echo "Option -t was triggered, running tests"
+      TEST=1
       ;;
     :)
       echo "Option -${OPTARG} requires an argument."
@@ -249,6 +266,9 @@ function main() {
     elif [[ $USAGE == 1 ]]; then
         clear
         usage
+    elif [[ $TEST == 1 ]]; then
+        clear
+        labtest
     else 
         echo "Nothing to do!" 
     fi
