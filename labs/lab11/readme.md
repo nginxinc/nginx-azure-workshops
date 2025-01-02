@@ -119,10 +119,9 @@ server {
     server_name geo.example.com;
     location / {
         default_type text/html;
-        return 200 "Welcome to N4A Workshop, you are from\nContinent: $geoip2_data_continent_code\nCountryISO: $geoip2_data_country_iso_code\nCity: $geoip2_data_city_name\nPostal: $geoip2_data_postal_code\nLat-Long: $geoip2_data_latitude-$geoip2_data_longitude\nState: $geoip2_data_state_name\nStateISO: $geoip2_data_state_code\n";
+        return 200 "Welcome to N4A Workshop, GeoIP tracked you from\nContinent: $geoip2_data_continent_code\nCountryISO: $geoip2_data_country_iso_code\nCity: $geoip2_data_city_name\nPostal: $geoip2_data_postal_code\nLat-Long: $geoip2_data_latitude-$geoip2_data_longitude\nState: $geoip2_data_state_name\nStateISO: $geoip2_data_state_code\n";
     }
 }
-
 
 ```
 
@@ -130,6 +129,7 @@ server {
 
 1. Using your browser, go to `http://geo.example.com`, and you should see something similar to this.  You will notice that we are using both the Country and City MaxMind data to populate the Nginx $variables used for this HTTP Response from Nginx.
 
+< geoip tracker page >
 
 ## Explore additional GeoIP2 use cases
 
