@@ -401,7 +401,7 @@ Your completed Vnet/Subnets should look similar to this:
    az nginx deployment create \
    --resource-group $MY_RESOURCEGROUP \
    --name nginx4a \
-   --sku name="standard_v2_Monthly" \
+   --sku name="standardv2_Monthly" \
    --network-profile front-end-ip-configuration="{public-ip-addresses:[{id:/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP}]}" network-interface-configuration="{subnet-id:/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet}" \
    --identity="{type:'SystemAssigned, UserAssigned',userAssignedIdentities:{/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity:{}}}"
    ```
@@ -452,7 +452,7 @@ Your completed Vnet/Subnets should look similar to this:
        },
        "resourceGroup": "sh.dutta-n4a-workshop",
        "sku": {
-           "name": "standard_v2_Monthly"
+           "name": "standardv2_Monthly"
        },
        "systemData": {
            "createdAt": "2024-04-16T22:51:28.3015754Z",
