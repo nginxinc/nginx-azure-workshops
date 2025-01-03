@@ -452,7 +452,7 @@ Your completed Vnet/Subnets should look similar to this:
        },
        "resourceGroup": "sh.dutta-n4a-workshop",
        "sku": {
-           "name": "standard_Monthly"
+           "name": "standard_v2_Monthly"
        },
        "systemData": {
            "createdAt": "2024-04-16T22:51:28.3015754Z",
