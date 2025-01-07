@@ -72,8 +72,9 @@ In your Nginx for Azure instance, the main Nginx `nginx.conf` file must be updat
 ```nginx
 ...
 
+# Load geoip2 software into memory
 load_module modules/ngx_http_geoip2_module.so;
-load_module modules/ngx_stream_geoip2_module.so;
+
 
 http {
     # ...
@@ -85,21 +86,24 @@ http {
 
 1. Using the N4A web console, create a new file, `/etc/nginx/GeoIP.conf`, copy and paste the contents from your previously downloaded file.  Note, the /path and name of the file must be exact.
 
-1. Submit your changes, and Nginx for Azure will confirm that the configuration is valid.  If you see any errors, you must fix them befor proceeding.
+1. Submit your changes, and Nginx for Azure will confirm that the configuration is valid.  If you see any errors, you must fix them before proceeding.
 
 ## Create Nginx GeoIP Test Configurations
 
-In this exercise, you will create a simple Nginx configuration that you can use for testing the variables from the MaxMind database.
+In this exercise, you will create a simple Nginx configuration that you can use for testing the metadata from the MaxMind database.
 
-1. Using the N4A web console, create a new file, `/etc/nginx/conf.d/geoiptest.conf`, copy and paste this example:
+1. Create a file that includes all the Nginx $variables that will contain GeoIP2 metadata.  You will create these in the `/etc/nginx/includes/geoip2_variables.conf` file.  As a shared resource in the /includes folder, this can then be used by any server block in your Nginx config files.  (Create it once, use it many times - an Nginx best practice).
+
+Using the N4A web console, create a new file, `/etc/nginx/includes/geoip2_variables.conf`, copy and paste this example:
 
 ```nginx
-# Nginx 4 Azure - geoiptest.conf
+# Nginx 4 Azure - geoip2_variables.conf
 # Chris Akker, Shouvik Dutta, Adam Currier - Jan 2025
 #
 # Using "GeoLite2-Country" as one of the EditionIDs in /etc/nginx/GeoIP.conf
 # Using "GeoLite2-City" as one of the EditionIDs in /etc/nginx/GeoIP.conf
-
+#
+# Set geoip2_ variables from City Database
 geoip2 /usr/local/share/GeoIP/GeoLite2-City.mmdb {
     $geoip2_data_city_name   city names en;
     $geoip2_data_postal_code postal code;
@@ -109,17 +113,28 @@ geoip2 /usr/local/share/GeoIP/GeoLite2-City.mmdb {
     $geoip2_data_state_code  subdivisions 0 iso_code;
 }
 
+# Set geoip2_ variables from Country Database
 geoip2 /usr/local/share/GeoIP/GeoLite2-Country.mmdb {
     $geoip2_data_continent_code   continent code;
     $geoip2_data_country_iso_code country iso_code;
 }
 
+```
+
+Take *NOTE* that you are creating these Nginx variables that reference different tables and values from both the GeoLite2 database files.
+
+1. Using the N4A web console, create a new file for your new Host, http://geo.example.com, `/etc/nginx/conf.d/geo.example.com.conf`, copy and paste this example:
+
+```nginx
+# Nginx 4 Azure - geo.example.com.conf
+# Chris Akker, Shouvik Dutta, Adam Currier - Jan 2025
+#
 server {
     listen 80;
     server_name geo.example.com;
     location / {
-        default_type text/html;
-        return 200 "Welcome to N4A Workshop, GeoIP tracked you from\nContinent: $geoip2_data_continent_code\nCountryISO: $geoip2_data_country_iso_code\nCity: $geoip2_data_city_name\nPostal: $geoip2_data_postal_code\nLat-Long: $geoip2_data_latitude-$geoip2_data_longitude\nState: $geoip2_data_state_name\nStateISO: $geoip2_data_state_code\n";
+
+        return 200 "Welcome to N4A Workshop, GeoIP tracked your IP: $remote_addr from\nContinent: $geoip2_data_continent_code\nCountryISO: $geoip2_data_country_iso_code\nCity: $geoip2_data_city_name\nPostal: $geoip2_data_postal_code\nLat-Long: $geoip2_data_latitude $geoip2_data_longitude\nState: $geoip2_data_state_name\nStateISO: $geoip2_data_state_code\n";
     }
 }
 
@@ -127,9 +142,196 @@ server {
 
 1. Update your local DNS hosts file, to use your Nginx for Azure public IP address for `geo.example.com`.
 
+```bash
+cat /etc/hosts
+
+```
+
+```
+## Sample output ##
+20.29.28.3 geo.example.com
+
+```
+
+1. Test with curl:
+
+```bash
+curl http://geo.example.com
+
+```
+
+```
+## Sample output ##
+Welcome to N4A Workshop, GeoIP tracked your IP:73.24.193.234 from
+Continent: NA
+CountryISO: US
+City: Tucson
+Postal: 85718
+Lat-Long: 32.30980 -110.91500
+State: Arizona
+StateISO: AZ
+
+```
+
+>Nice!!  The geoip2 module is working, as it delivered metadata via Nginx variables to your Curl command.
+
+1. Inspect the Nginx `return 200 Directive` in `geo.example.com.conf`, you will see that your IP address ($remote_addr), as well as 7 different GeoIP fields were sent back to you.
+
 1. Using your browser, go to `http://geo.example.com`, and you should see something similar to this.  You will notice that we are using both the Country and City MaxMind data to populate the Nginx $variables used for this HTTP Response from Nginx.
 
 < geoip tracker page >
+
+## Use Case:  Choosing the Nearest Data Center, without GSLB/DNS
+
+As you are likely an Nginx Admin with Global responisbilities, you have multiple Data Centers spread around the world.  When you have users also around the world, you are forced to use traditional `Global Server Load Balancing` and "SmartDNS" tools, to respond to DNS queries for your FQDNs.  However, there is likely an entirely different team responsible for DNS administration/managment, right?  Oh groan, more tickets and waiting.  *What if there was an easier way, to find a user's location, and route the users' requests correctly to the closest data center?*
+
+You can easily do that with Nginx and the MaxMind GeoIP2 module, without any changes from your DNS admins.
+
+< three data center diagram here >
+
+In this example, you will control traffic to three Data Centers spread around the world, without using DNS.  One in North America, one in Europe, and one in Asia.  You will use the Nginx `$geoip2_data_continent_code variable` to redirect users to the Data Center in those three regions.  You will use the Nginx `map directive` to associate the MaxMind Continent Code to a 2-character identifier, as shown.   
+
+```nginx
+map $geoip2_data_continent_code $nearest_data_center {  
+    EU      eu;
+    NA      na;
+    AS      as;
+    default all;
+
+}
+
+```
+
+1. Using the N4A web console, create a new config file called
+
+## Test GeoIP2 lookups with a Header
+
+Yes, that's right!  You can use Nginx with GeoIP2 to perform MaxMind Database lookups.  You will add the following to your Nginx configs:
+- Create new GeoIP2 `test` variables
+- Create a new `/testip` location block
+- Update the current `return Directive` to use the new test_geoip2 variables.
+
+1. Update your `/etc/nginx/includes/geoip2_variables.conf` to include 8 new `test_` variables, with the `SOURCE = X-Forward-For Header`, as shown.  Remember, Nginx converts all HTTP Headers to lower case, changes dashes to underscores, and adds the `http_` prefix.
+
+```nginx
+# Nginx 4 Azure - geoip2_variables.conf
+# Chris Akker, Shouvik Dutta, Adam Currier - Jan 2025
+#
+# Using "GeoLite2-Country" as one of the EditionIDs in /etc/nginx/GeoIP.conf
+# Using "GeoLite2-City" as one of the EditionIDs in /etc/nginx/GeoIP.conf
+#
+# Set geoip2_ variables from City Database
+geoip2 /usr/local/share/GeoIP/GeoLite2-City.mmdb {
+    $geoip2_data_city_name   city names en;
+    $geoip2_data_postal_code postal code;
+    $geoip2_data_latitude    location latitude;
+    $geoip2_data_longitude   location longitude;
+    $geoip2_data_state_name  subdivisions 0 names en;
+    $geoip2_data_state_code  subdivisions 0 iso_code;
+
+# Test IP Address from XFF Header
+    $test_geoip2_data_city_name   source=$http_x_forwarded_for city names en;
+    $test_geoip2_data_postal_code source=$http_x_forwarded_for postal code;
+    $test_geoip2_data_latitude    source=$http_x_forwarded_for location latitude;
+    $test_geoip2_data_longitude   source=$http_x_forwarded_for location longitude;
+    $test_geoip2_data_state_name  source=$http_x_forwarded_for subdivisions 0 names en;
+    $test_geoip2_data_state_code  source=$http_x_forwarded_for subdivisions 0 iso_code;
+}
+
+# Set geoip2_ variables from Country Database
+geoip2 /usr/local/share/GeoIP/GeoLite2-Country.mmdb {
+    $geoip2_data_continent_code   continent code;
+    $geoip2_data_country_iso_code country iso_code;
+    
+# Test IP address using XFF Header value
+    $test_geoip2_data_continent_code   source=$http_x_forwarded_for continent code;
+    $test_geoip2_data_country_iso_code source=$http_x_forwarded_for country iso_code;
+}
+
+```
+
+1. Edit your `/etc/nginx/conf.d/geo.example.com.conf` file to add a new location block for `/testip`, as shown.  Notice the geoip2 $variables are using the new one with a `source = x-forward-for`:
+
+```nginx
+...
+
+        location /testip {
+
+        return 200 "Welcome to N4A Workshop, GeoIP tested IP: $http_x_forwarded_for from\nContinent: $test_geoip2_data_continent_code\nCountryISO: $test_geoip2_data_country_iso_code\nCity: $test_geoip2_data_city_name\nPostal: $test_geoip2_data_postal_code\nLat-Long: $test_geoip2_data_latitude $test_geoip2_data_longitude\nState: $test_geoip2_data_state_name\nStateISO: $test_geoip2_data_state_code\n";
+
+    }
+
+...
+
+```
+
+Submit your Nginx Configuration.
+
+1. Try an IP Address from Switzerland with curl, add the XFF Header with an IP Address to lookup:
+
+```bash
+curl http://geo.example.com/testip -H "X-Forwarded-For: 109.202.192.1"
+
+```
+
+```bash
+## Sample output ##
+Welcome to N4A Workshop, GeoIP tested IP: 109.202.192.1 from
+Continent: EU
+CountryISO: CH
+City: Bern
+Postal: 3012
+Lat-Long: 46.96330 7.42270
+State: Bern
+StateISO: BE
+
+```
+
+1. Try one from Australia with curl, adding the XFF Header with an IP Address to lookup:
+
+```bash
+curl http://geo.example.com/testip -H "X-Forwarded-For: 49.255.14.118"
+
+```
+
+```bash
+## Sample output ##
+Welcome to N4A Workshop, GeoIP tested IP: 49.255.14.118 from
+Continent: OC
+CountryISO: AU
+City: Sydney
+Postal: 2000
+Lat-Long: -33.87150 151.20060
+State: New South Wales
+StateISO: NSW
+
+```
+
+1. Try one from AWS in Japan with curl, adding the XFF Header with an IP Address to lookup:
+
+```bash
+curl http://geo.example.com/testip -H "X-Forwarded-For: 43.206.101.204"
+
+```
+
+```bash
+## Sample output ##
+Welcome to N4A Workshop, GeoIP tested IP: 43.206.101.204 from
+Continent: AS
+CountryISO: JP
+City: Tokyo
+Postal: 151-0053
+Lat-Long: 35.68930 139.68990
+State: Tokyo
+StateISO: 13
+
+```
+
+As you can see, passing the IP Address to query in the XFF Header lets Nginx perform lookups easily without the MaxMind Database utility.
+
+Kudos:  Credit to Echorand for the example: https://echorand.me/posts/nginx-geoip2-mmdblookup/
+
+<br/>
 
 ## Explore additional GeoIP2 use cases
 
@@ -141,6 +343,7 @@ server {
 - [NGINX As A Service for Azure GeoIP2](https://docs.nginx.com/nginxaas/azure/quickstart/geoip2/)
 - [NGINX GeoIP2 Module](https://docs.nginx.com/nginx/admin-guide/dynamic-modules/geoip2/)
 - [NGINX GeoIP2 Admin Guide](https://docs.nginx.com/nginx/admin-guide/security-controls/controlling-access-by-geoip/)
+- [NGINX GeoIP2 Examples](https://docs.nginx.com/nginx/admin-guide/security-controls/controlling-access-by-geoip/)
 - [MaxMind GeoIP Databases](https://www.maxmind.com/en/geoip-databases)
 - [NGINX Plus Product Page](https://docs.nginx.com/nginx/)
 - [NGINX Directives Index](https://nginx.org/en/docs/dirindex.html)
