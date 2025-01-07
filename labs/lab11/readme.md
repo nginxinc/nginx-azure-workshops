@@ -257,7 +257,7 @@ geoip2 /usr/local/share/GeoIP/GeoLite2-Country.mmdb {
 
         location /testip {
 
-        return 200 "Welcome to N4A Workshop, GeoIP tested IP: $http_x_forwarded_for from\nContinent: $test_geoip2_data_continent_code\nCountryISO: $test_geoip2_data_country_iso_code\nCity: $test_geoip2_data_city_name\nPostal: $test_geoip2_data_postal_code\nLat-Long: $test_geoip2_data_latitude $test_geoip2_data_longitude\nState: $test_geoip2_data_state_name\nStateISO: $test_geoip2_data_state_code\n";
+        return 200 "Welcome to N4A Workshop, GeoIP2 tested IP: $http_x_forwarded_for from\nContinent: $test_geoip2_data_continent_code\nCountryISO: $test_geoip2_data_country_iso_code\nCity: $test_geoip2_data_city_name\nPostal: $test_geoip2_data_postal_code\nLat-Long: $test_geoip2_data_latitude $test_geoip2_data_longitude\nState: $test_geoip2_data_state_name\nStateISO: $test_geoip2_data_state_code\n";
 
     }
 
