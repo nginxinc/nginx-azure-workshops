@@ -7,7 +7,7 @@ function cwarn() {
 	STATUS="[WARN]"
 	echo -e "${COLOR}${STATUS}${RESET}"
 }
- 
+
 # Display colorized failure output for 'failures'
 function cfail() {
 	COLOR='\033[01;31m'	# bold red
@@ -49,7 +49,7 @@ SIGNEDIN=`az ad signed-in-user show | jq -r .id`
 
 if [ test -z "$SIGNEDIN" ]; then
 	cfail
-else 
+else
 	cpass
 fi
 }
@@ -60,7 +60,7 @@ LGTH=${#MESSAGE}
 echo -ne $MESSAGE
 padding $LGTH
 
-# This script creates clusters and switches k8s contexts.  
+# This script creates clusters and switches k8s contexts.
 # Removing this lock at the start makes things run smoother.
 # If you changed the username for Owner you may need to edit this path.
 
@@ -106,7 +106,7 @@ padding $LGTH
 if [[ -d "n4a-configs-staging" ]]; then
   rm -r n4a-configs-staging
   cpass
-else 
+else
   cnota
 fi
 }
@@ -121,7 +121,7 @@ CREATE_RESOURCE_GROUP=`az group create --name $MY_RESOURCEGROUP --location $MY_L
 
 if [[ -z "$CREATE_RESOURCE_GROUP" ]]; then
 	cfail
-else 
+else
 	cpass
 fi
 }
@@ -136,7 +136,7 @@ if [[ -z "$CREATE_VNET" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -153,7 +153,7 @@ if [[ -z "$CREATE_SECURITY_GROUP" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -174,7 +174,7 @@ if [[ -z "$CREATE_SECURITY_GROUP_RULES1" || -z "$CREATE_SECURITY_GROUP_RULES2" |
 	echo -ne $MESSAGE
     padding $LGTH
     cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
     cpass
@@ -197,7 +197,7 @@ if [[ -z "$CREATE_SUBNET" || -z "$CREATE_VM_SUBNET" || -z "$CREATE_AKS1_SUBNET" 
     echo -ne $MESSAGE
     padding $LGTH
     cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -216,7 +216,7 @@ export MY_AZURE_PUBLIC_IP=$(az network public-ip show --resource-group $MY_RESOU
 
 if [[ -z "$CREATE_PUBLIC_IP" ]]; then
 	cfail
-else 
+else
 	cpass
 fi
 }
@@ -231,7 +231,7 @@ CREATE_IDENTITY=`az identity create --resource-group $MY_RESOURCEGROUP --name n4
 
 if [[ -z "$CREATE_IDENTITY" ]]; then
 	cfail
-else 
+else
 	cpass
 fi
 }
@@ -240,7 +240,7 @@ function create_n4a_deployment(){
 MESSAGE="Creating N4A Deployment"
 LGTH=${#MESSAGE}
 
-CREATE_N4A_DEPLOYMENT=`az nginx deployment create --resource-group $MY_RESOURCEGROUP --name nginx4a --sku name="standard_Monthly" --network-profile front-end-ip-configuration="{public-ip-addresses:[{id:/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP}]}" network-interface-configuration="{subnet-id:/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet}" --identity="{type:'SystemAssigned, UserAssigned',userAssignedIdentities:{/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity:{}}}"`
+CREATE_N4A_DEPLOYMENT=`az nginx deployment create --resource-group $MY_RESOURCEGROUP --name nginx4a --sku name="standardv2_Monthly" --network-profile front-end-ip-configuration="{public-ip-addresses:[{id:/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP}]}" network-interface-configuration="{subnet-id:/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet}" --identity="{type:'SystemAssigned, UserAssigned',userAssignedIdentities:{/subscriptions/$MY_SUBSCRIPTIONID/resourceGroups/$MY_RESOURCEGROUP/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity:{}}}"`
 CREATE_N4A_DEPLOYMENT_DIAG=`az nginx deployment update --resource-group $MY_RESOURCEGROUP --name nginx4a --enable-diagnostics true`
 
 export MY_N4A_ID=$(az nginx deployment show --resource-group $MY_RESOURCEGROUP --name nginx4a --query id --output tsv)
@@ -249,7 +249,7 @@ if [[ -z "$CREATE_N4A_DEPLOYMENT" || -z "$CREATE_N4A_DEPLOYMENT_DIAG" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -276,7 +276,7 @@ if [[ -z "$CREATE_LOG_ANALYTICS" || -z "$CREATE_DIAG_SETTINGS" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
 	echo -ne $MESSAGE
     padding $LGTH
     cpass
@@ -316,7 +316,7 @@ if [[ -z "$CREATE_UBUNTU_VM" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -338,7 +338,7 @@ if [[ -z "$SECURE_PORT_22" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -371,7 +371,7 @@ if [[ -z "$CREATE_WINDOWS_VM" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -388,7 +388,7 @@ if [[ -z "$CREATE_SECURITY_GROUP_RULES4" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -429,7 +429,7 @@ if [[ -z "$CREATE_AKS_CLUSTER1" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo
     echo -ne $MESSAGE
     padding $LGTH
@@ -454,7 +454,7 @@ if [[ -z "$CLONE" || -z "$EXISTS" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
@@ -481,7 +481,7 @@ if [[ -z "$CREATE_NIC_RESOURCES1" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -505,7 +505,7 @@ if [[ -z "$CREATE_JWT1" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -526,7 +526,7 @@ if [[ -z "$DEPLOY_NIC1" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -561,7 +561,7 @@ if [[ -z "$CREATE_AKS_CLUSTER2" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo
     echo -ne $MESSAGE
     padding $LGTH
@@ -589,7 +589,7 @@ if [[ -z "$CREATE_NIC_RESOURCES2" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -608,7 +608,7 @@ if [[ -z "$CREATE_JWT2" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -629,7 +629,7 @@ if [[ -z "$DEPLOY_NIC2" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -680,7 +680,7 @@ if [[ -z "$CREATE_NSG_RULE_AKS" ]]; then
     echo -ne $MESSAGE
     padding $LGTH
 	cfail
-else 
+else
     echo -ne $MESSAGE
     padding $LGTH
 	cpass
@@ -742,7 +742,7 @@ cpass
 
 function create_archive(){
 MESSAGE="Creating the archive"
-LGTH=${#MESSAGE} 
+LGTH=${#MESSAGE}
 
 cd n4a-configs-staging
 COPYFILE_DISABLE=1 tar --exclude='.DS_Store' -czf ../n4a-configs.tar.gz *
@@ -757,7 +757,7 @@ cpass
 function upload_archive(){
 
 MESSAGE="Prepare and upload archive package"
-LGTH=${#MESSAGE} 
+LGTH=${#MESSAGE}
 
 export B64_N4A_CONFIG=$(base64 -i n4a-configs.tar.gz | tr -d '\n')
 cat << EOF > package.json
@@ -777,7 +777,7 @@ if [[ -z "$PACKAGE" ]]; then
   echo -ne $MESSAGE
   padding $LGTH
 	cfail
-else 
+else
   echo -ne $MESSAGE
   padding $LGTH
 	cpass
@@ -787,7 +787,7 @@ fi
 function update_hosts_file(){
 
 MESSAGE="Updating hosts file with Azure Public IP"
-LGTH=${#MESSAGE} 
+LGTH=${#MESSAGE}
 
 HOST="cafe.example.com bar.example.com dashboard.example.com grafana.example.com prometheus.example.com juiceshop.example.com redis.example.com"
 sudo sed -i '' '/cafe.example.com/ s/.*/'"$MY_AZURE_PUBLIC_IP"'\t'"$HOST"'/g' /etc/hosts
@@ -800,7 +800,7 @@ cpass
 function delete(){
 MESSAGE="Resource Group Deletion"
 LGTH=${#MESSAGE}
-    
+
 # This will remove the resource group and everything in it.  It will prompt for confirmation.
 az group delete --name $MY_RESOURCEGROUP
 
@@ -810,7 +810,7 @@ az group delete --name $MY_RESOURCEGROUP
 }
 
 function display(){
-# Display more variable values that we used in the script.  
+# Display more variable values that we used in the script.
 # Per instructions, copy output and pastr back to teh terminal so we have these moving forward.
 cat <<EOI
 export MY_N4A_ID=$MY_N4A_ID
