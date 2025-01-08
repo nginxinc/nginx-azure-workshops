@@ -2,9 +2,17 @@
 
 ## Introduction
 
-The Nginx for Azure Service now includes the`MaxMind GeoIP2 Database modules` for HTTP and TCP traffic processing.  The MaxMind GeoIP Location database is available as both a free service (called GeoLite) and a Subscription service (called GeoIP2).  The Paid Subscription service adds additional metadata and increased accuracy.  The Nginx for Azure modules can work with either service.  The GeoIP2 module uses the client Source IP address as the key when looking up database metadata, the accuracy of this data varies by many factors.  The MaxMind paid Subscription service continually updates the database, and the Nginx for Azure Instance continually updates it's local copy of this database, providing access to the most current database available.
+The Nginx for Azure as a Service now includes the`MaxMind GeoIP2 Database modules` for HTTP and TCP traffic processing.  The MaxMind GeoIP Location database is available as both a free service (called GeoLite) and a Paid Subscription service (called GeoIP2).  The Paid Subscription service adds additional databases,metadata and increased accuracy.  The Nginx for Azure geoip2 modules can work with either service.  The GeoIP2 module uses the client Source IP Address as the key when looking up database metadata, the accuracy of this data varies by many factors.  The MaxMind paid Subscription service continually updates the database, and the Nginx for Azure Instance continually updates it's local copy of this database, providing access to the most current database available.
 
-Knowing the client IP address can be used to create Solutions and solve many different challenges for processing requests to Nginx.  This lab exercise will explore a couple use cases, and provide step by step instructions for installation, configuration and testing.
+Knowing the client IP address can be used to create Solutions and solve many different challenges for processing requests to Nginx.  This lab exercise will explore a couple Solutions, and provide step by step instructions as lab exercises for installation, configuration and testing.
+
+<br/>
+
+NGINXaaS for Azure | MaxMind | GeoIP
+:-------------------------:|:-------------------------:|:-----------------:
+![N4A](media/nginx-azure-icon.png) | ![MaxMind](media/maxmind-icon.png) | ![GeoIP](media/geoip-icon.jpeg)
+
+<br/>
 
 ## Learning Objectives 
 
@@ -67,6 +75,8 @@ Notice the `EditionIDs`, these are the (free) databases available to you, the AS
 <br/>
 
 ## Enable the GeoIP2 module
+
+![GeoIP](media/geoip-icon.jpeg)
 
 In your Nginx for Azure instance, the main Nginx `nginx.conf` file must be updated to load the geoip2 modules into memory so Nginx can use them.  These dynamic software modules are already installed on your Instance's disk. You will load the http module, so you can explore it in this lab exercise. There is also a geoip2 module for the Nginx TCP stream context (not covered in this lab exercise).
 
@@ -196,7 +206,7 @@ As you are likely an Nginx Admin with Global responsibilities, you have multiple
 
 You can easily do that with Nginx and the MaxMind GeoIP2 module, without requiring many changes from your DNS admin team.
 
-< three data center diagram here >
+![Nginx-GeoIP](media/nginx-geoip2.png)
 
 There are several Benefits, But also some Drawbacks, to this Solution:
 
