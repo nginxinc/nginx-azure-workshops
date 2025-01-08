@@ -541,7 +541,81 @@ Submit your Nginx Configuration.
 
 <br/>
 
-## NGINXperts Solution:  Select US Cities for Marketing Promotion
+## Using Nginx with GeoIP2 for Software Export Controls
+
+A common requirement for software companies is to control and limit access to their software for `Export Compliance`.  The company may provide advanced software features, have government contracts, or be under other regulations that require limitations on who can use their software or other assets.  In this lab exercise, you are the DevOps Nginx admin tasked with limiting access to the Downloads of company software based on the user's Country.  You will use the GeoIP2 module with Nginx to only allow downloads of your high security software from Countries that are in the G7 Group.  You must also log every download for the `Explort Compliance Audit` paperwork required.
+
+This Solution is actually quite easy, you just need three things:
+
+- A new `Nginx map block` using the GeoIP2 Country ISO code data, and map that to a yes|no $variable value.  
+- Then use the yes|no $varible with an `if statement` to check if access to the `/downloads` location block is allowed.  
+- Create an Nginx custom access log-format to log all the important metadata.
+
+The new Nginx map block will look something like this:
+
+```nginx
+map $geoip2_data_country_iso_code $is_allowed {
+    CA      yes;  # Canada
+    FR      yes;  # France
+    DE      yes;  # Germany
+    IT      yes;  # Italy
+    JP      yes;  # Japan
+    UK      yes;  # United Kingdom
+    US      yes;  # United States
+    default no;   
+}
+
+```
+
+1. Using the N4A web console, create a new file, `/etc/nginx/conf.d/downloads.example.com.conf` for this lab exercise.  Here is an example, you can just copy/paste.
+
+```nginx
+# Nginx 4 Azure - downloads.example.com.conf
+# Chris Akker, Shouvik Dutta, Adam Currier - Jan 2025
+#
+# Nginx Map Block for Country Download Export Control
+#
+map $geoip2_data_country_iso_code $is_allowed {
+    CA      1;    # Canada
+    FR      1;    # France
+    DE      1;    # Germany
+    IT      1;    # Italy
+    JP      1;    # Japan
+    UK      1;    # United Kingdom
+    US      1;    # United States
+    default 0;   
+}
+#
+# Download Server
+#
+server {
+    listen 80;
+    server_name downloads.example.com;
+
+    location /downloads {
+
+        if ($is_allowed = 0) {
+
+            return 403 "Access not allowed from\nCountry: $geoip2_data_country_iso_code\n";
+        }
+
+        return 200 "Welcome to the /downloads URI\nYour IP Address is: $remote_addr\nFrom CountryISO: $geoip2_data_country_iso_code\n";
+        
+    }
+    #
+    # Test Source IPs using XFF Header
+    #
+    location /testip {
+
+        return 200 "Welcome to /downloads test, GeoIP2 tested IP: $http_x_forwarded_for from\nContinent: $test_geoip2_data_continent_code\nCountryISO: $test_geoip2_data_country_iso_code\n";
+
+    }
+
+}
+
+```
+
+1. Create a new Nginx Access log format with GeoIP2 $variables.
 
 
 <br/>
