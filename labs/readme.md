@@ -84,7 +84,7 @@ NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis | MaxMind
 - [Lab10: Nginx with Grafana for Azure](lab10/readme.md)
 
 ### Lab 11: Nginx for Azure with MaxMind GeoIP2
-- [Lab10: Nginx with Grafana for Azure](lab11/readme.md)
+- [Lab11: Nginx for Azure with MaxMind GeoIP2](lab11/readme.md)
 
 #### Labs Optional: Optional Exercises
 - [Labs Optional: Optional Exercises](labs-optional/readme.md)
