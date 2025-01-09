@@ -81,7 +81,7 @@ Notice the `EditionIDs`, these are the (free) databases available to you, the AS
 
 ![GeoIP](media/geoip-icon.jpeg)
 
-In your Nginx for Azure instance, the main Nginx `nginx.conf` file must be updated to load the geoip2 modules into memory so Nginx can use them.  These dynamic software modules are already installed on your Instance's disk. You will load the `ngx_http_geoip2_module.so` module, so you can explore it in this lab exercise. There is also a geoip2 module for the Nginx TCP stream context (not covered in this lab exercise).
+In your Nginx for Azure instance, the main Nginx `/etc/nginx/nginx.conf` file must be updated to load the geoip2 modules into memory so Nginx can use them.  These dynamic software modules are already installed on your Instance's disk. You will load the `ngx_http_geoip2_module.so` module, so you can explore it in this lab exercise. There is also a geoip2 module for the Nginx TCP stream context (not covered in this lab exercise).
 
 1. Using the N4A web console, edit the `nginx.conf` `main context` to add the load_module command, as shown here.  Note: the main context is at the top of the file, just *before* the `events {}` context:
 
@@ -106,7 +106,7 @@ In your Nginx for Azure instance, the main Nginx `nginx.conf` file must be updat
 
 1. Using the N4A web console, create a new file, `/etc/nginx/GeoIP.conf`, copy and paste the entire contents from your previously downloaded file.  Note, the /path and name of the file must be exactly as stated here, you cannot use a different path or filename.
 
-Submit your Nginx changes, and Nginx for Azure will confirm that the configuration is valid.  If you see any errors, you must fix them before proceeding.
+    Submit your Nginx changes, and Nginx for Azure will confirm that the configuration is valid.  If you see any errors, you must fix them before proceeding.
 
 ### Create Nginx GeoIP Test Configurations
 
@@ -549,7 +549,7 @@ A common requirement for software companies is to control and limit access to th
 This Solution is actually quite easy, you just need three things:
 
 - A new `Nginx map block` using the GeoIP2 Country ISO code data, and map that to a yes|no $variable value.  
-- Then use the yes|no $varible with an `if statement` to check if access to the `/downloads` location block is allowed.  
+- Then use the yes|no $varible with an `if statement` to check if access to the `/downloads` location is allowed.  
 - Create an Nginx custom access log-format to log all the important metadata.
 
 The new Nginx map block will look something like this:
