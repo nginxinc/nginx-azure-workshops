@@ -555,14 +555,14 @@ The new Nginx map block will look something like this:
 
 ```nginx
 map $geoip2_data_country_iso_code $is_allowed {
-    CA      yes;  # Canada
-    FR      yes;  # France
-    DE      yes;  # Germany
-    IT      yes;  # Italy
-    JP      yes;  # Japan
-    UK      yes;  # United Kingdom
-    US      yes;  # United States
-    default no;   
+    CA      1;    # Canada
+    FR      1;    # France
+    DE      1;    # Germany
+    IT      1;    # Italy
+    JP      1;    # Japan
+    UK      1;    # United Kingdom
+    US      1;    # United States
+    default 0;    
 }
 
 ```
