@@ -617,17 +617,37 @@ server {
 
 1. Create a new Nginx Access log format with GeoIP2 $variables.
 
+In this exercise, you will extend the default Nginx access log and add all of the GeoIP2 $variables, so you have the metadata required for the Export Compliance auditors.
 
-<br/>
+1. Review the current default Nginx Access log format is called `combined`, as shown here:
 
-## Explore additional GeoIP2 use cases
+```nginx
+log_format combined '$remote_addr - $remote_user [$time_local] '
+                    '"$request" $status $body_bytes_sent '
+                    '"$http_referer" "$http_user_agent"';
+
+```
+
+Notice that there are no GeoIP2 logging fields, and no fields about which download server delivered the content, or the X-Forward-For Header information.  You will add all these fields to a new log format called `geoip2`, as shown here:
+
+```nginx
+log_format geoip2 '$remote_addr - $remote_user [$time_local] '
+                    '"$request" $status $body_bytes_sent '
+                    '"$http_referer" "$http_user_agent" "http_x_forwarded_for" "$geoip2_data_continent_code" "$geoip2_data_country_iso_code" "$geoip2_data_city_name" "$geoip2_data_postal_code" "$geoip2_data_latitude-$geoip2_data_longitude" "$geoip2_data_state_name" "$geoip2_data_state_code" ua=$upstream_addr';
+
+```
+
+1. Using the N4A web console, create a new file `/etc/nginx/includes/geoip2_logging.conf`, and copy/paste the new log format.  This file is placed in the /includes folder so you can use as many times as needed.  You can edit this new log format to meet what metadata is required for your Compliance Audits.
+
+
+
 
 <br/>
 
 ## References:
 
 - [NGINX As A Service for Azure](https://docs.nginx.com/nginxaas/azure/)
-- [NGINX As A Service for Azure GeoIP2](https://docs.nginx.com/nginxaas/azure/quickstart/geoip2/)
+- [NGINX As A Service for Azure with GeoIP2](https://docs.nginx.com/nginxaas/azure/quickstart/geoip2/)
 - [NGINX GeoIP2 Module](https://docs.nginx.com/nginx/admin-guide/dynamic-modules/geoip2/)
 - [NGINX GeoIP2 Admin Guide](https://docs.nginx.com/nginx/admin-guide/security-controls/controlling-access-by-geoip/)
 - [NGINX GeoIP2 Examples](https://docs.nginx.com/nginx/admin-guide/security-controls/controlling-access-by-geoip/)
