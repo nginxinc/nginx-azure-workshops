@@ -810,8 +810,19 @@ az group delete --name $MY_RESOURCEGROUP
 }
 
 function display(){
-# Display more variable values that we used in the script.
-# Per instructions, copy output and pastr back to teh terminal so we have these moving forward.
+# Display more variable values that we used in the script.  
+# Per instructions, copy output and paste back to the terminal so we have these moving forward.
+
+export MY_N4A_ID=$(az nginx deployment show --resource-group $MY_RESOURCEGROUP --name nginx4a --query id --output tsv)
+export MY_LOG_ANALYTICS_ID=`az monitor log-analytics workspace show --resource-group $MY_RESOURCEGROUP --name n4a-loganalytics --query id --output tsv`
+kubectl config use-context n4a-aks1
+export AKS1_NIC=$(kubectl get pods -n nginx-ingress -o jsonpath='{.items[0].metadata.name}')
+kubectl config use-context n4a-aks2
+export AKS2_NIC=$(kubectl get pods -n nginx-ingress -o jsonpath='{.items[0].metadata.name}')
+export MY_AZURE_PUBLIC_IP=$(az network public-ip show --resource-group $MY_RESOURCEGROUP --name $MY_AZURE_PUBLIC_IP_NAME --query ipAddress --output tsv)
+export UBUNTU_VM_PUBLICIP=$(az vm show -d -g $MY_RESOURCEGROUP -n n4a-ubuntuvm --query publicIps -o tsv)
+export WINDOWS_VM_PUBLICIP=$(az vm show -d -g $MY_RESOURCEGROUP -n n4a-windowsvm --query publicIps -o tsv)
+
 cat <<EOI
 export MY_N4A_ID=$MY_N4A_ID
 export MY_LOG_ANALYTICS_ID=$MY_LOG_ANALYTICS_ID
