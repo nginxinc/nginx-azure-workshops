@@ -207,13 +207,13 @@ In this exercise, you will create a simple Nginx configuration that you can use 
 
 ## NGINXperts Solution:  Choosing the Nearest Data Center, without GSLB/DNS
 
-As you are likely an Nginx Admin with Global responsibilities, you have multiple Data Centers spread around the world or the country.  When you have users also around the world, you are probably traditional `Global Server Load Balancing` and "SmartDNS" systems, to respond to DNS queries for your FQDNs.  However, these are not usually in your control, and there is likely an entirely different team responsible for DNS administration/management, right?  OH groan, more tickets and waiting...  *What if there was an easier way, to find a user's location, and route the users' requests correctly to the closest data center?*
+As you are likely a DevOps Engineer, Application Architect/Developer, or Nginx Admin with Global responsibilities, you have `multiple Data Centers spread around the world or the country`.  As you also have users also around the world, you are probably using traditional `Global Server Load Balancing` and "SmartDNS" systems, to respond to DNS queries for your FQDNs.  However, these systems are not usually in your control, and there is likely an entirely different team responsible for DNS administration/management, right?  OH groan, more tickets and waiting...  **What if there was an easier way, to find a user's location, and route the users to the closest data center?**
 
 You can easily do that with Nginx and the MaxMind GeoIP2 module, without requiring many changes from your DNS admin team.
 
 ![Nginx-GeoIP](media/nginx-geoip2.png)
 
-There are several Benefits, But also some Drawbacks, to this Solution:
+There are several Benefits, but also some Drawbacks, to this Solution:
 
 Benefits | Drawbacks
 :-------:|:---------:
@@ -229,13 +229,15 @@ Reduce the cost of GSLB systems |
 
 <br/>
 
-But this Solution does eliminate or minimize many of the current challenges that exist with DNS.  The two most common Nginx-DevOps headaches are 1) lack of DNS Admin access/control, and 2) *DNS caching of A records at multple points in the DNS system that you can't see or control, such as*:
+But this Solution does eliminate or minimize many of the current challenges that exist with DNS.  The two most common Nginx-DevOps headaches are:
 
-- Clients'/Browsers' local DNS Resolver cache 
-- Internet/Cloud provider's DNS servers' cache
-- Nginx Servers' Company DNS SOA/Nameservers in the Data Centers
+- 1) lack of DNS Admin access/control 
+- 2) *DNS caching of A records at multple points in the DNS system that you can't see or control, such as*:
+    - Clients'/Browsers' local DNS Resolver cache 
+    - Internet/Cloud provider's DNS servers' cache
+    - Your Company's DNS SOA/Nameservers in the Data Centers
 
-In this exercise, you will control traffic to three Data Centers spread around the world, without using DNS.  One Data Center in North America, one in Europe, and one in Asia.  You will use the Nginx `$geoip2_data_continent_code variable` to redirect users to the Data Center in those three regions.  You will use the Nginx `map directive` to associate the MaxMind Continent Code to a 2-character identifier, as shown here:
+In this exercise, you will route traffic to three Data Centers spread around the world, without using DNS.  One Data Center in North America, one in Europe, and one in Asia.  You will use the Nginx `$geoip2_data_continent_code variable` to redirect users to the Data Center in those three regions.  You will use the Nginx `map directive` to associate the MaxMind Continent Code to a 2-character identifier, as a DNS sub-domain, as shown here:
 
 ```nginx
 map $geoip2_data_continent_code $nearest_data_center {  
