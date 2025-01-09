@@ -16,7 +16,7 @@
 
 This **NGINXperts Workshop** will introduce **`NGINXaaS for Azure`** with hands-on practice through lab exercises.
 
-You will learn and explore NGINX for Azure, deploy and configure it with various Azure Resources. You will use many NGINX Plus features, for routing traffic, terminate TLS, splitting traffic, and caching.  You will build a sample Enterprise environment in Azure with apps and services in Linux and Windows VMs, use Docker, and multiple Kubernetes AKS clusters.  You will terminate TLS, route HTTP/S traffic, load balance running VMs, containers, pods and Nginx Ingress Controllers.  You will configure Advanced Nginx Plus features like Caching and Dynamic Split Clients for Blue/Green testing, using live traffic.  You will expose both Web and TCP applications on the Internet.  You will explore the integrations of Nginx with Azure Cloud Resources like Key Vault, Monitoring, Logging/Analytics, and Grafana.
+You will learn and explore NGINX for Azure, deploy and configure it with various Azure Resources. You will use many NGINX Plus features, for routing traffic, terminate TLS, splitting traffic, and caching.  You will build a sample Enterprise environment in Azure with apps and services in Linux and Windows VMs, use Docker, and multiple Kubernetes AKS clusters.  You will terminate TLS, route HTTP/S traffic, load balance running VMs, containers, pods and Nginx Ingress Controllers.  You will configure Advanced Nginx Plus features like Caching and Dynamic Split Clients for Blue/Green testing, using live traffic.  You will route traffic to the nearest Data Center using Nginx and MaxMind GeoIP2 data. You will expose both Web and TCP applications on the Internet.  You will explore the integrations of Nginx with Azure Cloud Resources like Key Vault, Monitoring, Logging/Analytics, and Grafana.
 
 The Hands-on Lab Exercises are designed to build upon each other, adding additional services and features as you progress through them, completing the labs in sequential order is required.  You will follow along as an instructor guides you through these exercises.
 
@@ -42,9 +42,9 @@ See the [Lab0 Readme.md](lab0/readme.md) for details on Student Prerequisites fo
 
 </br>
 
-NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis
-:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![](media/nginx-azure-icon.png)  |  ![](media/nginx-plus-icon.png)   |  ![](media/kubernetes-icon.png) |  ![](media/docker-icon.png) |  ![](media/redis-icon.png)
+NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis | MaxMind
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![](media/nginx-azure-icon.png)  |  ![](media/nginx-plus-icon.png)   |  ![](media/kubernetes-icon.png) |  ![](media/docker-icon.png) |  ![](media/redis-icon.png) | ![](media/maxmind-icon.png)
 
 <br/>
 
@@ -82,6 +82,9 @@ NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis
 
 ### Lab 10: Nginx with Grafana for Azure
 - [Lab10: Nginx with Grafana for Azure](lab10/readme.md)
+
+### Lab 11: Nginx for Azure with MaxMind GeoIP2
+- [Lab10: Nginx with Grafana for Azure](lab11/readme.md)
 
 #### Labs Optional: Optional Exercises
 - [Labs Optional: Optional Exercises](labs-optional/readme.md)
