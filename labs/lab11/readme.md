@@ -18,11 +18,14 @@ NGINXaaS for Azure | MaxMind | GeoIP
 
 By the end of the lab you will be able to: 
 - Signup for a free MaxMind account
-- Enable the MaxMind GeoIP2 module for HTTP
-- Explore several Nginx Solutions using GeoIP2
+- Enable and test the MaxMind GeoIP2 module for HTTP
+- NGINXperts Solution:  Route users to closest Data Center
 - Just say NO to GSLB on DNS
-- Create Nginx Configurations to test
-- Explore additional use cases
+- NGINXperts Solution: Use Nginx for MaxMind database queries
+- NGINXperts Solution: Use Nginx and GeoIP2 for Export Compliance
+- Create Enhanced Access Logging using GeoIP2 metadata
+
+<br/>
 
 ## Prerequisites
 
@@ -99,15 +102,13 @@ In your Nginx for Azure instance, the main Nginx `nginx.conf` file must be updat
 
 <br/>
 
-## Create Nginx GeoIP Config
+## Add MaxMind GeoIP Config to Nginx
 
 1. Using the N4A web console, create a new file, `/etc/nginx/GeoIP.conf`, copy and paste the entire contents from your previously downloaded file.  Note, the /path and name of the file must be exactly as stated here, you cannot use a different path or filename.
 
 Submit your Nginx changes, and Nginx for Azure will confirm that the configuration is valid.  If you see any errors, you must fix them before proceeding.
 
-<br/>
-
-## Create Nginx GeoIP Test Configurations
+### Create Nginx GeoIP Test Configurations
 
 In this exercise, you will create a simple Nginx configuration that you can use for testing the metadata from the MaxMind database.
 
@@ -543,7 +544,7 @@ Submit your Nginx Configuration.
 
 ## Using Nginx with GeoIP2 for Software Export Controls
 
-A common requirement for software companies is to control and limit access to their software for `Export Compliance`.  The company may provide advanced software features, have government contracts, or be under other regulations that require limitations on who can use their software or other assets.  In this lab exercise, you are the DevOps Nginx admin tasked with limiting access to the Downloads of company software based on the user's Country.  You will use the GeoIP2 module with Nginx to only allow downloads of your high security software from Countries that are in the G7 Group.  You must also log every download for the `Explort Compliance Audit` paperwork required.
+A common requirement for software companies is to control and limit access to their software for `Export Compliance`.  The company may provide advanced software features, have government contracts, or be under other regulations that require limitations on who can use their software or other assets.  In this lab exercise, you are the DevOps Nginx admin tasked with `limiting access to the Downloads of company software` based on the user's Country.  You will use the GeoIP2 module with Nginx to only allow downloads of your high security software from Countries that are in the G7 Group.  You must also log every download for the `Explort Compliance Audit` paperwork required.
 
 This Solution is actually quite easy, you just need three things:
 
@@ -569,77 +570,148 @@ map $geoip2_data_country_iso_code $is_allowed {
 
 1. Using the N4A web console, create a new file, `/etc/nginx/conf.d/downloads.example.com.conf` for this lab exercise.  Here is an example, you can just copy/paste.
 
-```nginx
-# Nginx 4 Azure - downloads.example.com.conf
-# Chris Akker, Shouvik Dutta, Adam Currier - Jan 2025
-#
-# Nginx Map Block for Country Download Export Control
-#
-map $geoip2_data_country_iso_code $is_allowed {
-    CA      1;    # Canada
-    FR      1;    # France
-    DE      1;    # Germany
-    IT      1;    # Italy
-    JP      1;    # Japan
-    UK      1;    # United Kingdom
-    US      1;    # United States
-    default 0;   
-}
-#
-# Download Server
-#
-server {
-    listen 80;
-    server_name downloads.example.com;
+    ```nginx
+    # Nginx 4 Azure - downloads.example.com.conf
+    # Chris Akker, Shouvik Dutta, Adam Currier - Jan 2025
+    #
+    # Nginx Map Block for Country Download Export Control
+    #
+    map $geoip2_data_country_iso_code $is_allowed {
+        CA      1;    # Canada
+        FR      1;    # France
+        DE      1;    # Germany
+        IT      1;    # Italy
+        JP      1;    # Japan
+        UK      1;    # United Kingdom
+        US      1;    # United States
+        default 0;   
+    }
+    #
+    # Download Server
+    #
+    server {
+        listen 80;
+        server_name downloads.example.com;
 
-    location /downloads {
+        location /downloads {
 
-        if ($is_allowed = 0) {
+            if ($is_allowed = 0) {
 
-            return 403 "Access not allowed from\nCountry: $geoip2_data_country_iso_code\n";
+                return 403 "Access not allowed from\nCountry: $geoip2_data_country_iso_code\n";
+            }
+
+            return 200 "Welcome to the /downloads URI\nYour IP Address is: $remote_addr\nFrom CountryISO: $geoip2_data_country_iso_code\n";
+            
+        }
+        #
+        # Test Source IPs using XFF Header
+        #
+        location /testip {
+
+            return 200 "Welcome to /downloads test, GeoIP2 tested IP: $http_x_forwarded_for from\nContinent: $test_geoip2_data_continent_code\nCountryISO: $test_geoip2_data_country_iso_code\n";
+
         }
 
-        return 200 "Welcome to the /downloads URI\nYour IP Address is: $remote_addr\nFrom CountryISO: $geoip2_data_country_iso_code\n";
-        
-    }
-    #
-    # Test Source IPs using XFF Header
-    #
-    location /testip {
-
-        return 200 "Welcome to /downloads test, GeoIP2 tested IP: $http_x_forwarded_for from\nContinent: $test_geoip2_data_continent_code\nCountryISO: $test_geoip2_data_country_iso_code\n";
-
     }
 
-}
-
-```
+    ```
 
 1. Create a new Nginx Access log format with GeoIP2 $variables.
 
-In this exercise, you will extend the default Nginx access log and add all of the GeoIP2 $variables, so you have the metadata required for the Export Compliance auditors.
+    In this exercise, you will extend the default Nginx access log and add all of the GeoIP2 $variables, so you have the metadata required for the Export Compliance auditors.
 
-1. Review the current default Nginx Access log format is called `combined`, as shown here:
+1. Review the current default Nginx Access log format called `combined`, as shown here:
 
-```nginx
-log_format combined '$remote_addr - $remote_user [$time_local] '
-                    '"$request" $status $body_bytes_sent '
-                    '"$http_referer" "$http_user_agent"';
+    ```nginx
+    log_format combined '$remote_addr - $remote_user [$time_local] '
+                        '"$request" $status $body_bytes_sent '
+                        '"$http_referer" "$http_user_agent"';
 
-```
+    ```
 
-Notice that there are no GeoIP2 logging fields, and no fields about which download server delivered the content, or the X-Forward-For Header information.  You will add all these fields to a new log format called `geoip2`, as shown here:
+    Notice that there are no GeoIP2 logging fields, and no fields about which download server delivered the content, or the X-Forward-For Header information.  You will add all these fields to a new log format called `geoip2`, as shown here:
 
-```nginx
-log_format geoip2 '$remote_addr - $remote_user [$time_local] '
-                    '"$request" $status $body_bytes_sent '
-                    '"$http_referer" "$http_user_agent" "http_x_forwarded_for" "$geoip2_data_continent_code" "$geoip2_data_country_iso_code" "$geoip2_data_city_name" "$geoip2_data_postal_code" "$geoip2_data_latitude-$geoip2_data_longitude" "$geoip2_data_state_name" "$geoip2_data_state_code" ua=$upstream_addr';
+    ```nginx
+    log_format geoip2 '$remote_addr - $remote_user [$time_local] '
+                        '"$request" $status $body_bytes_sent '
+                        '"$http_referer" "$http_user_agent" "http_x_forwarded_for" "$geoip2_data_continent_code" "$geoip2_data_country_iso_code" "$geoip2_data_city_name" "$geoip2_data_postal_code" "$geoip2_data_latitude-$geoip2_data_longitude" "$geoip2_data_state_name" "$geoip2_data_state_code" ua=$upstream_addr';
 
-```
+    ```
 
-1. Using the N4A web console, create a new file `/etc/nginx/includes/geoip2_logging.conf`, and copy/paste the new log format.  This file is placed in the /includes folder so you can use as many times as needed.  You can edit this new log format to meet what metadata is required for your Compliance Audits.
+1. Using the N4A web console, edit your `/etc/nginx/nginx.conf`, and copy/paste the new log format.  This file is placed in the http{} context so you can use as many times as needed.  You can edit this new log format to meet the metadata required for your Export Compliance Audits.
+
+    ```nginx
+    user nginx;
+    worker_processes auto;
+    worker_rlimit_nofile 8192;
+    pid /run/nginx/nginx.pid;
+
+    # Load geoip2 software into memory
+    load_module modules/ngx_http_geoip2_module.so;
+
+    events {
+        worker_connections 4000;
+    }
+
+    error_log /var/log/nginx/error.log error;
+
+    http {
+
+        # New Access Log Format
+        #
+        log_format geoip2 '$remote_addr - $remote_user [$time_local] ' '"$request" $status $body_bytes_sent ' '"$http_referer" "$http_user_agent" "http_x_forwarded_for" "$geoip2_data_continent_code" "$geoip2_data_country_iso_code" "$geoip2_data_city_name" "$geoip2_data_postal_code" "$geoip2_data_latitude-$geoip2_data_longitude" "$geoip2_data_state_name" "$geoip2_data_state_code" ua=$upstream_addr';
+
+        server_tokens "";
+        server {
+            listen 80;
+            server_name localhost;
+            location / {
+                # Points to a directory with a basic html index file with
+                # a "Welcome to NGINX as a Service for Azure!" page
+                root /var/www;
+                index index.html;
+            }
+        }
+
+        include /etc/nginx/conf.d/*.conf;
+        include /etc/nginx/includes/*.conf;    # shared files
+        
+    }
+    ```
+
+1. Edit the `downloads.example.com.conf` file, and add your new GeoIP2 logging format, as shown:
+
+    ```nginx
+    ...
+    # Download Server
+    #
+    server {
+        listen 80;
+        server_name downloads.example.com;
+
+        access_log /var/log/nginx/downloads.example.com.log geoip2;  # Add new GeoIP2 logging
+
+        location /downloads {
+
+            if ($is_allowed = 0) {
+                return 403 "Access not allowed from\nCountry: $geoip2_data_country_iso_code\n";
+            }
+
+            return 200 "Welcome to the /downloads URI\nYour IP Address is: $remote_addr\nFrom CountryISO: $geoip2_data_country_iso_code\n";
+
+        }
+
+    ...
 
 
+    ```
+
+1. Using curl or Chrome, test access to http://downloads.example.com/downloads, and then verify the Azure logs contain the new GeoIP2 data fields.
+
+    ![Azure Logs](media/lab11_azure-log-geoip.png)
+
+
+>You can find detailed information on Viewing Nginx Access Logs using Azure's Logging / Analytics Workspace, in this Workshop in `Lab6`.
 
 
 <br/>
