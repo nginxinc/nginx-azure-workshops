@@ -233,10 +233,10 @@ Reduce the cost of GSLB systems |
 
 <br/>
 
-But this Solution does eliminate or minimize many of the current challenges that exist with DNS.  The two most common Nginx-DevOps headaches are:
+But this Solution does eliminate or minimize many of the current challenges that exist with GSLB/DNS systems.  The two most common Nginx-DevOps headaches are:
 
-- 1) lack of DNS Admin access/control 
-- 2) *DNS caching of A records at multple points in the DNS system that you can't see or control, such as*:
+- Lack of DNS Admin access/control 
+- *DNS caching of A records at multple points in the DNS system that you can't see or control, such as*:
     - Clients'/Browsers' local DNS Resolver cache 
     - Internet/Cloud provider's DNS servers' cache
     - Your Company's DNS SOA/Nameservers in the Data Centers
