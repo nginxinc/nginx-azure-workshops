@@ -8,7 +8,7 @@ Knowing the client IP address can be used to create Solutions and solve many dif
 
 <br/>
 
-NGINXaaS for Azure | MaxMind | GeoIP
+NGINXaaS for Azure | MaxMind | GeoIP2
 :-------------------------:|:-------------------------:|:-----------------:
 ![N4A](media/nginx-azure-icon.png) | ![MaxMind](media/maxmind-icon.png) | ![GeoIP](media/geoip-icon.jpeg)
 
@@ -22,8 +22,8 @@ By the end of the lab you will be able to:
 - NGINXperts Solution:  Route users to closest Data Center
 - Just say NO to GSLB on DNS
 - NGINXperts Solution: Use Nginx for MaxMind database queries
-- NGINXperts Solution: Use Nginx and GeoIP2 for Export Compliance
-- Create Enhanced Access Logging using GeoIP2 metadata
+- NGINXperts Solution: Software Export Controls with Nginx and GeoIP2 
+- NGINX Enhanced Logging with GeoIP2 metadata
 
 <br/>
 
@@ -77,7 +77,7 @@ Notice the `EditionIDs`, these are the (free) databases available to you, the AS
 
 <br/>
 
-## Enable the GeoIP2 module
+## Enable and test the GeoIP2 module
 
 ![GeoIP](media/geoip-icon.jpeg)
 
@@ -195,7 +195,7 @@ In this exercise, you will create a simple Nginx configuration that you can use 
 
     >Nice!!  The geoip2 module is working, as it delivered metadata via Nginx variables to your Curl command.
 
-1. Inspect the Nginx `return 200 Directive` in `geo.example.com.conf`, you will see that your IP address ($remote_addr), as well as 7 different GeoIP fields were sent back to you.
+1. Inspect the Nginx `return 200 Directive` in `geo.example.com.conf`, you will see that your IP address ($remote_addr), as well as 7 different GeoIP2 fields were sent back to you.
 
 1. Using your browser, go to `http://geo.example.com`, and you should see something similar to this.  You will notice that we are using both the Country and City MaxMind data to populate the Nginx $variables used for this HTTP Response from Nginx.
 
@@ -207,11 +207,15 @@ In this exercise, you will create a simple Nginx configuration that you can use 
 
 ## NGINXperts Solution:  Choosing the Nearest Data Center, without GSLB/DNS
 
+NGINXaaS for Azure | Global Data Centers | GeoIP2
+:-------------------------:|:-------------------------:|:-----------------:
+![N4A](media/nginx-azure-icon.png) | ![Nginx-GeoIP](media/nginx-geoip2.png) | ![GeoIP](media/geoip-icon.jpeg)
+
+<br/>
+
 As you are likely a DevOps Engineer, Application Architect/Developer, or Nginx Admin with Global responsibilities, you have `multiple Data Centers spread around the world or the country`.  As you also have users also around the world, you are probably using traditional `Global Server Load Balancing` and "SmartDNS" systems, to respond to DNS queries for your FQDNs.  However, these systems are not usually in your control, and there is likely an entirely different team responsible for DNS administration/management, right?  OH groan, more tickets and waiting...  **What if there was an easier way, to find a user's location, and route the users to the closest data center?**
 
 You can easily do that with Nginx and the MaxMind GeoIP2 module, without requiring many changes from your DNS admin team.
-
-![Nginx-GeoIP](media/nginx-geoip2.png)
 
 There are several Benefits, but also some Drawbacks, to this Solution:
 
@@ -365,7 +369,9 @@ map $geoip2_data_continent_code $nearest_data_center {
 
     Submit your Nginx Configuration.
 
-### Test your Nginx Continent Routing - the GeoIP2 lookups and the HTTP Redirect to the correct Continent as follows:
+### Test your Nginx Global Data Center Routing
+
+Check your the GeoIP2 lookups and the HTTP Redirect to the correct Continent / Data Center as follows:
 
 1. Using curl, test your new /dctest location block, verify the HTTP Redirect to each Continent's FQDN. You are looking at the HTTP Headers to see how Nginx is Redirecting and routing your requests:
 
@@ -410,7 +416,9 @@ map $geoip2_data_continent_code $nearest_data_center {
 
 ## NGINXperts Solution: Test GeoIP2 lookups on Nginx with an HTTP Header
 
-![N4A](media/nginx-azure-icon.png)
+![N4A](media/nginx-azure-icon.png) | ![GeoIP](media/geoip-icon.jpeg)
+
+<br/>
 
 **NO WAY you say...** Yes, that's right!  You can use Nginx with GeoIP2 to perform MaxMind Database lookups on your Nginx server.  You only need to add three things to your Nginx configs:
 
@@ -474,7 +482,9 @@ map $geoip2_data_continent_code $nearest_data_center {
 
 Submit your Nginx Configuration.
 
-### Test your new configuration, trying various IP Addresses from around the world in the XFF Header value, as shown:
+### Test your GeoIP2 Lookups with HTTP Header
+
+Check various IP Addresses from around the world in the XFF Header value, as shown:
 
 1. Try one from Azure Cloud, US East Region, adding the XFF Header with an IP Address to lookup:
 
@@ -540,11 +550,15 @@ Submit your Nginx Configuration.
 
 >**Security NOTE:** Do NOT use this example in production, as there are NO access-lists or other protections for the /testip location block, take appropriate measures as needed to secure it properly.
 
-* Kudos:  Credit to Echorand from this example: https://echorand.me/posts/nginx-geoip2-mmdblookup/
+* Kudos:  Credit to Echorand and Google search AI for this example: https://echorand.me/posts/nginx-geoip2-mmdblookup/
 
 <br/>
 
-## Using Nginx with GeoIP2 for Software Export Controls
+## Software Export Controls with Nginx and GeoIP2 
+
+![N4A](media/nginx-azure-icon.png) | ![GeoIP](media/geoip-icon.jpeg)
+
+<br/>
 
 A common requirement for software companies is to control and limit access to their software for `Export Compliance`.  The company may provide advanced software features, have government contracts, or be under other regulations that require limitations on who can use their software or other assets.  In this lab exercise, you are the DevOps Nginx admin tasked with `limiting access to the Downloads of company software` based on the user's Country.  You will use the GeoIP2 module with Nginx to only allow downloads of your high security software from Countries that are in the G7 Group.  You must also log every download for the `Explort Compliance Audit` paperwork required.
 
@@ -715,6 +729,13 @@ map $geoip2_data_country_iso_code $is_allowed {
 
 >You can find detailed information on Viewing Nginx Access Logs using Azure's Logging / Analytics Workspace, in this Workshop in `Lab6`.
 
+<br/>
+
+>>Final Note:  All of these NGINXperts Solutions and Nginx/GeoIP configurations will work with NGINX Plus and the MaxMind GeoIP2 modules.  You can run Nginx in a Docker Container, VM, or bare-metal server.  The Nginx config files should work as-is, no modifications needed.  You too, can become an NGINXpert!
+
+<br/>
+
+**This completes Lab 11.**
 
 <br/>
 
