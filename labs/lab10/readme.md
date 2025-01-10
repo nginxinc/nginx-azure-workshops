@@ -171,6 +171,4 @@ az grafana delete --name $MY_GRAFANA --resource-group $MY_RESOURCEGROUP --yes
 
 -------------
 
-Navigate to ([Lab Guide](../readme.md))
-
-
+Navigate to ([Lab11](../lab11/readme.md) | [LabGuide](../readme.md))
