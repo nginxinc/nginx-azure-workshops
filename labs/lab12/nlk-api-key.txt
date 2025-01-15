@@ -1,0 +1,6 @@
+#API Key
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+#Dataplane API endpoint
+https://nginx4a-xxxxxxxxxxxx.centralus.nginxaas.net/nplus
+
