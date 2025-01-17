@@ -162,6 +162,52 @@ Submit your Configuration.
 
 <br/>
 
+## Update cafe.example.com Proxy_Pass
+
+Update your `/etc/nginx/conf.d/cafe.example.com.conf` configuration, to `proxy_pass to your new aks1-nlk-upstreams` Upstream block, as shown.  This changes where N4A will load balance your traffic:
+
+```nginx
+# Nginx 4 Azure - Cafe Nginx to AKS1 with NLK
+# Chris Akker, Shouvik Dutta, Adam Currier - Jan 2025
+#
+server {
+    
+    listen 80;      # Listening on port 80
+
+    server_name cafe.example.com;   # Set hostname to match in request
+    status_zone cafe.example.com;   # Metrics zone name
+
+    access_log  /var/log/nginx/cafe.example.com.log main;
+    error_log   /var/log/nginx/cafe.example.com_error.log info;
+
+    location / {
+        status_zone /;              # Metrics zone name
+        #
+        # return 200 "You have reached cafe.example.com, location /\n";
+         
+        proxy_pass http://aks1-nlk-upstreams;        # Proxy AND load balance to AKS1 NLK UpstreamServer List
+        add_header X-Proxy-Pass aks1-nlk-upstreams;  # Custom Header
+        add_header X-Aks1-Upstream $upstream_addr;   # Which AKS1 NodeIP:Port
+        
+        # proxy_pass http://cafe_nginx;          # Proxy AND load balance to Docker VM
+        # add_header X-Proxy-Pass cafe_nginx;    # Custom Header
+
+        # proxy_pass http://aks1_ingress;        # Proxy AND load balance to AKS1 Nginx Ingress
+        # add_header X-Proxy-Pass aks1_ingress;  # Custom Header
+
+        # proxy_pass http://aks2_ingress;        # Proxy AND load balance to AKS2 Nginx Ingress
+        # add_header X-Proxy-Pass aks2_ingress;  # Custom Header
+
+    }
+    
+}
+
+```
+
+Submit your Nginx Configuration.
+
+<br>
+
 ## Create the Kubernetes NodePort Service
 
 ![AKS](media/aks-icon.png) | ![NLK](media/kubernetes-icon.jpeg)
