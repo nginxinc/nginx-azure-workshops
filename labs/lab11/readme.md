@@ -762,4 +762,4 @@ map $geoip2_data_country_iso_code $is_allowed {
 
 -------------
 
-Navigate to [LabGuide](../readme.md))
+Navigate to ([Lab12](../lab12/readme.md) | [LabGuide](../readme.md))

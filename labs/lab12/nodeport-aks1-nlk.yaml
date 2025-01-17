@@ -4,7 +4,7 @@ metadata:
   name: nginx-ingress
   namespace: nginx-ingress
   annotations:
-    # Let the controller know to pay attention to this K8s Service.
+    # Let the controller know to Watch this K8s Service.
     nginx.com/nginxaas: nginxaas
 spec:
   # expose the HTTP port on the nodes
@@ -15,6 +15,6 @@ spec:
     protocol: TCP
     # The port name maps to N4A upstream. It must be prefixed with `http-`
     # and the rest of the name must match the name of an upstream
-    name: http-my-service
+    name: http-aks1-nlk-upstreams
   selector:
     app: nginx-ingress
