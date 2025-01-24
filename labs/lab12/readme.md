@@ -298,7 +298,7 @@ IP:                       10.0.47.161
 IPs:                      10.0.47.161
 Port:                     http-aks1-nlk-upstreams  80/TCP
 TargetPort:               80/TCP
-NodePort:                 http-aks1-nlk-upstreams  31729/TCP
+NodePort:                 http-aks1-nlk-upstreams  31039/TCP
 Endpoints:                10.244.0.4:80
 Session Affinity:         None
 External Traffic Policy:  Cluster
@@ -306,7 +306,7 @@ Events:                   <none>
 
 ```
 
-`Take NOTE:` Notice that Kubernetes chooses an ephemeral high-numbered TCP Port, `31729` in this example.  The NLK Controller is Notified of this Service change, and will send the API commands to N4A to update the UpstreamServer List.  The UpstreamServer List will be each Worker's `NodeIP:31729`.  (Kubernetes Control Nodes are intentionally excluded from this List).
+`Take NOTE:` Notice that Kubernetes chooses an ephemeral high-numbered TCP Port, `31039` in this example.  The NLK Controller is Notified of this Service change, and will send the API commands to N4A to update the UpstreamServer List.  The UpstreamServer List will be each Worker's `NodeIP:31039`.  (Kubernetes Control Nodes are intentionally excluded from this List).
 
 You can confirm this in several ways.
 
@@ -328,11 +328,11 @@ Connection: keep-alive
 Expires: Fri, 17 Jan 2025 18:20:26 GMT
 Cache-Control: no-cache
 X-Proxy-Pass: aks1-nlk-upstreams       # this is the proxy pass Header
-X-Aks1-Upstream: 172.16.10.4:31729     # this is the upstream Header
+X-Aks1-Upstream: 172.16.10.4:31039     # this is the upstream Header
 
 ```
 
-Notice that the `X-Ask1-Upstream Header` value is one of your AKS1 worker nodes, with the NodePort `31729`.
+Notice that the `X-Ask1-Upstream Header` value is one of your AKS1 worker nodes, with the NodePort `31039`.
 
 Verify your AKS1 worker Node IPs, ask Kubernetes:
 
