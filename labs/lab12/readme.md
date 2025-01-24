@@ -234,17 +234,17 @@ Nginx Ingress will then route the requests to the correct Services and Pods.  (N
 
 ![NLK Diagram](media/nlk-diagram.png)
 
-1. Using kubectl, set your config context for `aks1`, and apply the NodePort manifest file provided here:
+1. Using kubectl, set your config context for `n4a-aks1`, and apply the NodePort manifest file provided here:
 
 ```bash
-kubectl config use-context aks1
+kubectl config use-context n4a-aks1
 kubectl apply -f nodeport-aks1-nlk.yaml
 
 ```
 
 ![Scuba Cat](media/scuba-cat.png)
 
->DeepDive Explanation of the `nodeport-ask1-nlk.yaml` manifest:
+>DeepDive Explanation of the `nodeport-aks1-nlk.yaml` manifest:
 
 ```yaml
 apiVersion: v1
@@ -499,7 +499,7 @@ Now for the actual Scaling Test!!  Does the NLK Controller detect when you `scal
 
 ### Now for the `SCALE DOWN Test`  
 
-As it is the `end of day` business time for your company, the workload demands of the cluster will drop after hours.  Scale the `n4a-ask1 nodepool` to just ONE worker node.  You intentionally only scale to one so we can still test traffic, making sure the application is still running, and you need at least one worker for the Nginx Ingress and NLK Controllers to run...right ?
+As it is the `end of day` business time for your company, the workload demands of the cluster will drop after hours.  Scale the `n4a-aks1 nodepool` to just ONE worker node.  You intentionally only scale to one so we can still test traffic, making sure the application is still running, and you need at least one worker for the Nginx Ingress and NLK Controllers to run...right ?
 
 ![Aks nodes=1](media/lab12_aks-nodes-1.png)
 
