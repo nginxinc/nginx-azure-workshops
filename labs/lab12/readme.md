@@ -2,13 +2,13 @@
 
 ## Introduction
 
-The NGINX as a Servive for Azure now includes the **NGINX Loadbalancer for Kubernetes Controller**, to support both manual and dynamic AutoScaling of AKS clusters with matching NGINXaaS configurations.
+The `NGINX as a Servive for Azure` now includes the **NGINX Loadbalancer for Kubernetes Controller**, to support both manual and dynamic AutoScaling of AKS clusters with matching NGINXaaS configurations.
 
 >Using NGINXaaS with NGINX Loadbalancer Kubernetes synchronizes the AKS Worker Nodes of the cluster with the NGINX UpstreamServer list automatically, so that all Worker nodes can receive incoming traffic.  This provides High Availability, increased Performance, dynamic Node Scaling, and allows NGINXaaS to match the Kubernetes Node or Service changes made to the cluster by the AKS admin or any cluster automation tools.
 
 <br/>
 
-What is the NLK Controller and how does it work?  It is a standard Kubernetes Container, written as a Controller object that interfaces with the Kubernetes cluster control plane, including the Kubernetes Cluster API.  It Registers itself as a Controller with the API, which allows it to `Watch and be Notified` of certain Kubernetes Events.  When to Controller receives Notifications of `Node or Service changes`, it triggers the Controller to then send it's own API updates to the Nginx for Azure instance.  The updates are limited to updating the `upstream server IP:Ports` in the Nginx config files, without an Nginx Reload!  You will configure and test it in this lab exercise.
+What is the NLK Controller and how does it work?  It is a standard Kubernetes Container, written as a Controller object that interfaces with the Kubernetes cluster control plane, including the Kubernetes Cluster API.  It Registers itself as a Controller with the API, which allows it to `Watch and be Notified` of certain Kubernetes Events.  When the Controller receives Notifications of `Node or Service changes`, it triggers the Controller to then send it's own API updates to the Nginx for Azure instance.  The updates are limited to updating the `upstream server IP:Ports` in the Nginx config files, without an Nginx Reload!  You will configure and test it in this lab exercise.
 
 ![NLK Diagram](media/n4a-nlk-diagram.png)
 
@@ -159,7 +159,7 @@ Now that the NLK Controller is running, you need a matching Upstream Server bloc
 >DeepDive Explanation of the Upstream block:
 
 - **upstream name**; - choose a name that will be easy to remember, which cluster, and a NLK tag (you can change this as needed, of course)
-- **zone name**; this is the shared memory zone used by Nginx Plus to collect all the upstream server metrics; like connections, health checks, handshakes, requests, responses, and response time
+- **zone name**; this is the shared memory zone used by Nginx Plus to collect all the upstream server metrics; like connections, health checks, handshakes, requests, response codes, and response time
 - **state file**; - this is a backup file of the UpstreamServer List, in case Nginx is restarted, or the host is rebooted.  Because this UpstreamServer List only exists in memory, this backup file is required, the file name should match the upstream name.
 - **least_time last_byte**; - this is the `Nginx advanced load balancing algorithm` that watches the HTTP Response time, and favors the fastest server.  This is a critical setting for obtaining optimal performance in Kubernetes environments.
 - **keepalive num**; - this creates a TCP connection pool that Nginx uses for Requests.  Also critical for optimal performance
