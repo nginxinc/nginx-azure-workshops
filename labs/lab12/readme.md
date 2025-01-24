@@ -459,7 +459,7 @@ kubectl logs deployment/aks1nlk-nginxaas-loadbalancer-kubernetes -n nlk --follow
 ![AKS](media/aks-icon.png) ![NLK](media/nlk-icon.png)
 
 
-Now for the acutal Scaling Test!!  Does the NLK Controller detect when you `scale your AKS Cluster nodes up/down` (Node Scaling)?  You will test that now.
+Now for the actual Scaling Test!!  Does the NLK Controller detect when you `scale your AKS Cluster nodes up/down` (Node Scaling)?  You will test that now.
 
 1. Using the N4A web console, manually scale your `n4a-aks1 nodepool` from 3 to 5 workers.  
 
