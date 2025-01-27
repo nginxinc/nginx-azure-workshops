@@ -1,18 +1,18 @@
-# NGINXaaS for Azure and NLK - NGINXaaS Loadbalancer for Kubernetes
+# NGINXaaS for Azure with Loadbalancer for Kubernetes (NLK)
 
 ## Introduction
 
-The `NGINX as a Servive for Azure` now includes the **NGINX Loadbalancer for Kubernetes Controller**, to support both manual and dynamic AutoScaling of AKS clusters with matching NGINXaaS configurations.
+The `NGINX as a Servive for Azure` now includes the **NGINX Loadbalancer for Kubernetes Controller**, to support both manual and dynamic AutoScaling of AKS clusters with synchronized NGINXaaS configurations.
 
 >Using NGINXaaS with NGINX Loadbalancer Kubernetes synchronizes the AKS Worker Nodes of the cluster with the NGINX UpstreamServer list automatically, so that all Worker nodes can receive incoming traffic.  This provides High Availability, increased Performance, dynamic Node Scaling, and allows NGINXaaS to match the Kubernetes Node or Service changes made to the cluster by the AKS admin or any cluster automation tools.
 
 <br/>
 
-What is the NLK Controller and how does it work?  It is a standard Kubernetes Container, written as a Controller object that interfaces with the Kubernetes cluster control plane, including the Kubernetes Cluster API.  It Registers itself as a Controller with the API, which allows it to `Watch and be Notified` of certain Kubernetes Events.  When the Controller receives Notifications of `Node or Service changes`, it triggers the Controller to then send it's own API updates to the Nginx for Azure instance.  The updates are limited to updating the `upstream server IP:Ports` in the Nginx config files, without an Nginx Reload!  You will configure and test it in this lab exercise.
+What is the NLK Controller and how does it work?  It is a standard Kubernetes Container, written as a Controller object that interfaces with the Kubernetes cluster control plane, including the Kubernetes Cluster API.  It Registers itself as a Controller with the API, which allows it to `Watch and be Notified` of certain Kubernetes Events.  When the Controller receives `Notifications of Node or Service changes`, the Controller will then send it's own API updates to the Nginx for Azure instance.  The updates are limited to updating the `upstream server IP:Ports` in the Nginx config files, without an Nginx Reload!  You will configure and test NLK in this lab exercise.
 
 ![NLK Diagram](media/n4a-nlk-diagram.png)
 
-Using both manual and autoscaling with AKS clusters is a common practice, the most common scenario is the need for the Cluster resources to be scaled `in response to changing workload demands` running in the Cluster.  If you scale Worker nodepools up/down, NLK will detect these changes and update your Nginx configuration for you, automatically.
+Using both manual and autoscaling with AKS clusters is a common practice. The most common use case is the need for the Cluster compute resources to be scaled `in response to changing workload demands` running in the Cluster.  If you scale Worker nodepools up or down, NLK will detect these changes and update your Nginx configuration for you, automatically.
 
 <br/>
 
@@ -107,7 +107,7 @@ Go the Azure Marketplane, and search for `NGINX`.  Or click on this link to take
 
   ```
 
-You should see a pod, deployment, and replicaset, all in a READY state.
+You should see a pod, deployment, and replica set, all in a READY state.
 
 ```bash
 ## Sample output ##
@@ -128,7 +128,7 @@ replicaset.apps/aks1nlk-nginxaas-loadbalancer-kubernetes-79d8655d7d   1         
 
 ![N4A](media/nginx-azure-icon.png)  ![NLK](media/nlk-icon.png)
 
-Now that the NLK Controller is running, you need a matching Upstream Server block configuration in your N4A instance, that will forward traffic to your Cluster.  In this example, you will great a new upstream config named `aks1-nlk-upstreams.conf`.  *Notice - this upstream block will NOT contain any server IP:PORT directives*, because the NLK Controller will be dynamically adding them for you, using the NginxPlus API.  
+Now that the NLK Controller is running, you need a matching Upstream Server block configuration in your N4A instance, that will forward traffic to your Cluster.  In this example, you will create a new upstream config named `aks1-nlk-upstreams.conf`.  *Notice - this upstream block will NOT contain any server IP:PORT directives*, because the NLK Controller will be dynamically adding them for you, using the NginxPlus API.  
 
 1. Ensure you are in the `labs/lab12` folder for these exercises.
 
@@ -337,6 +337,7 @@ Notice that the `X-Ask1-Upstream Header` value is one of your AKS1 worker nodes,
 Verify your AKS1 worker Node IPs, ask Kubernetes:
 
 ```bash
+kubectl config use-context n4a-aks1
 kubectl describe nodes |grep Internal
 
 ```
@@ -458,16 +459,15 @@ kubectl logs deployment/aks1nlk-nginxaas-loadbalancer-kubernetes -n nlk --follow
 
 ![AKS](media/aks-icon.png) ![NLK](media/nlk-icon.png)
 
-
 Now for the actual Scaling Test!!  Does the NLK Controller detect when you `scale your AKS Cluster nodes up/down` (Node Scaling)?  You will test that now.
 
-1. Using the N4A web console, manually scale your `n4a-aks1 nodepool` from 3 to 5 workers.  
+1. Using the Azure Portal web console, manually scale your `n4a-aks1 nodepool` from 3 to 5 workers.  
 
-  ![Aks nodes=5](media/lab12_aks-nodes-5.png)
+   ![Aks nodes=5](media/lab12_aks-nodes-5.png)
 
-  Watching the NLK Logs, you should see some NLK `Updated messages` scroll by.
+   Watching the NLK Logs, you should see some NLK `Updated messages` scroll by.
 
-1. Open a new Terminal, check with Curl, do you find 5 different IP addresses in the in X-Aks1-Upstream Header values?
+1. Open a new Terminal, check with Curl, do you find 5 different IP addresses in the in `X-Aks1-Upstream Header` values?
 
   ```bash
   while true; do curl -I http://cafe.example.com/coffee; sleep .5; done
@@ -477,6 +477,7 @@ Now for the actual Scaling Test!!  Does the NLK Controller detect when you `scal
   Confirm - what are the 5 n4a-aks1 Node IPs?  Ask Kubernetes ...
 
   ```bash
+  kubectl config use-context n4a-aks1
   kubectl describe nodes |grep Internal
 
   ```
@@ -491,11 +492,13 @@ Now for the actual Scaling Test!!  Does the NLK Controller detect when you `scal
 
   ```
 
-  **MOST EXCELLENT!!**  NLK saw the change in the `nginx-ingress` Service.  Remember, the nginx-ingress Service is Type NodePort, which means an open high-port socket on every Worker node.  When you SCALED UP the nodepool from 3 > 5, Kubernetes had to open that socket on the two new Nodes after they were up and running, triggering a CHANGE in the `nginx-ingress` NodePort Service ... 
+   
 
-1. Go back your N4A Web Console, and check the `plus.http.upstream.peer.address` of your Metrics Filter... you should also find 5 IP:NodePort Addresses, one for each upstream/worker.
+1. Go back your N4A Metrics Panel, and check the `plus.http.upstream.peer.address` of your Metrics Filter... you should also find 5 IP:NodePort Addresses, one for each upstream/worker.
 
 ![5 upstreams](media/lab12_azure-metrics-5upstreams.png)
+
+<br/>
 
 ### Now for the `SCALE DOWN Test`  
 
