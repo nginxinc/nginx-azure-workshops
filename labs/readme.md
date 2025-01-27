@@ -65,8 +65,8 @@ NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis | MaxMind
 ### Lab 4: AKS / Nginx Ingress Controller / Cafe Demo / Redis
 - [Lab 4: AKS / Nginx Ingress Controller / Cafe Demo / Redis](lab4/readme.md)
 
-### Lab 5: Nginx Load Balancing / Blue-Green / Split Clients
-- [Lab 5: Nginx Load Balancing / Blue-Green / Split Clients](lab5/readme.md)
+### Lab 5: Nginx Load Balancing / Blue-Green / Split Clients / Multi Cluster LB
+- [Lab 5: Nginx Load Balancing / Blue-Green / Split Clients / Multi Cluster LB](lab5/readme.md)
 
 ### Lab 6: Azure Monitoring / Logging Analytics
 - [Lab 6: Azure Monitoring / Logging Analytics](lab6/readme.md)
@@ -85,6 +85,9 @@ NGINXaaS for Azure  |  NGINX Plus  |  Kubernetes | Docker | Redis | MaxMind
 
 ### Lab 11: Nginx for Azure with MaxMind GeoIP2
 - [Lab11: Nginx for Azure with MaxMind GeoIP2](lab11/readme.md)
+
+### Lab 12: Nginx for Azure with Nginx Loadbalancer for Kubernetes
+- [Lab12: Nginx for Azure with Nginx Loadbalancer for Kubernetes](lab12/readme.md)
 
 #### Labs Optional: Optional Exercises
 - [Labs Optional: Optional Exercises](labs-optional/readme.md)
