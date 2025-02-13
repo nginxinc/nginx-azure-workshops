@@ -148,7 +148,7 @@ Now that the NLK Controller is running, you need a matching Upstream Server bloc
 
     # Server List dynamically managed by NLK Controller
 
-    keepalive 16;
+    keepalive 32;
 
   }
 
