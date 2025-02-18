@@ -213,7 +213,9 @@ NGINXaaS for Azure | Global Data Centers | GeoIP2
 
 <br/>
 
-As you are likely a DevOps Engineer, Application Architect/Developer, or NGINX Admin with Global responsibilities, you have `multiple Data Centers spread around the world or the country`.  As you also have users also around the world, you are probably using traditional `Global Server Load Balancing` and "SmartDNS" systems, to respond to DNS queries for your FQDNs.  However, these systems are not usually in your control, and there is likely an entirely different team responsible for DNS administration/management, right?  OH groan, more tickets and waiting...  **What if there was an easier way, to find a user's location, and route the users to the closest data center?**
+As you are likely a DevOps Engineer, Application Architect/Developer, or NGINX Admin with Global responsibilities, you have `multiple Data Centers spread around the world or the country`.  As you also have users also around the world, you are probably using traditional `Global Server Load Balancing` and "SmartDNS" systems, to respond to DNS queries for your FQDNs.  However, these systems are not usually in your control, and there is likely an entirely different team responsible for DNS administration/management, right?  OH groan, more tickets and waiting...  
+
+>**What if there was an easier way, to find a user's location, and route the users to the closest data center?**
 
 You can easily do that with NGINX and the MaxMind GeoIP2 module, without requiring many changes from your DNS admin team.
 
@@ -233,7 +235,7 @@ Reduce the cost of GSLB systems |
 
 <br/>
 
-But this Solution does eliminate or minimize many of the current challenges that exist with GSLB/DNS systems.  The two most common NGINX-DevOps headaches are:
+But this Solution *does* eliminate or minimize many of the current challenges that exist with GSLB/DNS systems.  The two most common NGINX-DevOps headaches are:
 
 - Lack of DNS Admin access/control 
 - *DNS caching of A records at multple points in the DNS system that you can't see or control, such as*:
@@ -241,7 +243,11 @@ But this Solution does eliminate or minimize many of the current challenges that
     - Internet/Cloud provider's DNS servers' cache
     - Your Company's DNS SOA/Nameservers in the Data Centers
 
-In this exercise, you will route traffic to three Data Centers spread around the world, without using DNS.  One Data Center in North America, one in Europe, and one in Asia.  You will use the NGINX `$geoip2_data_continent_code variable` to redirect users to the Data Center in those three regions.  You will use the NGINX `map directive` to associate the MaxMind Continent Code to a 2-character identifier, as a DNS sub-domain, as shown here:
+In this exercise, you will route traffic to three Data Centers spread around the world, without using DNS.  One Data Center in North America, one in Europe, and one in Asia.  
+
+![N4A](media/lab11_3datacenters.png)
+
+You will use the NGINX `$geoip2_data_continent_code variable` to redirect users to the Data Center in those three regions.  You will use the NGINX `map directive` to associate the MaxMind Continent Code to a 2-character identifier, as a DNS sub-domain, as shown here:
 
 ```nginx
 map $geoip2_data_continent_code $nearest_data_center {  
