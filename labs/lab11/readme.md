@@ -98,7 +98,7 @@ In your NGINX for Azure instance, the main NGINX `/etc/nginx/nginx.conf` file mu
 
     ```
 
-    Submit you NGINX Configuration, NGINX for Azure will validate it for you.  You must fix any errors before proceeding.
+    Submit your NGINX Configuration, NGINX for Azure will validate it for you.  You must fix any errors before proceeding.
 
 <br/>
 
@@ -304,7 +304,7 @@ map $geoip2_data_continent_code $nearest_data_center {
     Here are the three new files, just copy/paste:
 
     ```nginx
-    # NGINX 4 Azure - na.example.com.conf
+    # NGINX 4 Azure - na.geo.example.com.conf
     # Chris Akker, Shouvik Dutta, Adam Currier - Jan 2025
     # NGINX Server Block for GeoIP Continent Routing
     #
