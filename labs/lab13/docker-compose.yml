@@ -1,0 +1,13 @@
+# Docker compose file for Juiceshop
+# NGINX for Azure, June 2024
+# Chris Akker, Shouvik Dutta, Adam Currier
+# Create on ubuntuvm and run
+#
+services:
+  juiceshop:
+      hostname: docker-juiceshop
+      container_name: docker-juiceshop
+      image: bkimminich/juice-shop:v17.3.0             # Image from Docker Hub
+      restart: always
+      ports:
+        - "3000:3000"    # Open for Juiceshop
