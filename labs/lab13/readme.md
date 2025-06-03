@@ -100,58 +100,22 @@ After Azure and Nginx provisioning, you will see a `Success` message, and inform
 
 ![Juiceshop](media/juiceshop-icon.png)
 
-Go the Azure Marketplane, and search for `NGINX`.  Or click on this link to take you directly to the NLK Controller.  https://azuremarketplace.microsoft.com/en-us/marketplace/apps/f5-networks.f5-nginx-for-azure-aks-extension
+### Test Various HTTP Attacks to Juiceshop application - NO App Protect
 
-![Azure Marketplace NLK](media/azure-market-nlk.png)
+Using a browser, try the following Attacks as URLs:
 
-1. Click on `Get It Now`, then `Continue`.
+*Cross-Site Scripting*
+https://juiceshop.example.com/?%3Cscript%3E
 
-  Select the Subscription and Resource Group for the deployment; Select `No` for a new AKS cluster.  You will use your existing clusters from Lab3 for this lab exercise.
+*Embedded iFrame*
+https://juiceshop.example.com/index.html/?id=%3Ciframe%20src%3D%22javascript:alert(%60data%20all%20over%20this%20screen%20that%20wasnt%20planned%60)%22%3E
 
-1. Click `Next`, and chose `n4a-aks1` under Cluster Details.
+*SQL Injection*
+https://juiceshop.example.com//rest/products/search?q=qwert%27%29%29%20UNION%20SELECT%20id%2C%20email%2C%20password%2C%20%274%27%2C%20%275%27%2C%20%276%27%2C%20%277%27%2C%20%278%27%2C%20%279%27%20FROM%20Users--
 
-1. Click `Next`, and fill out as follows:
-    - Type `aks1nlk` for the Cluster extension resouce name
-    - Leave the namespace as `nlk`
-    - Check the `Allow minor version updates`
-    - Paste your Dataplane API Key value
-    - Paste your Dataplane API Endpoint URL **and ADD `nplus` to the end**
-    - Optional: Add new KeyValue pair:  `nlk.config.logLevel` `info`
 
-1. Click `Next`, Review your settings.
 
-    If you scroll to the bottom, you will see your entered data, take a screenshot if you did not SAVE it somewhere.  If you are satisifed with your Settiings, click `Create`.  *You can safely ignore the billing warning, NLK is free of charge at the time of this writing.*
 
-    ![NLK Config](media/lab12_nlk-config.png)
-
-1. Wait for the Deployment to be successful, it can take several minutes.
-
-    ![NLK Success](media/lab12_nlk-deployment-success.png)
-
-1. Verify it is running in your `n4a-aks1` cluster.
-
-    Check that your kubectl config context is set for n4a-aks1, and check for everything in the `nlk` namespace, as shown:
-
-    ```bash
-    kubectl config use-context n4a-aks1
-    kubectl get all -n nlk
-
-    ```
-
-    You should see a pod, deployment, and replica set, all in a READY state.
-
-    ```bash
-    ## Sample output ##
-    NAME                                                            READY   STATUS    RESTARTS   AGE
-    pod/aks1nlk-nginxaas-loadbalancer-kubernetes-79d8655d7d-kspxc   1/1     Running   0          2m21s
-
-    NAME                                                       READY   UP-TO-DATE   AVAILABLE   AGE
-    deployment.apps/aks1nlk-nginxaas-loadbalancer-kubernetes   1/1     1            1           2m21s
-
-    NAME                                                                  DESIRED   CURRENT   READY   AGE
-    replicaset.apps/aks1nlk-nginxaas-loadbalancer-kubernetes-79d8655d7d   1         1         1       2m21s
-
-    ```
 
 <br/>
 
