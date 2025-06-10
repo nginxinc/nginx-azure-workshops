@@ -14,11 +14,9 @@ Better news, Azure Entra ID / Azure AD is the second half of this Solution, prov
 
 <br/>
 
-<logos here>
-
 NGINXaaS Azure | Entra ID | Cafe App
 :-----------------:|:-----------------:|:-----------------:
-![NGINXaaS](media/nginx-azure-icon.png)  |![Entra ID](media/entra-id-icon.png) |![Nginx Cafe App](media/cafe-icon.png) 
+![NGINXaaS](media/nginx-azure-icon.png)  |![Entra ID](media/entra-id-icon.png) |![Nginx Cafe App](media/cafe-icon.png)
 
 <br/>
 
@@ -48,11 +46,10 @@ To enable an application to use Entra ID / Azure AD for authentication, you will
    https://cafe.example.com:443/_codexch
    ```
 
-
    >**Note:** Make sure you are specifing `HTTPS` and port 443. This is a required setting.
 
 6. Click on `Register` to register your application.
-   
+
     ![App registration](media/lab8_example-register.png)
 
 7. Once the application has been registered you will be redirected to the `Overview` page of the newly created application.
@@ -75,17 +72,17 @@ You will need to create a new `Client credentials secret` that will be used by N
 1. Within your new App Registration, click on `Certificates & Secrets` option from left menu. This should open the `Certificate & Secrets` section.
 
 2. Click the `+ New client secret` button within the `Client Secrets` tab to create a new client secret that will be used by NGINXaaS. This secret will be used in the Nginx config as part of the Auth workflow.
-   
+
    ![New Secret Creation](media/lab8_new-secret-creation.png)
 
 3. Fill out the description for the client secret. For this workshop we provided the name as `example.com`.
 
 4. You can also change the Duration for the client secret expiration or keep the default recommended value. Click on `Add` to generate the new client secret.
-   
+
    ![Fill Secret Details](media/lab8_fill-secret-details.png)
 
 5. Once you click on the `Add` button, you will see the secret within the `Client Secrets` tab as seen in below screenshot. The `Value` column will be the field you want to look for and copy. This Client Secret will be used by Nginx to communicate with Entra ID.
-   
+
    ![Post Secret Creation](media/lab8_post-secret-creation.png)
 
 6. Copy the `Value` portion of the client secret to the clipboard, and also save it on your computer as you will use it in next section of this lab.  **NOTE:** It is important that you have a backup of this `Client Secret Value`, *as it is only shown here at creation time.* If you lose the Client Secret, you can easily create a new one in this same Azure Portal page and you will have to update your N4A configuration.
@@ -198,6 +195,22 @@ Now that the Azure Entra ID configurations are complete, you will configure Ngin
 
 As there are 2 Active/Active instances of Nginx `under the hood` of an N4A deployment, synchronizing the KeyValue shared memory zone used for OIDC tokens is required. This NginxPlus feature uses a module called `ngx_stream_zone_sync_module`. The module uses a dedicated TCP connection between N4A pairs to send updates of the shared memory to each other. For the Nginx OIDC solution, the shared memory is used to cache the users' Auth Tokens, so that subsequent requests do NOT have to be validated with the IDP. Caching these Auth Tokens provides a large performance improvement to users accessing OIDC protected content. Without this Nginx caching feature, `every request would suffer the Round Trip delay` of going back and forth to the Identity provider, slowing your application Response Time to a dismal crawl, and potentially prompting for user credentials repeatedly.
 
+1. Create and modify the `/etc/nginx/stream/zonesync.conf` file as follows:
+
+   ```nginx
+   # Nginx for Azure Zone Sync config
+   # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+   #
+   resolver 127.0.0.1:49153 valid=20s;
+   
+   server {
+   listen 9000; # should match the port specified with zone_sync_server
+   status_zone n4a-zonesync;
+      
+   zone_sync;
+   zone_sync_server internal.nginxaas.nginx.com:9000 resolve;
+   }
+   ```
 
 ### Customize the Nginx OpenID Connect files
 
@@ -214,14 +227,19 @@ As there are 2 Active/Active instances of Nginx `under the hood` of an N4A deplo
    3. Line #28, change the `jwks_uri` to your URL
 
    4. Line #33, change the `client_id` to your Value
-   ```bash
-   echo $MY_CLIENT_ID
-   ```
+
+      ```bash
+      echo $MY_CLIENT_ID
+      ```
+
    5. Line #42, change the `client_secret` to your Value
-   ```bash
-   echo $MY_CLIENT_SECRET
-   ```
+
+      ```bash
+      echo $MY_CLIENT_SECRET
+      ```
+
    Take those values and put them into the file mentioned above (/etc/nginx/oidc/openid_connect_configuration.conf).
+
    ```nginx
    # Nginx for Azure / OpenID Connect configuration
    # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
@@ -271,7 +289,6 @@ As there are 2 Active/Active instances of Nginx `under the hood` of an N4A deplo
 
    ```
 
-
 1. There are no changes needed for the `/etc/nginx/oidc/openid_connect.server_conf` - just copy and paste it.
 
 1. There are no changes needed for the `/etc/nginx/oidc/openid_connect.js` Javascript file - just copy and paste it. This is the core Nginx Javascript code that gets executed for this OIDC Solution. Once the three files are created/modified, click `Submit` to have them loaded into the N4A instance.
@@ -282,91 +299,91 @@ As there are 2 Active/Active instances of Nginx `under the hood` of an N4A deplo
 
 1. Update your `/etc/nginx/nginx.conf` to add the following items.
 
-- Line #9, add the `load_module` directive to add Nginx JavaScript Dynamic Module (NJS) to your config.
-- Line #20, add a new Log Format that logs JWT claims information.
-- Line #61, add an additional `include directive` that points to the OIDC configuration files in `/etc/nginx/oidc`, as shown:
+   - Line #9, add the `load_module` directive to add Nginx JavaScript Dynamic Module (NJS) to your config.
+   - Line #20, add a new Log Format that logs JWT claims information.
+   - Line #61, add an additional `include directive` that points to the OIDC configuration files in `/etc/nginx/oidc`, as shown:
 
-```nginx
-# Nginx 4 Azure - Entra ID and OIDC - Updated Nginx.conf
-# Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
-#
-user nginx;
-worker_processes auto;
-worker_rlimit_nofile 8192;
-pid /run/nginx/nginx.pid;
+   ```nginx
+   # Nginx 4 Azure - Entra ID and OIDC - Updated Nginx.conf
+   # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
+   #
+   user nginx;
+   worker_processes auto;
+   worker_rlimit_nofile 8192;
+   pid /run/nginx/nginx.pid;
 
-load_module modules/ngx_http_js_module.so;   #Added for OIDC
+   load_module modules/ngx_http_js_module.so;   #Added for OIDC
 
-events {
-    worker_connections 4000;
-}
+   events {
+      worker_connections 4000;
+   }
 
-error_log /var/log/nginx/error.log error;
+   error_log /var/log/nginx/error.log error;
 
-http {
+   http {
 
-    # Custom log format to include the 'sub' claim in the REMOTE_USER field
-    log_format  main_jwt '$remote_addr - $jwt_claim_sub [$time_local] "$request" $status '
-                    '$body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"';
+      # Custom log format to include the 'sub' claim in the REMOTE_USER field
+      log_format  main_jwt '$remote_addr - $jwt_claim_sub [$time_local] "$request" $status '
+                     '$body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"';
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
 
-    log_format  main_ext    'remote_addr="$remote_addr", '
-                            '[time_local=$time_local], '
-                            'request="$request", '
-                            'status="$status", '
-                            'http_referer="$http_referer", '
-                            'body_bytes_sent="$body_bytes_sent", '
-                            'Host="$host", '
-                            'sn="$server_name", '
-                            'request_time=$request_time, '
-                            'http_user_agent="$http_user_agent", '
-                            'http_x_forwarded_for="$http_x_forwarded_for", '
-                            'request_length="$request_length", '
-                            'upstream_address="$upstream_addr", '
-                            'upstream_status="$upstream_status", '
-                            'upstream_connect_time="$upstream_connect_time", '
-                            'upstream_header_time="$upstream_header_time", '
-                            'upstream_response_time="$upstream_response_time", '
-                            'upstream_response_length="$upstream_response_length", '
-                            'cachestatus=“$upstream_cache_status“, '
-                            'limitstatus=“$limit_req_status“ ';
-                      
-    access_log off;
-    server_tokens "";
-    server {
-        listen 80 default_server;
-        server_name localhost;
-        location / {
-            # Points to a directory with a basic html index file with
-            # a "Welcome to NGINX as a Service for Azure!" page
-            root /var/www;
-            index index.html;
-        }
-    }
+      log_format  main_ext    'remote_addr="$remote_addr", '
+                              '[time_local=$time_local], '
+                              'request="$request", '
+                              'status="$status", '
+                              'http_referer="$http_referer", '
+                              'body_bytes_sent="$body_bytes_sent", '
+                              'Host="$host", '
+                              'sn="$server_name", '
+                              'request_time=$request_time, '
+                              'http_user_agent="$http_user_agent", '
+                              'http_x_forwarded_for="$http_x_forwarded_for", '
+                              'request_length="$request_length", '
+                              'upstream_address="$upstream_addr", '
+                              'upstream_status="$upstream_status", '
+                              'upstream_connect_time="$upstream_connect_time", '
+                              'upstream_header_time="$upstream_header_time", '
+                              'upstream_response_time="$upstream_response_time", '
+                              'upstream_response_length="$upstream_response_length", '
+                              'cachestatus=“$upstream_cache_status“, '
+                              'limitstatus=“$limit_req_status“ ';
+                        
+      access_log off;
+      server_tokens "";
+      server {
+         listen 80 default_server;
+         server_name localhost;
+         location / {
+               # Points to a directory with a basic html index file with
+               # a "Welcome to NGINX as a Service for Azure!" page
+               root /var/www;
+               index index.html;
+         }
+      }
 
-    include /etc/nginx/oidc/openid_connect.server_conf; # OIDC authorization code flow and Relying Party processing
-    include /etc/nginx/conf.d/*.conf;
-    include /etc/nginx/includes/*.conf;    # shared files
-    
+      include /etc/nginx/oidc/openid_connect.server_conf; # OIDC authorization code flow and Relying Party processing
+      include /etc/nginx/conf.d/*.conf;
+      include /etc/nginx/includes/*.conf;    # shared files
+      
 
-}
+   }
 
-stream {
-    
-    include /etc/nginx/stream/*.conf;          # Stream TCP nginx files
+   stream {
+      
+      include /etc/nginx/stream/*.conf;          # Stream TCP nginx files
 
-}
+   }
 
-```
+   ```
 
-Submit your Nginx Configuration.
+1. Submit your Nginx Configuration.
 
 <br/>
 
-## Test Nginx 4 Azure with Entra ID
+## Test NGINXaaS with Entra ID
 
 1. You can now test your Azure Entra ID with OIDC config with NGINXaaS. To test, open up your browser, open Dev Tools, and try `https://cafe.example.com/beer`. **NOTE:** You will likely have to use a new `Chrome Incognito` browser, because it is caching and using your current credentials, *and you need to start with fresh browser.*
 
@@ -382,11 +399,11 @@ Submit your Nginx Configuration.
 
 1. Open a new Chrome Incognito browser, and test again for `https://cafe.example.com/wine`. Does it work as expected?
 
-< Maybe - You can see the Nginx Zone Sync metrics, and caching of user Auth Tokens in the N4A Metrics, as shown here: >
+   < Maybe - You can see the Nginx Zone Sync metrics, and caching of user Auth Tokens in the N4A Metrics, as shown here: >
 
-< Azure monitor ss here >
+   < Azure monitor ss here >
 
->Notice how easy it was, to configure Nginx to protect a hostname/location in the configuration? It only required obtaining a few settings from Entra ID, and then using those settings in the Nginx configuration.
+   >Notice how easy it was, to configure Nginx to protect a hostname/location in the configuration? It only required obtaining a few settings from Entra ID, and then using those settings in the Nginx configuration.
 
 <br/>
 
@@ -396,11 +413,11 @@ There are additional applications that are running on the Docker containers, Ngi
 
 1. Can you find out what the other `over 21 beverages` are that should be protected with Entra ID?
 
-<Hint here - Docker exec into one of the ingress-demo containers on the Ubuntu VM, and review the Nginx configurations. You should discover there are 5 `over 21 beverages`. Beer, wine, cosmo, daiquiri, mojito.>
+   <Hint here - Docker exec into one of the ingress-demo containers on the Ubuntu VM, and review the Nginx configurations. You should discover there are 5 `over 21 beverages`. Beer, wine, cosmo, daiquiri, mojito.>
 
 1. Now that you have a list of the beverages, can you modify the `/beer location block` to add all of those `over 21 beverages`? How many location blocks will you need - will it require a block for each beverage, or can you do it with just ONE?
 
-<Hint here - Use this Regular Expression: >
+   <Hint here - Use this Regular Expression: >
 
    ```nginx
    ...
@@ -413,7 +430,7 @@ There are additional applications that are running on the Docker containers, Ngi
 
    ```
 
-As you can see, it is quite easy to update the location block, and use a `Regular Expression` to capture those paths, and provide Entra ID protection.
+   As you can see, it is quite easy to update the location block, and use a `Regular Expression` to capture those paths, and provide Entra ID protection.
 
 <br/>
 
@@ -434,6 +451,7 @@ As you can see, it is quite easy to update the location block, and use a `Regula
 <br/>
 
 ### Authors
+
 - Chris Akker - Solutions Architect - Community and Alliances @ F5, Inc.
 - Shouvik Dutta - Solutions Architect - Community and Alliances @ F5, Inc.
 - Adam Currier - Solutions Architect - Community and Alliances @ F5, Inc.
