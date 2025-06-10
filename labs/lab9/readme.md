@@ -8,7 +8,7 @@ In this lab, you will deploy an image rich application, and use Nginx Caching to
 
 NGINXaaS Azure | Cache | Juiceshop | My Garage
 :-----------------:|:-----------------:|:-----------------:|:-----------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![Nginx Cache](media/nginx-cache-icon.png) |![Juiceshop](media/juiceshop-icon.png) |![Mygarage](media/mygarage-icon.png) 
+![NGINX aaS](media/nginx-azure-icon.png)  |![Nginx Cache](media/nginx-cache-icon.png) |![Juiceshop](media/juiceshop-icon.png)
   
 ## Learning Objectives
 
@@ -173,16 +173,16 @@ In this exercise, you will create an Nginx for Azure configuration, to add Cachi
     - Line #17,18 - set the logging filenames
     - Line #30 - send requests to Nginx Ingress in AKS1
     - Line #31 - set the Header for tracking
-    - Lines #37-62 - A new `location block`, with the following parameters
-    - - Line #39 - Use a Regular Expression (regex) to identify image types.
-    - - Line #42 - new status zone for image metrics
-    - - - Lines #44-46 - use the `image_cache` created earlier on Line #7 
-    - - - cache 200 responses for 60 seconds
-    - - - use a cache key, made up of three Nginx request $variables
-    - - Lines #49-51 - Set and Control Caching Headers
-    - - Line #55 - Set a Custom Header for Cache Status = HIT, MISS, EXPIRED
-    - - Line #57 - Send requests to Nginx Ingress in AKS1
-    - - Line #58 - Set another Custom Header for tracking
+    - Lines #37-58 - A new `location block`, with the following parameters
+        - Line #37 - Use a Regular Expression (regex) to identify image types.
+        - Line #40 - new status zone for image metrics
+        - Lines #42-44 - use the `image_cache` created earlier on Line #7
+            - cache 200 responses for 60 seconds
+            - use a cache key, made up of three Nginx request $variables
+        - Lines #46-49 - Set and Control Caching Headers
+        - Line #53 - Set a Custom Header for Cache Status = HIT, MISS, EXPIRED
+        - Line #55 - Send requests to Nginx Ingress in AKS1
+        - Line #56 - Set another Custom Header for tracking
 
     As you can see, there are quite a few Caching directives and parameters that must be set properly.  There are Advanced Nginx Caching classes available from Nginx University that cover architectures and many more details and use cases if you would like to learn more.  You will also find quite a few blogs and a Webinar on Nginx Caching, it is a popular topic.  See the References Section.
 
@@ -281,8 +281,8 @@ In this exercise, you will create an Nginx for Azure configuration, to add Cachi
 
     You will be adding your THREE custom Nginx headers to the display for easy viewing.  Click on `Add custom header...` , input these names one at a time:
 
-    - X-Cache-Status 
-    - X-Proxy-Pass 
+    - X-Cache-Status
+    - X-Proxy-Pass
     - X-RateLimit-Status
 
     This added these Headers to the display, making it easy to see the Header Values.
