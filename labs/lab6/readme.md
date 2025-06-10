@@ -106,7 +106,8 @@ In this section you will create an extended log format which you will use with `
 
     ```bash
     ## Set environment variables
-    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_NAME=$(whoami)
+    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
     export MY_N4A_IP=$(az network public-ip show \
     --resource-group $MY_RESOURCEGROUP \
     --name n4a-publicIP \
@@ -117,13 +118,13 @@ In this section you will create an extended log format which you will use with `
     Make request to the default server block which is using the `main` log format for access logging by running below command.
 
     ```bash
-    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s http://$MY_N4A_IP
+    docker run --name wrk --rm elswork/wrk -t4 -c200 -d1m --timeout 2s http://$MY_N4A_IP
     ```
 
     Make request to the `cafe.example.com` server block which is using the `main_ext` log format for access logging by running below command.
 
     ```bash
-    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s -H 'Host: cafe.example.com'  http://$MY_N4A_IP/coffee
+    docker run --name wrk --rm elswork/wrk -t4 -c200 -d1m --timeout 2s -H 'Host: cafe.example.com'  http://$MY_N4A_IP/coffee
     ```
 
 1. Within Azure portal, open your NGINX for Azure resource (nginx4a). From the left pane click on `Monitoring > Logs`. This should open a new Qeury pane. Select `Resource type` from drop down and then type in `nginx` in the search box. This should show all the sample queries related to NGINX for Azure. Under `Show NGINXaaS access logs` click on `Run` button
@@ -221,7 +222,7 @@ In this section you will create an extended log format which you will use with `
 1. Now generate some steady traffic using your local Docker Desktop. Start and run the `WRK` load generation tool from a container using below command to generate traffic:
 
     ```bash
-    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d30m --timeout 2s http://cafe.example.com/coffee
+    docker run --name wrk --rm elswork/wrk -t4 -c200 -d30m --timeout 2s http://cafe.example.com/coffee
     ```
 
     The above command would run for 30 minutes and send request to `http://cafe.example.com/coffee` using 4 threads and 200 connections.

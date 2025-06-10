@@ -63,7 +63,8 @@ For additional information on the script you can run the same command with `-h` 
 
     ```bash
     ## Set environment variables
-    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_ID=`az group show -n $MY_RESOURCEGROUP --query "id" -otsv`
     ```
 
 1. Make sure your Terminal is the `nginx-azure-workshops/labs` directory for all commands during this Workshop.
@@ -85,14 +86,19 @@ For additional information on the script you can run the same command with `-h` 
         --assign-identity \
         --generate-ssh-keys \
         --public-ip-sku Standard \
-        --custom-data lab2/init.sh
+        --custom-data lab2/init.sh \
+        --scope $MY_ID \
+        --role Owner \
+        --security-type TrustedLaunch \
+        --enable-secure-boot true \
+        --enable-vtpm true
     ```
 
     ```bash
     ##Sample Output##
     {
       "fqdns": "",
-      "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Compute/virtualMachines/n4a-ubuntuvm",
+      "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Compute/virtualMachines/n4a-ubuntuvm",
       "identity": {
         "systemAssignedIdentity": "xxxx-xxxx-xxxx-xxxx-xxxx",
         "userAssignedIdentities": {}
@@ -102,7 +108,7 @@ For additional information on the script you can run the same command with `-h` 
       "powerState": "VM running",
       "privateIpAddress": "172.16.2.4",
       "publicIpAddress": "<AZURE_ASSIGNED_PUBLICIP>",
-      "resourceGroup": "s.dutta-workshop",
+      "resourceGroup": "sh.dutta-n4a-workshop",
       "zones": ""
     }
     ```
@@ -473,7 +479,7 @@ Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
 1. In your local machine open terminal and make sure you are logged onto your Azure tenant. Set the following Environment variables:
 
     ```bash
-    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
     export MY_VM_IMAGE=cognosys:iis-on-windows-server-2016:iis-on-windows-server-2016:1.2019.1009
     ```
 
@@ -487,7 +493,8 @@ Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
         --vnet-name n4a-vnet \
         --subnet vm-subnet \
         --admin-username azureuser \
-        --public-ip-sku Standard
+        --public-ip-sku Standard \
+        --security-type Standard
     ```
 
     ```bash
@@ -497,13 +504,13 @@ Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
     Consider upgrading security for your workloads using Azure Trusted Launch VMs. To know more about Trusted Launch, please visit https://aka.ms/TrustedLaunch.
     {
     "fqdns": "",
-    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.Compute/virtualMachines/n4a-windowsvm",
+    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Compute/virtualMachines/n4a-windowsvm",
     "location": "centralus",
     "macAddress": "00-0D-3A-96-C5-F1",
     "powerState": "VM running",
     "privateIpAddress": "172.16.2.5",
     "publicIpAddress": "<AZURE_ASSIGNED_PUBLICIP>",
-    "resourceGroup": "s.dutta-workshop",
+    "resourceGroup": "sh.dutta-n4a-workshop",
     "zones": ""
     }
     ```

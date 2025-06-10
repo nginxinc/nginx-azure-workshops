@@ -86,10 +86,11 @@ With the use of single Azure CLI command, you will deploy a production-ready AKS
 
    ```bash
     ## Set environment variables
-    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_NAME=$(whoami)
+    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
     export MY_AKS=n4a-aks1
-    export MY_NAME=s.dutta
-    export K8S_VERSION=1.27
+    export K8S_VERSION=1.32
+    export NIC_VERSION=v3.7.2
     export MY_SUBNET=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks1-subnet --vnet-name n4a-vnet --query id -o tsv)
     ```
 
@@ -107,7 +108,7 @@ With the use of single Azure CLI command, you will deploy a production-ready AKS
         --generate-ssh-keys
     ```
 
-   >**Note**: At the time of this writing, 1.27 is the latest kubernetes long-term supported (LTS) version available in Azure AKS.
+   >**Note**: At the time of this writing, 1.32 is the latest kubernetes long-term supported (LTS) version available in Azure AKS.
 
 1. **(Optional Step)**: If kubectl ultility tool is not installed in your workstation then you can install `kubectl` locally using below command:
 
@@ -138,9 +139,9 @@ In this section, you will be installing NGINX Plus Ingress Controller in your fi
    ```bash
    ##Sample Output##
    NAME                                STATUS   ROLES   AGE     VERSION
-   aks-nodepool1-19055428-vmss000003   Ready    agent   3m52s   v1.27.9
-   aks-nodepool1-19055428-vmss000004   Ready    agent   3m12s   v1.27.9
-   aks-nodepool1-19055428-vmss000005   Ready    agent   3m37s   v1.27.9
+   aks-nodepool1-19055428-vmss000003   Ready    agent   3m52s   v1.32.4
+   aks-nodepool1-19055428-vmss000004   Ready    agent   3m12s   v1.32.4
+   aks-nodepool1-19055428-vmss000005   Ready    agent   3m37s   v1.32.4
    ```
 
 1. Ensure that you are in the `/labs` directory of the workshop repository within your terminal.
@@ -155,41 +156,39 @@ In this section, you will be installing NGINX Plus Ingress Controller in your fi
     <Parent directory where you git cloned the workshop repo>/nginx-azure-workshops/labs
     ```
 
-1. Git Clone the Nginx Ingress Controller repo and navigate into the `/deployments` directory to make it your working directory for installing NGINX Ingress Controller:
+1. Git Clone the Nginx Ingress Controller repo and navigate into the `kubernetes-ingress` directory to make it your working directory for installing NGINX Ingress Controller:
 
    ```bash
-   git clone https://github.com/nginxinc/kubernetes-ingress.git --branch v3.3.2
-   cd kubernetes-ingress/deployments
+   git clone https://github.com/nginxinc/kubernetes-ingress.git --branch $NIC_VERSION
+   cd kubernetes-ingress
    ```
 
-   >**Note**: At the time of this writing `3.3.2` is the latest NGINX Plus Ingress version that is available. Please feel free to use the latest version of NGINX Plus Ingress Controller. Look into [references](#references) for the latest Ingress images.
+   >**Note**: At the time of this writing `3.7.2` is the latest NGINX Plus Ingress version that is available. Please feel free to use the latest version of NGINX Plus Ingress Controller. Look into [references](#references) for the latest Ingress images.
 
 1. Create necessary Kubernetes objects needed for Ingress Controller:
 
    ```bash
    # Create namespace and a service account
-   kubectl apply -f common/ns-and-sa.yaml
+   kubectl apply -f deployments/common/ns-and-sa.yaml
 
    # Create cluster role and cluster role bindings
-   kubectl apply -f rbac/rbac.yaml
+   kubectl apply -f deployments/rbac/rbac.yaml
 
    # Create default server secret with TLS certificate and a key
-   kubectl apply -f ../examples/shared-examples/default-server-secret/default-server-secret.yaml
+   kubectl apply -f examples/shared-examples/default-server-secret/default-server-secret.yaml
 
    # Create config map
-   kubectl apply -f common/nginx-config.yaml
+   kubectl apply -f deployments/common/nginx-config.yaml
 
    # Create IngressClass resource
-   kubectl apply -f common/ingress-class.yaml
+   kubectl apply -f deployments/common/ingress-class.yaml
 
    # Create CRDs
-   kubectl apply -f common/crds/k8s.nginx.org_virtualservers.yaml
-   kubectl apply -f common/crds/k8s.nginx.org_virtualserverroutes.yaml
-   kubectl apply -f common/crds/k8s.nginx.org_transportservers.yaml
-   kubectl apply -f common/crds/k8s.nginx.org_policies.yaml
-   
-   # Create GlobalConfiguration resource
-   kubectl apply -f common/crds/k8s.nginx.org_globalconfigurations.yaml
+   kubectl apply -f config/crd/bases/k8s.nginx.org_virtualservers.yaml
+   kubectl apply -f config/crd/bases/k8s.nginx.org_virtualserverroutes.yaml
+   kubectl apply -f config/crd/bases/k8s.nginx.org_transportservers.yaml
+   kubectl apply -f config/crd/bases/k8s.nginx.org_policies.yaml
+   kubectl apply -f config/crd/bases/k8s.nginx.org_globalconfigurations.yaml
    ```
 
    ```bash
@@ -283,7 +282,7 @@ In this section, you will be installing NGINX Plus Ingress Controller in your fi
 
      - On lines #16-19, we have enabled `Prometheus` related annotations.
      - On Lines #22-23, the ImagePullSecret is set to the Docker Config Secret `regcred` you created previously.
-     - On line #38, the `nginx-plus-ingress:3.3.2` placeholder is changed to the Nginx Private Registry image.
+     - On line #38, the `nginx-plus-ingress:3.7.2` placeholder is changed to the Nginx Private Registry image.
      - On lines #52-53, we have added TCP port 9000 for the Plus Dashboard.
      - On line #97, uncomment to make use of default TLS secret
      - On lines #98-99, we have enabled the Dashboard and set the IP access controls to the Dashboard.
@@ -456,9 +455,9 @@ So why use ports 9001 for the NIC Dashboard?  Will this work on port 80/443?  Ye
    ##Sample Output##
    Switched to context "n4a-aks1".
    NAME                                STATUS   ROLES   AGE     VERSION
-   aks-nodepool1-19055428-vmss000003   Ready    agent   4h32m   v1.27.9
-   aks-nodepool1-19055428-vmss000004   Ready    agent   4h31m   v1.27.9
-   aks-nodepool1-19055428-vmss000005   Ready    agent   4h32m   v1.27.9
+   aks-nodepool1-19055428-vmss000003   Ready    agent   4h32m   v1.32.4
+   aks-nodepool1-19055428-vmss000004   Ready    agent   4h31m   v1.32.4
+   aks-nodepool1-19055428-vmss000005   Ready    agent   4h32m   v1.32.4
    ```
 
 1. Use the 3 Node Names as your Upstream Servers, and add `:32090` as your port number.  This matches the NodePort-Static that you configured in previous section.
@@ -522,7 +521,7 @@ So why use ports 9001 for the NIC Dashboard?  Will this work on port 80/443?  Ye
 
    ```bash
    ## Set environment variables
-   export MY_RESOURCEGROUP=s.dutta-workshop
+   export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
    export MY_PUBLICIP=$(curl ipinfo.io/ip)
    ```
 
@@ -581,10 +580,10 @@ In this section, similar to how you deployed the first AKS cluster, you will dep
 
    ```bash
     ## Set environment variables
-    export MY_RESOURCEGROUP=s.dutta-workshop
+    export MY_NAME=$(whoami)
+    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
     export MY_AKS=n4a-aks2
-    export MY_NAME=s.dutta
-    export K8S_VERSION=1.27
+    export K8S_VERSION=1.32
     export MY_SUBNET=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks2-subnet --vnet-name n4a-vnet --query id -o tsv)
     
     ```
@@ -604,7 +603,7 @@ In this section, similar to how you deployed the first AKS cluster, you will dep
         --generate-ssh-keys
    ```
 
-   >**Note**: At the time of this writing, 1.27 is the latest kubernetes long-term supported (LTS) version available in Azure AKS.
+   >**Note**: At the time of this writing, 1.32 is the latest kubernetes long-term supported (LTS) version available in Azure AKS.
 
 2. Configure `kubectl` to connect to your Azure AKS cluster using below command.
 
@@ -634,44 +633,43 @@ In this section, similar to how you installed NGINX Plus Ingress Controller in f
    ##Sample Output##
    Switched to context "n4a-aks2".
    NAME                                STATUS   ROLES   AGE   VERSION
-   aks-nodepool1-29147198-vmss000000   Ready    agent   21h   v1.27.9
-   aks-nodepool1-29147198-vmss000001   Ready    agent   21h   v1.27.9
-   aks-nodepool1-29147198-vmss000002   Ready    agent   21h   v1.27.9
-   aks-nodepool1-29147198-vmss000003   Ready    agent   21h   v1.27.9
+   aks-nodepool1-29147198-vmss000000   Ready    agent   21h   v1.32.4
+   aks-nodepool1-29147198-vmss000001   Ready    agent   21h   v1.32.4
+   aks-nodepool1-29147198-vmss000002   Ready    agent   21h   v1.32.4
+   aks-nodepool1-29147198-vmss000003   Ready    agent   21h   v1.32.4
    ```
 
-1. Navigate to `/kubernetes-ingress/deployments` directory within `/labs` directory
+1. Navigate to `/kubernetes-ingress` directory within `/labs` directory
 
     ```bash
-    cd <Parent directory where you git cloned the workshop repo>/nginx-azure-workshops/labs/kubernetes-ingress/deployments
+    cd <Parent directory where you git cloned the workshop repo>/nginx-azure-workshops/labs/kubernetes-ingress
     ```
 
 1. Create necessary Kubernetes objects needed for Ingress Controller:
 
    ```bash
    # Create namespace and a service account
-   kubectl apply -f common/ns-and-sa.yaml
+   kubectl apply -f deployments/common/ns-and-sa.yaml
 
    # Create cluster role and cluster role bindings
-   kubectl apply -f rbac/rbac.yaml
+   kubectl apply -f deployments/rbac/rbac.yaml
 
    # Create default server secret with TLS certificate and a key
-   kubectl apply -f ../examples/shared-examples/default-server-secret/default-server-secret.yaml
+   kubectl apply -f examples/shared-examples/default-server-secret/default-server-secret.yaml
 
    # Create config map
-   kubectl apply -f common/nginx-config.yaml
+   kubectl apply -f deployments/common/nginx-config.yaml
 
    # Create IngressClass resource
-   kubectl apply -f common/ingress-class.yaml
+   kubectl apply -f deployments/common/ingress-class.yaml
 
    # Create CRDs
-   kubectl apply -f common/crds/k8s.nginx.org_virtualservers.yaml
-   kubectl apply -f common/crds/k8s.nginx.org_virtualserverroutes.yaml
-   kubectl apply -f common/crds/k8s.nginx.org_transportservers.yaml
-   kubectl apply -f common/crds/k8s.nginx.org_policies.yaml
+   kubectl apply -f config/crd/bases/k8s.nginx.org_virtualservers.yaml
+   kubectl apply -f config/crd/bases/k8s.nginx.org_virtualserverroutes.yaml
+   kubectl apply -f config/crd/bases/k8s.nginx.org_transportservers.yaml
+   kubectl apply -f config/crd/bases/k8s.nginx.org_policies.yaml
+   kubectl apply -f config/crd/bases/k8s.nginx.org_globalconfigurations.yaml
    
-   # Create GlobalConfiguration resource
-   kubectl apply -f common/crds/k8s.nginx.org_globalconfigurations.yaml
    ```
 
    ```bash
@@ -985,8 +983,8 @@ So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 8
    ##Sample Output##
    CURRENT   NAME               CLUSTER            AUTHINFO                                NAMESPACE
             aks-shouvik-fips   aks-shouvik-fips   clusterUser_s.dutta_aks-shouvik-fips    
-   *        n4a-aks1           n4a-aks1           clusterUser_s.dutta-workshop_n4a-aks1   
-            n4a-aks2           n4a-aks2           clusterUser_s.dutta-workshop_n4a-aks2   
+   *        n4a-aks1           n4a-aks1           clusterUser_sh.dutta-n4a-workshop_n4a-aks1   
+            n4a-aks2           n4a-aks2           clusterUser_sh.dutta-n4a-workshop_n4a-aks2   
             rancher-desktop    rancher-desktop    rancher-desktop                         
    ```
 
@@ -1012,9 +1010,9 @@ So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 8
    ```bash
    ##Sample Output##
    NAME                                STATUS   ROLES   AGE   VERSION
-   aks-nodepool1-19055428-vmss000000   Ready    agent   46m   v1.27.9
-   aks-nodepool1-19055428-vmss000001   Ready    agent   46m   v1.27.9
-   aks-nodepool1-19055428-vmss000002   Ready    agent   46m   v1.27.9   
+   aks-nodepool1-19055428-vmss000000   Ready    agent   46m   v1.32.4
+   aks-nodepool1-19055428-vmss000001   Ready    agent   46m   v1.32.4
+   aks-nodepool1-19055428-vmss000002   Ready    agent   46m   v1.32.4   
    ```
 
 1. Test if you are able to access your second AKS cluster(`n4a-aks2`).
@@ -1032,16 +1030,16 @@ So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 8
    ```bash
    ##Sample Output##
    NAME                                STATUS   ROLES   AGE   VERSION
-   aks-nodepool1-29147198-vmss000000   Ready    agent   27m   v1.27.9
-   aks-nodepool1-29147198-vmss000001   Ready    agent   27m   v1.27.9
-   aks-nodepool1-29147198-vmss000002   Ready    agent   27m   v1.27.9
-   aks-nodepool1-29147198-vmss000003   Ready    agent   27m   v1.27.9  
+   aks-nodepool1-29147198-vmss000000   Ready    agent   27m   v1.32.4
+   aks-nodepool1-29147198-vmss000001   Ready    agent   27m   v1.32.4
+   aks-nodepool1-29147198-vmss000002   Ready    agent   27m   v1.32.4
+   aks-nodepool1-29147198-vmss000003   Ready    agent   27m   v1.32.4 
    ```
 
 1. Finally to stop a running AKS cluster use below command.
 
    ```bash
-   export MY_RESOURCEGROUP=s.dutta
+   export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
    export MY_AKS=n4a-aks1
 
    az aks stop \
@@ -1052,7 +1050,7 @@ So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 8
 1. To start an already deployed AKS cluster use this command.
 
    ```bash
-   export MY_RESOURCEGROUP=s.dutta
+   export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
    export MY_AKS=n4a-aks1
 
    az aks start \

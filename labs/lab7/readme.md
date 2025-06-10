@@ -4,9 +4,9 @@
 
 In this lab, you will create a new key-vault resource that would be storing self-signed certificates. You will then configure Nginx for Azure to listen for https traffic and then terminate TLS before proxying and load balancing back to the backend system.
 
-NGINX aaS | Docker
+NGINXaaS | Docker
 :-------------------------:|:-------------------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)
+![NGINXaaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)
   
 ## Learning Objectives
 
@@ -30,9 +30,9 @@ By the end of the lab you will be able to:
 
     ```bash
     ## Set environment variable
-    export MY_RESOURCEGROUP=s.dutta-workshop
-    export MY_INITIALS=sdutta
-    export MY_KEYVAULT=n4a-keyvault-$MY_INITIALS
+    export MY_NAME=$(whoami)
+    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_KEYVAULT=n4a-keyvault-$MY_NAME
     ```
 
     Once the environment variables are all set, run below command to create the key vault resource
@@ -47,9 +47,9 @@ By the end of the lab you will be able to:
     ```bash
     ##Sample Output##
     {
-    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.dutta-workshop/providers/Microsoft.KeyVault/vaults/n4a-keyvault-sdutta",
+    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.KeyVault/vaults/n4a-keyvault-sh.dutta",
     "location": "centralus",
-    "name": "n4a-keyvault-sdutta",
+    "name": "n4a-keyvault-sh.dutta",
     "properties": {
         "accessPolicies": [
         {
@@ -90,9 +90,9 @@ By the end of the lab you will be able to:
         },
         "softDeleteRetentionInDays": 90,
         "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
-        "vaultUri": "https://n4a-keyvault-sdutta.vault.azure.net/"
+        "vaultUri": "https://n4a-keyvault-sh.dutta.vault.azure.net/"
     },
-    "resourceGroup": "s.dutta-workshop",
+    "resourceGroup": "sh.dutta-n4a-workshop",
     "systemData": {
         "createdAt": "2024-05-08T12:51:45.338000+00:00",
         "createdBy": "<YOUR EMAIL ID>",
@@ -113,7 +113,7 @@ By the end of the lab you will be able to:
 
     ```bash
     ## Set environment variable
-    MY_PRINCIPALID=$(az identity show \
+    export MY_PRINCIPALID=$(az identity show \
     --resource-group $MY_RESOURCEGROUP \
     --name n4a-useridentity \
     --query principalId \
@@ -155,7 +155,7 @@ By the end of the lab you will be able to:
     "cancellationRequested": false,
     "csr": "<Your Certificate Signing Request Data>",
     "error": null,
-    "id": "https://n4a-keyvault-sdutta.vault.azure.net/certificates/n4a-cert/pending",
+    "id": "https://n4a-keyvault-sh.dutta.vault.azure.net/certificates/n4a-cert/pending",
     "issuerParameters": {
         "certificateTransparency": null,
         "certificateType": null,
@@ -165,13 +165,13 @@ By the end of the lab you will be able to:
     "requestId": "9e3abe3b0977420cba1733c326fe26e5",
     "status": "completed",
     "statusDetails": null,
-    "target": "https://n4a-keyvault-sdutta.vault.azure.net/certificates/n4a-cert"
+    "target": "https://n4a-keyvault-sh.dutta.vault.azure.net/certificates/n4a-cert"
     }
     ```
 
     > **NOTE:** Within the output json you should have a `"status": "completed"` field which validates the command successfully created the certificate.
 
-3. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault-$MY_INITIALS` key-vault resource.
+3. Now log into Azure portal and navigate to your resource-group and then click on the `n4a-keyvault-$MY_NAME` key-vault resource.
 
 4. Within the keyvault resources window, click on `Certificates` under `Objects` from the left pane. You should see a self-signed certificate named `n4a-cert` within the certificates pane.
 
@@ -199,7 +199,7 @@ Now that you have a self signed TLS certificate for testing, you will configure 
         ![add certificate1](media/lab7_add_certificate1.png)
 
     - Click on the `Select Certificate` button and then fill in below certificate details. Once done click `Select`
-      - **Key vault:** Select your key vault (eg. n4a-keyvault-sdutta)
+      - **Key vault:** Select your key vault (eg. n4a-keyvault-sh.dutta)
       - **Certificate name:** Select a certificate (eg. n4a-cert)
 
         ![add certificate2](media/lab7_add_certificate2.png)
