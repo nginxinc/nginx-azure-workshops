@@ -24,7 +24,10 @@
 NAME="n4a-auto-lab.sh"
 VERSION="1"
 LOG_FILE="n4a-autolab.log" # not used yet, but will be soon
-export MY_LOCATION=centralus # can be changed to your location
+if [ -z "$MY_LOCATION" ]; then
+  export MY_LOCATION=centralus
+fi
+# export MY_LOCATION=centralus # can be changed to your location
 
 # On OS X, you can pull your username.  You can also set it yourself for use in the script:
 # export OWNER=<your name>

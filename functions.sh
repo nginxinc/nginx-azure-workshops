@@ -401,7 +401,8 @@ function create_aks_cluster1(){
 export MY_AKS1=n4a-aks1
 export MY_AKS2=n4a-aks2
 export MY_NAME=${MY_NAME:-$(whoami)}
-export K8S_VERSION=1.29
+export K8S_VERSION=1.32
+export NIC_VERSION=v3.7.2
 export MY_SUBNET1=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks1-subnet --vnet-name n4a-vnet --only-show-errors --query id -o tsv)
 export MY_SUBNET2=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks2-subnet --vnet-name n4a-vnet --only-show-errors --query id -o tsv)
 # This requires that you place your JWT file in the labs/lab3 directory and name it nginx-repo.jwt
@@ -441,12 +442,12 @@ function clone_repo(){
 
 if [ -d kubernetes-ingress/deployments ]; then
   EXISTS=1
-  MESSAGE="Use Existing NGINX Ingress Controller Repo"
+  MESSAGE="Use Existing NGINX Ingress Controller Repo version: $NIC_VERSION"
   LGTH=${#MESSAGE}
 else
-  CLONE=`git clone https://github.com/nginxinc/kubernetes-ingress.git --branch v3.3.2`
-  cd kubernetes-ingress/deployments
-  MESSAGE="Cloning NGINX Ingress Controller Repo"
+  CLONE=`git clone https://github.com/nginx/kubernetes-ingress.git --branch $NIC_VERSION`
+#   cd kubernetes-ingress/deployments
+  MESSAGE="Cloning NGINX Ingress Controller Repo version: $NIC_VERSION"
   LGTH=${#MESSAGE}
 fi
 
@@ -471,11 +472,11 @@ kubectl apply -f kubernetes-ingress/deployments/rbac/rbac.yaml
 kubectl apply -f kubernetes-ingress/examples/shared-examples/default-server-secret/default-server-secret.yaml
 kubectl apply -f kubernetes-ingress/deployments/common/nginx-config.yaml
 kubectl apply -f kubernetes-ingress/deployments/common/ingress-class.yaml
-kubectl apply -f kubernetes-ingress/deployments/common/crds/k8s.nginx.org_virtualservers.yaml
-kubectl apply -f kubernetes-ingress/deployments/common/crds/k8s.nginx.org_virtualserverroutes.yaml
-kubectl apply -f kubernetes-ingress/deployments/common/crds/k8s.nginx.org_transportservers.yaml
-kubectl apply -f kubernetes-ingress/deployments/common/crds/k8s.nginx.org_policies.yaml
-kubectl apply -f kubernetes-ingress/deployments/common/crds/k8s.nginx.org_globalconfigurations.yaml`
+kubectl apply -f kubernetes-ingress/config/crd/bases/k8s.nginx.org_virtualservers.yaml
+kubectl apply -f kubernetes-ingress/config/crd/bases/k8s.nginx.org_virtualserverroutes.yaml
+kubectl apply -f kubernetes-ingress/config/crd/bases/k8s.nginx.org_transportservers.yaml
+kubectl apply -f kubernetes-ingress/config/crd/bases/k8s.nginx.org_policies.yaml
+kubectl apply -f kubernetes-ingress/config/crd/bases/k8s.nginx.org_globalconfigurations.yaml`
 
 if [[ -z "$CREATE_NIC_RESOURCES1" ]]; then
     echo -ne $MESSAGE
@@ -579,11 +580,11 @@ kubectl apply -f kubernetes-ingress/deployments/rbac/rbac.yaml
 kubectl apply -f kubernetes-ingress/examples/shared-examples/default-server-secret/default-server-secret.yaml
 kubectl apply -f kubernetes-ingress/deployments/common/nginx-config.yaml
 kubectl apply -f kubernetes-ingress/deployments/common/ingress-class.yaml
-kubectl apply -f kubernetes-ingress/deployments/common/crds/k8s.nginx.org_virtualservers.yaml
-kubectl apply -f kubernetes-ingress/deployments/common/crds/k8s.nginx.org_virtualserverroutes.yaml
-kubectl apply -f kubernetes-ingress/deployments/common/crds/k8s.nginx.org_transportservers.yaml
-kubectl apply -f kubernetes-ingress/deployments/common/crds/k8s.nginx.org_policies.yaml
-kubectl apply -f kubernetes-ingress/deployments/common/crds/k8s.nginx.org_globalconfigurations.yaml`
+kubectl apply -f kubernetes-ingress/config/crd/bases/k8s.nginx.org_virtualservers.yaml
+kubectl apply -f kubernetes-ingress/config/crd/bases/k8s.nginx.org_virtualserverroutes.yaml
+kubectl apply -f kubernetes-ingress/config/crd/bases/k8s.nginx.org_transportservers.yaml
+kubectl apply -f kubernetes-ingress/config/crd/bases/k8s.nginx.org_policies.yaml
+kubectl apply -f kubernetes-ingress/config/crd/bases/k8s.nginx.org_globalconfigurations.yaml`
 
 if [[ -z "$CREATE_NIC_RESOURCES2" ]]; then
     echo -ne $MESSAGE

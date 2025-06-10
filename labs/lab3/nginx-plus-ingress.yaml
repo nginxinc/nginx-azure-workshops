@@ -35,7 +35,7 @@ spec:
 #      - name: nginx-log
 #        emptyDir: {}
       containers:
-      - image: private-registry.nginx.com/nginx-ic/nginx-plus-ingress:3.3.2
+      - image: private-registry.nginx.com/nginx-ic/nginx-plus-ingress:3.7.2
         imagePullPolicy: IfNotPresent
         name: nginx-plus-ingress
         ports:
@@ -94,23 +94,23 @@ spec:
         args:
           - -nginx-plus
           - -nginx-configmaps=$(POD_NAMESPACE)/nginx-config
-          - -default-server-tls-secret=$(POD_NAMESPACE)/default-server-secret
           - -nginx-status-port=9000
           - -nginx-status-allow-cidrs=0.0.0.0/0
-         #- -include-year
+          - -report-ingress-status
+          - -enable-oidc
+          - -external-service=nginx-ingress
+          - -default-server-tls-secret=$(POD_NAMESPACE)/default-server-secret
          #- -enable-cert-manager
          #- -enable-external-dns
          #- -enable-app-protect
          #- -enable-app-protect-dos
          #- -v=3 # Enables extensive logging. Useful for troubleshooting.
-          - -report-ingress-status
-         #- -external-service=nginx-ingress
           - -enable-prometheus-metrics
-          - -enable-oidc
+          - -enable-latency-metrics
          #- -enable-service-insight
           - -global-configuration=$(POD_NAMESPACE)/nginx-configuration
 #      initContainers:
-#      - image: nginx/nginx-ingress:3.2.1
+#      - image: nginx/nginx-ingress:3.7.2
 #        imagePullPolicy: IfNotPresent
 #        name: init-nginx-ingress
 #        command: ['cp', '-vdR', '/etc/nginx/.', '/mnt/etc']
