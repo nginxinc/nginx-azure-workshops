@@ -64,6 +64,7 @@ For additional information on the script you can run the same command with `-h` 
     ```bash
     ## Set environment variables
     export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_ID=`az group show -n $MY_RESOURCEGROUP --query "id" -otsv`
     ```
 
 1. Make sure your Terminal is the `nginx-azure-workshops/labs` directory for all commands during this Workshop.
@@ -85,7 +86,12 @@ For additional information on the script you can run the same command with `-h` 
         --assign-identity \
         --generate-ssh-keys \
         --public-ip-sku Standard \
-        --custom-data lab2/init.sh
+        --custom-data lab2/init.sh \
+        --scope $MY_ID \
+        --role Owner \
+        --security-type TrustedLaunch \
+        --enable-secure-boot true \
+        --enable-vtpm true
     ```
 
     ```bash
@@ -487,7 +493,8 @@ Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
         --vnet-name n4a-vnet \
         --subnet vm-subnet \
         --admin-username azureuser \
-        --public-ip-sku Standard
+        --public-ip-sku Standard \
+        --security-type Standard
     ```
 
     ```bash
