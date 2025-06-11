@@ -45,7 +45,7 @@ By the end of the lab you will be able to:
 
 The NLK controller uses an API key to send updates to your NGINX instance.  Create a new one following these steps:
 
-1. Using the N4A Web Console, in your N4A deployment, Settings, click on `NGINX API keys`, then `+ New API Key`.
+1. Using the N4A Web Console, in your N4A deployment, Settings, click on `NGINX Loadbalancer for Kubernetes`, then `+ New API Key`.
 
 1. On the right in `Add API Key` sidebar, give it a name.  Optionally change the Expiration Date.  In this example, you will use:
 
@@ -74,7 +74,7 @@ Go the Azure Marketplane, and search for `NGINX`.  Or click on this link to take
 
 1. Click on `Get It Now`, then `Continue`.
 
-  Select the Subscription and Resource Group for the deployment; Select `No` for a new AKS cluster.  You will use your existing clusters from Lab3 for this lab exercise.
+  Select your Subscription and Resource Group for the deployment; Select `No` for a new AKS cluster.  You will use your existing clusters from Lab3 for this lab exercise.
 
 1. Click `Next`, and chose `n4a-aks1` under Cluster Details.
 
@@ -84,11 +84,10 @@ Go the Azure Marketplane, and search for `NGINX`.  Or click on this link to take
     - Check the `Allow minor version updates`
     - Paste your Dataplane API Key value
     - Paste your Dataplane API Endpoint URL **and ADD `nplus` to the end**
-    - Optional: Add new KeyValue pair:  `nlk.config.logLevel` `info`
 
 1. Click `Next`, Review your settings.
 
-    If you scroll to the bottom, you will see your entered data, take a screenshot if you did not SAVE it somewhere.  If you are satisifed with your Settiings, click `Create`.  *You can safely ignore the billing warning, NLK is free of charge at the time of this writing.*
+    If you scroll to the bottom, you will see your entered data, take a screenshot if you did not SAVE it somewhere.  If you are satisifed with your Settiings, click `Create`.
 
     ![NLK Config](media/lab12_nlk-config.png)
 
@@ -311,7 +310,7 @@ NGINX Ingress will then route the requests to the correct Services and Pods.  (N
 
 1. Using curl, see if the NGINX Cafe application works and what Header Values are returned, ready for coffee?
 
-    <img src="media/curl-logo.png" height="20%" width="20%">
+    ![Curl icon](media/curl-icon.png)
 
     ```bash
     curl -I http://cafe.example.com/coffee
@@ -383,7 +382,12 @@ NGINX Ingress will then route the requests to the correct Services and Pods.  (N
 
     ```
 
-1. You can see this using Azure Metrics as well, as shown here.  Notice that you can add the Filter and Splitting, to see the IP Addresses of the NGINX Upstreams.  The Upstream `aks1-nlk-upstreams` and it's IP Addresses should match your Worker Node IPs, and the Port number should match your NodePort `nginx-ingress` Service.
+1. Using Chrome, open `http://cafe.example.com/coffee`, and Right-Click `Inspect`.  Choose `Network`, and then a webpage opject.  You should find the `X-Aks1-Upstream` Header, with the same Worker `NodeIP:NodePort` value.  As you Refresh Chrome, this Header Value will change as Nginx is load balancing to all your AKS workers.
+
+    ![Azure Metrics](media/lab12_chrome-headers.png)
+
+
+1. You can see this using Azure Metrics as well, as shown here.  Select `plus.http.upstreams.peers.state.up`, and then add the Filter for Upstream, and select `peer.address` Value for Splitting, to see the IP:Port Addresses of the NGINX Upstreams.  The Upstream `aks1-nlk-upstreams` and it's IP Addresses should match your Worker Node IPs, and the Port number should match your NodePort `nginx-ingress` Service.
 
     ![Azure Metrics](media/lab12_azure-metrics-3upstreams.png)
 
@@ -460,19 +464,17 @@ If you want to see what the NLK Controller is doing, you have to change the Logg
 
 Now for the actual Scaling Test!!  Does the NLK Controller detect when you `scale your AKS Cluster nodes up/down` (Node Scaling)?  You will test that now.
 
-1. Using the Azure Portal web console, manually scale your `n4a-aks1 nodepool` from 3 to 5 workers.  
+1. Using the Azure Portal web console, manually scale your `n4a-aks1 Node pool` from 3 to 5 workers.  Find your `n4a-aks1` cluster, Select Settings, then Node pools.  Click the `Scale node pool` button, then change it to 5 (or whatever you'd like to test), and click `Apply`.  It will take several minutes for the Workers to join the Cluster.
 
    ![Aks nodes=5](media/lab12_aks-nodes-5.png)
 
-   Watching the NLK Logs, you should see some NLK `Updated messages` scroll by.
-
-1. Open a new Terminal, check with Curl, do you find 5 different IP addresses in the in `X-Aks1-Upstream Header` values?
+1. Open a new Terminal, check again with Curl, do you find 5 different IP addresses in the in `X-Aks1-Upstream Header` values?
 
     ```bash
     while true; do curl -I http://cafe.example.com/coffee; sleep .5; done
     ```
 
-    Confirm - what are the 5 n4a-aks1 Node IPs?  Ask Kubernetes ...
+1. Confirmation - what are the 5 n4a-aks1 NodeIPs?  Ask Kubernetes ...
 
     ```bash
     kubectl config use-context n4a-aks1
@@ -488,8 +490,9 @@ Now for the actual Scaling Test!!  Does the NLK Controller detect when you `scal
       InternalIP:  172.16.10.7
     ```
 
+    Type `Ctrl-C` when you are finished with the curl command.
 
-1. Go back your N4A Metrics Panel, and check the `plus.http.upstream.peer.address` of your Metrics Filter... you should also find 5 IP:NodePort Addresses, one for each upstream/worker.
+1. Go back your N4A Metrics Panel, and check the `peer.address` of your Metrics Split... you should also find 5 IP:NodePort Addresses, one for each upstream/worker.
 
     ![5 upstreams](media/lab12_azure-metrics-5upstreams.png)
 
@@ -520,6 +523,10 @@ As it is the `end of day` business time for your company, the workload demands o
 ### Optional Exercise - NLK Debugging
 
 If you are curious, you can change the NLK Controller LogLevel to `debug`, and see many more details about what NLK is doing.  
+
+1. Using the Azure Portal, Select your `n4a-aks1` cluster, then Settings, Extensions.  Select your `aks1nlk` extension.  Scroll Down and Expand `Configuration settings`, and change the `nlk.config.logLevel` to `debug` and click Save, shown.
+
+    ![NLK Debug](media/lab12_nlk-debug.png)
 
 1. While watching the debug log, Scale your n4a-aks1 cluster back to 3 Nodes.  You will find something like this:
 
