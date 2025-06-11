@@ -320,7 +320,7 @@ Now that you have these new Nginx Upstream blocks created, you can test them.
     Using your local Docker Desktop, you will start and run the WRK loadtest from a container.  Try this for a 1 minute loadtest:
 
     ```bash
-    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s http://cafe.example.com/coffee
+    docker run --name wrk --rm elswork/wrk -t4 -c200 -d1m --timeout 2s http://cafe.example.com/coffee
     ```
 
     ```bash
@@ -471,7 +471,7 @@ You can also see this list, using the Nginx Plus Dashboard for the Ingress Contr
     Using your local Docker Desktop, you will start and run the WRK loadtest from a container. Try this for a 1 minute loadtest:
 
     ```bash
-    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d1m --timeout 2s http://cafe.example.com/coffee
+    docker run --name wrk --rm elswork/wrk -t4 -c200 -d1m --timeout 2s http://cafe.example.com/coffee
     ```
 
     ```bash
@@ -591,7 +591,7 @@ Unfortunately, refreshing about 100 times and trying to catch the 1% sent to AKS
 1. Open a separate Terminal, and start the WRK load tool. Use the example here, but change the IP address to your Nginx for Azure Public IP:
 
     ```bash
-    docker run --name wrk --rm williamyeh/wrk -t4 -c200 -d20m --timeout 2s http://cafe.example.com/coffee
+    docker run --name wrk --rm elswork/wrk -t4 -c200 -d20m --timeout 2s http://cafe.example.com/coffee
     ```
 
 This will open 200 Connections, and run for 20 minutes while we try different Split Ratios.  The FQDN `cafe.example.com` will match your Server Block in your Nginx for Azure configuration.

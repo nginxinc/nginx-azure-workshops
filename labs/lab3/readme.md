@@ -159,7 +159,7 @@ In this section, you will be installing NGINX Plus Ingress Controller in your fi
 1. Git Clone the Nginx Ingress Controller repo and navigate into the `kubernetes-ingress` directory to make it your working directory for installing NGINX Ingress Controller:
 
    ```bash
-   git clone https://github.com/nginxinc/kubernetes-ingress.git --branch $NIC_VERSION
+   git clone https://github.com/nginx/kubernetes-ingress.git --branch $NIC_VERSION
    cd kubernetes-ingress
    ```
 
@@ -887,7 +887,7 @@ This will be the logical network diagram for accessing the Nginx Ingress Dashboa
 
 So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 80/443?  Yes, it will, but separating this type of monitoring traffic from production traffic is generally considered a Best Practice.  It also shows you that Nginx for Azure is able to use any port for Port Based routing, it is not limited to just ports 80 and 443 like some cloud load balancers.
 
-![Lab3 NIC Dashboards Diagrom](media/lab3_nic-dashboards-diagram.png)
+![Lab3 NIC Dashboards Diagram](media/lab3_nic-dashboards-diagram.png)
 
 1. First, create the Upstream server block for AKS cluster #2.  You will need the AKS2 Node Names from the Node Pool.  Make sure your Kube Context is n4a-aks2:
 

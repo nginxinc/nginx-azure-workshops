@@ -119,7 +119,7 @@ To get the Dashboards to load. Replace each variable field at the top (see image
 1. Start the WRK load generation tool. This will provide some traffic to the NGINXaaS for Azure instance, so that the statistics will be increasing.
 
 ```bash
-docker run --rm williamyeh/wrk -t20 -d600s -c1000 https://cafe.example.com/ 
+docker run --rm elswork/wrk -t20 -d600s -c1000 https://cafe.example.com/ 
 ```
 
 <br/>
