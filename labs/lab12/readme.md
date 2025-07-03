@@ -22,7 +22,7 @@ NGINXaaS for Azure | AKS | NGINX Loadbalancer Kubernetes
 
 <br/>
 
-## Learning Objectives 
+## Learning Objectives
 
 By the end of the lab you will be able to:
 - Create NGINXaaS API Key 
@@ -45,7 +45,7 @@ By the end of the lab you will be able to:
 
 The NLK controller uses an API key to send updates to your NGINX instance.  Create a new one following these steps:
 
-1. Using the N4A Web Console, in your N4A deployment, Settings, click on `NGINX API keys`, then `+ New API Key`.
+1. Using the N4A Web Console, in your N4A deployment, Settings, click on `NGINX Loadbalancer for Kubernetes`, then `+ New API Key`.
 
 1. On the right in `Add API Key` sidebar, give it a name.  Optionally change the Expiration Date.  In this example, you will use:
 
