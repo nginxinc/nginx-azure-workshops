@@ -3408,13 +3408,13 @@
       {
         "current": {
           "selected": false,
-          "text": "a.currier-workshop",
-          "value": "a.currier-workshop"
+          "text": "b.gates-n4a-workshop",
+          "value": "b.gates-n4a-workshop"
         },
         "hide": 0,
         "name": "MY_RESOURCEGROUP",
         "options": [],
-        "query": "a.currier-workshop",
+        "query": "b.gates-n4a-workshop",
         "skipUrlSync": false,
         "type": "textbox"
       },
