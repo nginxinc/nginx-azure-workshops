@@ -63,7 +63,7 @@ For additional information on the script you can run the same command with `-h` 
 
     ```bash
     ## Set environment variables
-    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
     export MY_ID=`az group show -n $MY_RESOURCEGROUP --query "id" -otsv`
     ```
 
@@ -98,7 +98,7 @@ For additional information on the script you can run the same command with `-h` 
     ##Sample Output##
     {
       "fqdns": "",
-      "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Compute/virtualMachines/n4a-ubuntuvm",
+      "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Compute/virtualMachines/n4a-ubuntuvm",
       "identity": {
         "systemAssignedIdentity": "xxxx-xxxx-xxxx-xxxx-xxxx",
         "userAssignedIdentities": {}
@@ -108,7 +108,7 @@ For additional information on the script you can run the same command with `-h` 
       "powerState": "VM running",
       "privateIpAddress": "172.16.2.4",
       "publicIpAddress": "<AZURE_ASSIGNED_PUBLICIP>",
-      "resourceGroup": "sh.dutta-n4a-workshop",
+      "resourceGroup": "b.gates-n4a-workshop",
       "zones": ""
     }
     ```
@@ -479,7 +479,7 @@ Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
 1. In your local machine open terminal and make sure you are logged onto your Azure tenant. Set the following Environment variables:
 
     ```bash
-    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
     export MY_VM_IMAGE=cognosys:iis-on-windows-server-2016:iis-on-windows-server-2016:1.2019.1009
     ```
 
@@ -504,13 +504,13 @@ Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
     Consider upgrading security for your workloads using Azure Trusted Launch VMs. To know more about Trusted Launch, please visit https://aka.ms/TrustedLaunch.
     {
     "fqdns": "",
-    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Compute/virtualMachines/n4a-windowsvm",
+    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Compute/virtualMachines/n4a-windowsvm",
     "location": "centralus",
     "macAddress": "00-0D-3A-96-C5-F1",
     "powerState": "VM running",
     "privateIpAddress": "172.16.2.5",
     "publicIpAddress": "<AZURE_ASSIGNED_PUBLICIP>",
-    "resourceGroup": "sh.dutta-n4a-workshop",
+    "resourceGroup": "b.gates-n4a-workshop",
     "zones": ""
     }
     ```
@@ -580,7 +580,7 @@ NGINX aaS | Windows VM / IIS
     ![Windows Upstreams](media/lab2_windows-upstreams.png)
 
     Click `Submit` to save your Nginx configuration.
-    
+
     This creates a new Nginx Upstream Block, which defines the Windows IIS backend server group that Nginx will load balance traffic to.
 
 1. Edit the comment characters in `/etc/nginx/conf.d/cafe.example.com.conf`, to enable the `proxy_pass` to the `windowsvm`, and disable it for the `cafe-nginx`, as follows:

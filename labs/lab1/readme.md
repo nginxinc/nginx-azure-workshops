@@ -72,7 +72,7 @@ By the end of the lab you will be able to:
     az group create --name {name}-n4a-workshop --location {My_Location}
 
     ## example
-    export MY_NAME=s.jobs
+    export MY_NAME=b.gates
     export MY_LOCATION=centralus
 
     az group create --name ${MY_NAME}-n4a-workshop --location ${MY_LOCATION}
@@ -131,11 +131,11 @@ You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 diffe
            },
            "enableDdosProtection": false,
            "etag": "W/\"be1dfac2-9879-4a22-abe4-717badebb0ec\"",
-           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet",
+           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet",
            "location": "centralus",
            "name": "n4a-vnet",
            "provisioningState": "Succeeded",
-           "resourceGroup": "s.jobs-n4a-workshop",
+           "resourceGroup": "b.gates-n4a-workshop",
            "resourceGuid": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "subnets": [],
            "type": "Microsoft.Network/virtualNetworks",
@@ -205,12 +205,12 @@ You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 diffe
        "destinationPortRanges": [],
        "direction": "Inbound",
        "etag": "W/\"7a178961-d3b8-4562-8493-4fcd7752e37b\"",
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/HTTP",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/HTTP",
        "name": "HTTP",
        "priority": 320,
        "protocol": "Tcp",
        "provisioningState": "Succeeded",
-       "resourceGroup": "s.jobs-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "sourceAddressPrefix": "<MY_PUBLICIP>",
        "sourceAddressPrefixes": [],
        "sourcePortRange": "*",
@@ -228,12 +228,12 @@ You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 diffe
        "destinationPortRanges": [],
        "direction": "Inbound",
        "etag": "W/\"dc717c9f-3790-45ba-b7aa-e5e39c11142d\"",
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/HTTPS",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/HTTPS",
        "name": "HTTPS",
        "priority": 300,
        "protocol": "Tcp",
        "provisioningState": "Succeeded",
-       "resourceGroup": "s.jobs-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "sourceAddressPrefix": "<MY_PUBLICIP>",
        "sourceAddressPrefixes": [],
        "sourcePortRange": "*",
@@ -266,25 +266,25 @@ You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 diffe
                    "Microsoft.Network/virtualNetworks/subnets/join/action"
                ],
                "etag": "W/\"a615708f-145c-4568-a7b1-29b262f04065\"",
-               "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet/delegations/0",
+               "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet/delegations/0",
                "name": "0",
                "provisioningState": "Succeeded",
-               "resourceGroup": "s.jobs-n4a-workshop",
+               "resourceGroup": "b.gates-n4a-workshop",
                "serviceName": "NGINX.NGINXPLUS/nginxDeployments",
                "type": "Microsoft.Network/virtualNetworks/subnets/delegations"
            }
        ],
        "etag": "W/\"a615708f-145c-4568-a7b1-29b262f04065\"",
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet",
        "name": "n4a-subnet",
        "networkSecurityGroup": {
-           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg",
-           "resourceGroup": "s.jobs-n4a-workshop"
+           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg",
+           "resourceGroup": "b.gates-n4a-workshop"
        },
        "privateEndpointNetworkPolicies": "Disabled",
        "privateLinkServiceNetworkPolicies": "Enabled",
        "provisioningState": "Succeeded",
-       "resourceGroup": "s.jobs-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "type": "Microsoft.Network/virtualNetworks/subnets"
    }
    ```
@@ -346,7 +346,7 @@ Your completed Vnet/Subnets should look similar to this:
                "protectionMode": "VirtualNetworkInherited"
            },
            "etag": "W/\"cbeb62f5-3ecc-404f-919d-bdea24c7b9f3\"",
-           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP",
+           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP",
            "idleTimeoutInMinutes": 4,
            "ipAddress": "<AZURE_ASSIGNED_PUBLICIP>",
            "ipTags": [],
@@ -355,7 +355,7 @@ Your completed Vnet/Subnets should look similar to this:
            "provisioningState": "Succeeded",
            "publicIPAddressVersion": "IPv4",
            "publicIPAllocationMethod": "Static",
-           "resourceGroup": "s.jobs-n4a-workshop",
+           "resourceGroup": "b.gates-n4a-workshop",
            "resourceGuid": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "sku": {
                "name": "Standard",
@@ -380,11 +380,11 @@ Your completed Vnet/Subnets should look similar to this:
    ##Sample Output##
    {
         "clientId": "xxxx-xxxx-xxxx-xxxx-xxxx",
-        "id": "/subscriptions/<SUBSCRIPTION_ID>/resourcegroups/s.jobs-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity",
+        "id": "/subscriptions/<SUBSCRIPTION_ID>/resourcegroups/b.gates-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity",
         "location": "centralus",
         "name": "n4a-useridentity",
         "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx",
-        "resourceGroup": "s.jobs-n4a-workshop",
+        "resourceGroup": "b.gates-n4a-workshop",
         "systemData": null,
         "tags": {},
         "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
@@ -418,13 +418,13 @@ Your completed Vnet/Subnets should look similar to this:
    ```bash
    ##Sample Output##
    {
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Nginx.NginxPlus/nginxDeployments/nginx4a",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Nginx.NginxPlus/nginxDeployments/nginx4a",
        "identity": {
            "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "type": "SystemAssigned, UserAssigned",
            "userAssignedIdentities": {
-               "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity": {
+               "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity": {
                    "clientId": "xxxx-xxxx-xxxx-xxxx-xxxx",
                    "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx"
                }
@@ -438,18 +438,18 @@ Your completed Vnet/Subnets should look similar to this:
            },
            "enableDiagnosticsSupport": false,
            "ipAddress": "<AZURE_ASSIGNED_PUBLICIP>",
-           "managedResourceGroup": "NGX_s.jobs-n4a-workshop_nginx4a_centralus",
+           "managedResourceGroup": "NGX_b.gates-n4a-workshop_nginx4a_centralus",
            "networkProfile": {
                "frontEndIPConfiguration": {
                    "publicIPAddresses": [
                        {
-                           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP",
-                           "resourceGroup": "s.jobs-n4a-workshop"
+                           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP",
+                           "resourceGroup": "b.gates-n4a-workshop"
                        }
                    ]
                },
                "networkInterfaceConfiguration": {
-                   "subnetId": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet"
+                   "subnetId": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet"
                }
            },
            "nginxVersion": "1.25.1 (nginx-plus-r30-p2)",
@@ -459,7 +459,7 @@ Your completed Vnet/Subnets should look similar to this:
            },
            "userProfile": {}
        },
-       "resourceGroup": "s.jobs-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "sku": {
            "name": "standardv2_Monthly"
        },
@@ -499,14 +499,14 @@ In this section you will create a Log Analytics resource that would collect Ngin
        "features": {
            "enableLogAccessUsingOnlyResourcePermissions": true
        },
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.OperationalInsights/workspaces/n4a-loganalytics",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.OperationalInsights/workspaces/n4a-loganalytics",
        "location": "centralus",
        "modifiedDate": "2024-04-29T16:05:07.3687572Z",
        "name": "n4a-loganalytics",
        "provisioningState": "Succeeded",
        "publicNetworkAccessForIngestion": "Enabled",
        "publicNetworkAccessForQuery": "Enabled",
-       "resourceGroup": "s.jobs-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "retentionInDays": 30,
        "sku": {
            "lastSkuUpdate": "2024-04-17T20:42:48.2028783Z",
@@ -535,13 +535,13 @@ In this section you will create a Log Analytics resource that would collect Ngin
    ```bash
    ##Sample Output##
    {
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Nginx.NginxPlus/nginxDeployments/nginx4a",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Nginx.NginxPlus/nginxDeployments/nginx4a",
        "identity": {
            "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "type": "SystemAssigned, UserAssigned",
            "userAssignedIdentities": {
-           "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity": {
+           "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity": {
                    "clientId": "xxxx-xxxx-xxxx-xxxx-xxxx",
                    "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx"
                }
@@ -591,7 +591,7 @@ In this section you will create a Log Analytics resource that would collect Ngin
    ```bash
    ##Sample Output##
    {
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourcegroups/s.jobs-n4a-workshop/providers/nginx.nginxplus/nginxdeployments/nginx4a/providers/microsoft.insights/diagnosticSettings/n4a-nginxlogs",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourcegroups/b.gates-n4a-workshop/providers/nginx.nginxplus/nginxdeployments/nginx4a/providers/microsoft.insights/diagnosticSettings/n4a-nginxlogs",
        "logs": [
            {
            "category": "NginxLogs",
@@ -604,9 +604,9 @@ In this section you will create a Log Analytics resource that would collect Ngin
        ],
        "metrics": [],
        "name": "n4a-nginxlogs",
-       "resourceGroup": "s.jobs-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "type": "Microsoft.Insights/diagnosticSettings",
-       "workspaceId": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/s.jobs-n4a-workshop/providers/Microsoft.OperationalInsights/workspaces/n4a-loganalytics"
+       "workspaceId": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.OperationalInsights/workspaces/n4a-loganalytics"
    }
    ```
 
@@ -679,4 +679,3 @@ In this section you will be looking at NGINX for Azure resource that you created
 ---
 
 Navigate to ([Lab2](../lab2/readme.md) | [LabGuide](../readme.md))
-

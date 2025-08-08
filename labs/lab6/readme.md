@@ -106,8 +106,7 @@ In this section you will create an extended log format which you will use with `
 
     ```bash
     ## Set environment variables
-    export MY_NAME=$(whoami)
-    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
     export MY_N4A_IP=$(az network public-ip show \
     --resource-group $MY_RESOURCEGROUP \
     --name n4a-publicIP \

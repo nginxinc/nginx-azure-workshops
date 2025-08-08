@@ -68,7 +68,7 @@ This lab focuses on building out two AKS Kubernetes clusters in your Azure envir
 
 Your new Lab Diagram will look similar to this:
 
-![Lab3 Diagrom](media/lab3_diagram.png)
+![Lab3 Diagram](media/lab3_diagram.png)
 
 <br/>
 
@@ -87,7 +87,7 @@ With the use of single Azure CLI command, you will deploy a production-ready AKS
    ```bash
     ## Set environment variables
     export MY_NAME=$(whoami)
-    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
     export MY_AKS=n4a-aks1
     export K8S_VERSION=1.32
     export NIC_VERSION=v3.7.2
@@ -521,7 +521,7 @@ So why use ports 9001 for the NIC Dashboard?  Will this work on port 80/443?  Ye
 
    ```bash
    ## Set environment variables
-   export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+   export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
    export MY_PUBLICIP=$(curl ipinfo.io/ip)
    ```
 
@@ -581,7 +581,7 @@ In this section, similar to how you deployed the first AKS cluster, you will dep
    ```bash
     ## Set environment variables
     export MY_NAME=$(whoami)
-    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
     export MY_AKS=n4a-aks2
     export K8S_VERSION=1.32
     export MY_SUBNET=$(az network vnet subnet show -g $MY_RESOURCEGROUP -n aks2-subnet --vnet-name n4a-vnet --query id -o tsv)
@@ -983,8 +983,8 @@ So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 8
    ##Sample Output##
    CURRENT   NAME               CLUSTER            AUTHINFO                                NAMESPACE
             aks-shouvik-fips   aks-shouvik-fips   clusterUser_s.dutta_aks-shouvik-fips    
-   *        n4a-aks1           n4a-aks1           clusterUser_sh.dutta-n4a-workshop_n4a-aks1   
-            n4a-aks2           n4a-aks2           clusterUser_sh.dutta-n4a-workshop_n4a-aks2   
+   *        n4a-aks1           n4a-aks1           clusterUser_b.gates-n4a-workshop_n4a-aks1   
+            n4a-aks2           n4a-aks2           clusterUser_b.gates-n4a-workshop_n4a-aks2   
             rancher-desktop    rancher-desktop    rancher-desktop                         
    ```
 
@@ -1039,7 +1039,7 @@ So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 8
 1. Finally to stop a running AKS cluster use below command.
 
    ```bash
-   export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+   export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
    export MY_AKS=n4a-aks1
 
    az aks stop \
@@ -1050,7 +1050,7 @@ So why use ports 9001 and 9002 for the NIC Dashboards?  Will this work on port 8
 1. To start an already deployed AKS cluster use this command.
 
    ```bash
-   export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+   export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
    export MY_AKS=n4a-aks1
 
    az aks start \

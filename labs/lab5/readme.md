@@ -831,7 +831,7 @@ In this exercise, you will use Nginx for Azure to expose the `Redis Leader Servi
 
     ```bash
     ## Set environment variables
-    export MY_RESOURCEGROUP=c.akker-workshop
+    export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
     export MY_PUBLICIP=$(curl ipinfo.io/ip)
     ```
 
@@ -866,12 +866,12 @@ In this exercise, you will use Nginx for Azure to expose the `Redis Leader Servi
     "destinationPortRanges": [],
     "direction": "Inbound",
     "etag": "W/\"19a674d2-2cc0-481e-b642-f7db545e9f07\"",
-    "id": "/subscriptions/<SUBSCRIPTION ID>/resourceGroups/c.akker-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/Redis",
+    "id": "/subscriptions/<SUBSCRIPTION ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/Redis",
     "name": "Redis",
     "priority": 400,
     "protocol": "Tcp",
     "provisioningState": "Succeeded",
-    "resourceGroup": "c.akker-workshop",
+    "resourceGroup": "b.gates-n4a-workshop",
     "sourceAddressPrefix": "<MY_PUBLICIP>",
     "sourceAddressPrefixes": [],
     "sourcePortRange": "*",

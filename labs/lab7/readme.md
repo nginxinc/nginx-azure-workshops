@@ -30,8 +30,8 @@ By the end of the lab you will be able to:
 
     ```bash
     ## Set environment variable
-    export MY_NAME=$(whoami)
-    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_NAME=b.gates
+    export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
     export MY_KEYVAULT=n4a-keyvault-$MY_NAME
     ```
 
@@ -47,9 +47,9 @@ By the end of the lab you will be able to:
     ```bash
     ##Sample Output##
     {
-    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.KeyVault/vaults/n4a-keyvault-sh.dutta",
+    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.KeyVault/vaults/n4a-keyvault-b.gates",
     "location": "centralus",
-    "name": "n4a-keyvault-sh.dutta",
+    "name": "n4a-keyvault-b.gates",
     "properties": {
         "accessPolicies": [
         {
@@ -90,9 +90,9 @@ By the end of the lab you will be able to:
         },
         "softDeleteRetentionInDays": 90,
         "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
-        "vaultUri": "https://n4a-keyvault-sh.dutta.vault.azure.net/"
+        "vaultUri": "https://n4a-keyvault-b.gates.vault.azure.net/"
     },
-    "resourceGroup": "sh.dutta-n4a-workshop",
+    "resourceGroup": "b.gates-n4a-workshop",
     "systemData": {
         "createdAt": "2024-05-08T12:51:45.338000+00:00",
         "createdBy": "<YOUR EMAIL ID>",
@@ -155,7 +155,7 @@ By the end of the lab you will be able to:
     "cancellationRequested": false,
     "csr": "<Your Certificate Signing Request Data>",
     "error": null,
-    "id": "https://n4a-keyvault-sh.dutta.vault.azure.net/certificates/n4a-cert/pending",
+    "id": "https://n4a-keyvault-b.gates.vault.azure.net/certificates/n4a-cert/pending",
     "issuerParameters": {
         "certificateTransparency": null,
         "certificateType": null,
@@ -165,7 +165,7 @@ By the end of the lab you will be able to:
     "requestId": "9e3abe3b0977420cba1733c326fe26e5",
     "status": "completed",
     "statusDetails": null,
-    "target": "https://n4a-keyvault-sh.dutta.vault.azure.net/certificates/n4a-cert"
+    "target": "https://n4a-keyvault-b.gates.vault.azure.net/certificates/n4a-cert"
     }
     ```
 
@@ -199,7 +199,7 @@ Now that you have a self signed TLS certificate for testing, you will configure 
         ![add certificate1](media/lab7_add_certificate1.png)
 
     - Click on the `Select Certificate` button and then fill in below certificate details. Once done click `Select`
-      - **Key vault:** Select your key vault (eg. n4a-keyvault-sh.dutta)
+      - **Key vault:** Select your key vault (eg. n4a-keyvault-b.gates)
       - **Certificate name:** Select a certificate (eg. n4a-cert)
 
         ![add certificate2](media/lab7_add_certificate2.png)
