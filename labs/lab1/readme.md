@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In this lab, you will be adding and configuring the Azure components needed for this workshop. This will require a few network resources, a Network Security Group and a Public IP to allow incoming traffic to your NGINX for Azure workshop resource. You will also deploy NGINX for Azure resource. Then you will explore the Nginx for Azure product, as a quick Overview of what it is and how to deploy it.
+In this lab, you will be adding and configuring the Azure components needed for this workshop. This will require a few network resources, a Network Security Group and a Public IP to allow incoming traffic to your NGINX for Azure workshop resource. You will also deploy NGINX for Azure resource. Then you will explore the NGINX for Azure product, as a quick Overview of what it is and how to deploy it.
 
 <br/>
 
@@ -19,19 +19,19 @@ By the end of the lab you will be able to:
 - Setup your Azure Resource Group for this workshop
 - Setup your Azure Virtual Network, Subnets and Network Security Group for inbound traffic
 - Create a Public IP and user assigned managed identity to access NGINX for Azure
-- Deploy an Nginx for Azure resource
-- Explore Nginx for Azure
-- Create an initial Nginx configuration for testing
-- Create Log Analytics workspace to collect NGINX error and access logs from Nginx for Azure
+- Deploy an NGINX for Azure resource
+- Explore NGINX for Azure
+- Create an initial NGINX configuration for testing
+- Create Log Analytics workspace to collect NGINX error and access logs from NGINX for Azure
 
 ## Prerequisites
 
-- You must have an Azure account
-- You must have the Azure CLI software installed on your local system
+- You must have an Azure account if you are not a F5 hosted workshop attendee
+- You must have the Azure CLI software installed on your local system (Not needed for F5 hosted workshop attendee)
 - See `Lab0` for instructions on setting up your system for this Workshop
 - Familiarity with basic Linux concepts and commands
 - Familiarity with basic Azure concepts and commands
-- Familiarity with basic Nginx concepts and commands
+- Familiarity with basic NGINX concepts and commands
 
 <br/>
 
@@ -39,45 +39,74 @@ By the end of the lab you will be able to:
 
 <br/>
 
-### Setup your Azure Resource group for this workshop
+### Setup your Azure environment
 
-1. In your local machine open terminal and make sure you have Azure Command Line Interface (CLI) installed by running below command.
+1. In your local machine (use Jumphost for F5 hosted workshop attendees), open terminal and make sure you have Azure Command Line Interface (CLI) installed by running below command.
 
    ```bash
    az --version
    ```
 
-   > NOTE: If this command throws an error then it means Azure CLI is not installed. Follow lab0 instructions to get it installed in your local machine. You must have Azure CLI version 2.61.0 or higher.
+   > NOTE: If this command throws an error then it means Azure CLI is not installed. Follow lab0 instructions to get it installed in your local machine. You must have Azure CLI version 2.61.0 or higher. For F5 hosted workshop attendees the Azure CLI has been already installed within the jumphost.
 
    Make sure you have the Azure CLI `NGINX extension` installed by running below command.
 
    ```bash
-   az extension add --name nginx
+   az extension add --name nginx --allow-preview True
    ```
 
-1. Create a new Azure Resource Group called `<name>-n4a-workshop` , where `<name>` is your last name (or any unique value). This would hold all the Azure resources that you would create for this workshop.
+1. If you are attending F5 hosted workshop, then you would receive a temporary Azure account to access the workshop tenant for the duration of this workshop. Follow the  [Login Guide](./login.md) to access NGINXperts provided Azure tenant. Once you have logged in then move to the next step here.
 
-   Check out the available [Datacenter regions](https://azure.microsoft.com/en-us/explore/global-infrastructure/geographies/#geographies) and decide on a region that is closest to you and meets your needs.
+    <details>
+    <summary><b>Expand to see optional Steps if you are not using F5 provided Azure tenant</b></summary>
+    <br/>
+    Create a new Azure Resource Group called `{name}-n4a-workshop` , where `{name}` is your `{firstname_initials.lastname}` (or any unique value). This would hold all the Azure resources that you would create for this workshop.
 
-   You can make use of [Azure Latency Test](https://www.azurespeed.com/Azure/Latency) to select a region that provides the lowest latency.
+    Check out the available [Datacenter regions](https://azure.microsoft.com/en-us/explore/global-infrastructure/geographies/#geographies) and decide on a region that is closest to you and meets your needs.
 
-   I am located in Chicago, Illinois so I will opt to use `Central US` as my Azure location.
+    You can make use of [Azure Latency Test](https://www.azurespeed.com/Azure/Latency) to select a region that provides the lowest latency.
+
+    I am located in Chicago, Illinois so I will opt to use `Central US` as my Azure location.
+
+    ```bash
+    az group create --name {name}-n4a-workshop --location {My_Location}
+
+    ## example
+    export MY_NAME=b.gates
+    export MY_LOCATION=centralus
+
+    az group create --name ${MY_NAME}-n4a-workshop --location ${MY_LOCATION}
+    ```
+
+    </details>
+
+    <br/>
+
+1. Make sure your Azure Resource Group has been created by running below command.
 
    ```bash
-   az group create --name <name>-n4a-workshop --location <My_Location>
-
-   ## example
-   export MY_NAME=$(whoami)
-   export MY_LOCATION=centralus
-
-   az group create --name ${MY_NAME}-n4a-workshop --location ${MY_LOCATION}
+   az group list --query "[?ends_with(name, '-n4a-workshop')].[name]" --output tsv
    ```
 
-1. Make sure the new Azure Resource Group has been created by running below command.
+<br/>
 
-   ```bash
-   az group list -o table | grep workshop
-   ```
+### Automation script to build this lab
+
+This lab focuses on various Azure resource creation like Azure Virtual Network, Subnets, Network security group etc in your Azure tenant. You then deploy NGINXaaS resource. If you are familiar with those concepts then you can build this lab by running the below command which would automate all the build steps within this lab.
+
+> **Note:** Make sure your Terminal is the `nginx-azure-workshops` directory before running below command
+
+```bash
+./auto-lab.sh -l 1 
+```
+
+For additional information on the script you can run the same command with `-h` flag as shown below
+
+```bash
+./auto-lab.sh -h
+```
+
+Once the script has completed its execution, you can directly navigate to [Explore NGINX for Azure](#explore-nginx-for-azure) section to explore and verify the resources that got created using the script. If you want to see what the script is doing, the individual build steps are provided in below sections.
 
 <br/>
 
@@ -85,11 +114,11 @@ By the end of the lab you will be able to:
 
 ![lab1 Networks](media/lab1_azure-network.png)
 
-You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 different subnets, representing various backend networks for Azure resources like Nginx for Azure, VMs, and Kubernetes clusters.
+You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 different subnets, representing various backend networks for Azure resources like NGINX for Azure, VMs, and Kubernetes clusters.
 
 |    Name     |     Subnet     |    Assignment    |
 | :---------: | :------------: | :--------------: |
-| n4a-subnet  | 172.16.1.0/24  | Nginx for Azure  |
+| n4a-subnet  | 172.16.1.0/24  | NGINX for Azure  |
 |  vm-subnet  | 172.16.2.0/24  | Virtual Machines |
 | aks1-subnet | 172.16.10.0/23 |  AKS Cluster #1  |
 | aks2-subnet | 172.16.20.0/23 |  AKS Cluster #2  |
@@ -100,7 +129,7 @@ You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 diffe
 
    ```bash
    ## Set environment variables
-   export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+   export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
    export MY_PUBLICIP=$(curl ipinfo.io/ip)
    ```
 
@@ -122,11 +151,11 @@ You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 diffe
            },
            "enableDdosProtection": false,
            "etag": "W/\"be1dfac2-9879-4a22-abe4-717badebb0ec\"",
-           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet",
+           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet",
            "location": "centralus",
            "name": "n4a-vnet",
            "provisioningState": "Succeeded",
-           "resourceGroup": "sh.dutta-n4a-workshop",
+           "resourceGroup": "b.gates-n4a-workshop",
            "resourceGuid": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "subnets": [],
            "type": "Microsoft.Network/virtualNetworks",
@@ -196,12 +225,12 @@ You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 diffe
        "destinationPortRanges": [],
        "direction": "Inbound",
        "etag": "W/\"7a178961-d3b8-4562-8493-4fcd7752e37b\"",
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/HTTP",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/HTTP",
        "name": "HTTP",
        "priority": 320,
        "protocol": "Tcp",
        "provisioningState": "Succeeded",
-       "resourceGroup": "sh.dutta-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "sourceAddressPrefix": "<MY_PUBLICIP>",
        "sourceAddressPrefixes": [],
        "sourcePortRange": "*",
@@ -219,12 +248,12 @@ You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 diffe
        "destinationPortRanges": [],
        "direction": "Inbound",
        "etag": "W/\"dc717c9f-3790-45ba-b7aa-e5e39c11142d\"",
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/HTTPS",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg/securityRules/HTTPS",
        "name": "HTTPS",
        "priority": 300,
        "protocol": "Tcp",
        "provisioningState": "Succeeded",
-       "resourceGroup": "sh.dutta-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "sourceAddressPrefix": "<MY_PUBLICIP>",
        "sourceAddressPrefixes": [],
        "sourcePortRange": "*",
@@ -257,25 +286,25 @@ You will create an Azure Vnet for this Workshop. Inside of this Vnet are 4 diffe
                    "Microsoft.Network/virtualNetworks/subnets/join/action"
                ],
                "etag": "W/\"a615708f-145c-4568-a7b1-29b262f04065\"",
-               "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet/delegations/0",
+               "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet/delegations/0",
                "name": "0",
                "provisioningState": "Succeeded",
-               "resourceGroup": "sh.dutta-n4a-workshop",
+               "resourceGroup": "b.gates-n4a-workshop",
                "serviceName": "NGINX.NGINXPLUS/nginxDeployments",
                "type": "Microsoft.Network/virtualNetworks/subnets/delegations"
            }
        ],
        "etag": "W/\"a615708f-145c-4568-a7b1-29b262f04065\"",
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet",
        "name": "n4a-subnet",
        "networkSecurityGroup": {
-           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg",
-           "resourceGroup": "sh.dutta-n4a-workshop"
+           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/networkSecurityGroups/n4a-nsg",
+           "resourceGroup": "b.gates-n4a-workshop"
        },
        "privateEndpointNetworkPolicies": "Disabled",
        "privateLinkServiceNetworkPolicies": "Enabled",
        "provisioningState": "Succeeded",
-       "resourceGroup": "sh.dutta-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "type": "Microsoft.Network/virtualNetworks/subnets"
    }
    ```
@@ -337,7 +366,7 @@ Your completed Vnet/Subnets should look similar to this:
                "protectionMode": "VirtualNetworkInherited"
            },
            "etag": "W/\"cbeb62f5-3ecc-404f-919d-bdea24c7b9f3\"",
-           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP",
+           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP",
            "idleTimeoutInMinutes": 4,
            "ipAddress": "<AZURE_ASSIGNED_PUBLICIP>",
            "ipTags": [],
@@ -346,7 +375,7 @@ Your completed Vnet/Subnets should look similar to this:
            "provisioningState": "Succeeded",
            "publicIPAddressVersion": "IPv4",
            "publicIPAllocationMethod": "Static",
-           "resourceGroup": "sh.dutta-n4a-workshop",
+           "resourceGroup": "b.gates-n4a-workshop",
            "resourceGuid": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "sku": {
                "name": "Standard",
@@ -371,11 +400,11 @@ Your completed Vnet/Subnets should look similar to this:
    ##Sample Output##
    {
         "clientId": "xxxx-xxxx-xxxx-xxxx-xxxx",
-        "id": "/subscriptions/<SUBSCRIPTION_ID>/resourcegroups/sh.dutta-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity",
+        "id": "/subscriptions/<SUBSCRIPTION_ID>/resourcegroups/b.gates-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity",
         "location": "centralus",
         "name": "n4a-useridentity",
         "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx",
-        "resourceGroup": "sh.dutta-n4a-workshop",
+        "resourceGroup": "b.gates-n4a-workshop",
         "systemData": null,
         "tags": {},
         "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
@@ -385,7 +414,7 @@ Your completed Vnet/Subnets should look similar to this:
 
 <br/>
 
-## Deploy an Nginx for Azure Resource
+## Deploy an NGINX for Azure Resource
 
 <br/>
 
@@ -393,7 +422,7 @@ Your completed Vnet/Subnets should look similar to this:
 
    ```bash
    ## Set environment variables
-   export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+   export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
    export MY_SUBSCRIPTIONID=$(az account show --query id -o tsv)
    ```
 
@@ -409,13 +438,13 @@ Your completed Vnet/Subnets should look similar to this:
    ```bash
    ##Sample Output##
    {
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Nginx.NginxPlus/nginxDeployments/nginx4a",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Nginx.NginxPlus/nginxDeployments/nginx4a",
        "identity": {
            "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "type": "SystemAssigned, UserAssigned",
            "userAssignedIdentities": {
-               "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity": {
+               "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity": {
                    "clientId": "xxxx-xxxx-xxxx-xxxx-xxxx",
                    "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx"
                }
@@ -429,18 +458,18 @@ Your completed Vnet/Subnets should look similar to this:
            },
            "enableDiagnosticsSupport": false,
            "ipAddress": "<AZURE_ASSIGNED_PUBLICIP>",
-           "managedResourceGroup": "NGX_sh.dutta-n4a-workshop_nginx4a_centralus",
+           "managedResourceGroup": "NGX_b.gates-n4a-workshop_nginx4a_centralus",
            "networkProfile": {
                "frontEndIPConfiguration": {
                    "publicIPAddresses": [
                        {
-                           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP",
-                           "resourceGroup": "sh.dutta-n4a-workshop"
+                           "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/publicIPAddresses/n4a-publicIP",
+                           "resourceGroup": "b.gates-n4a-workshop"
                        }
                    ]
                },
                "networkInterfaceConfiguration": {
-                   "subnetId": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet"
+                   "subnetId": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Network/virtualNetworks/n4a-vnet/subnets/n4a-subnet"
                }
            },
            "nginxVersion": "1.25.1 (nginx-plus-r30-p2)",
@@ -450,7 +479,7 @@ Your completed Vnet/Subnets should look similar to this:
            },
            "userProfile": {}
        },
-       "resourceGroup": "sh.dutta-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "sku": {
            "name": "standardv2_Monthly"
        },
@@ -472,7 +501,7 @@ Your completed Vnet/Subnets should look similar to this:
 
 ### Create Log Analytics workspace to collect NGINX error and Access logs from NGINX for azure
 
-In this section you will create a Log Analytics resource that would collect Nginx logs from your Nginx for Azure resource. As this resource takes time to get provisioned and attached to NGINX for Azure resource, you are building it up here.
+In this section you will create a Log Analytics resource that would collect NGINX logs from your NGINX for Azure resource. As this resource takes time to get provisioned and attached to NGINX for Azure resource, you are building it up here.
 
 1. Create a Log Analytics workspace resource that you will attach to NGINX for Azure using Azure CLI. This resource would be used to capture and store NGINX error and access logs. Use below command to create this resource.
 
@@ -490,14 +519,14 @@ In this section you will create a Log Analytics resource that would collect Ngin
        "features": {
            "enableLogAccessUsingOnlyResourcePermissions": true
        },
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.OperationalInsights/workspaces/n4a-loganalytics",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.OperationalInsights/workspaces/n4a-loganalytics",
        "location": "centralus",
        "modifiedDate": "2024-04-29T16:05:07.3687572Z",
        "name": "n4a-loganalytics",
        "provisioningState": "Succeeded",
        "publicNetworkAccessForIngestion": "Enabled",
        "publicNetworkAccessForQuery": "Enabled",
-       "resourceGroup": "sh.dutta-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "retentionInDays": 30,
        "sku": {
            "lastSkuUpdate": "2024-04-17T20:42:48.2028783Z",
@@ -526,13 +555,13 @@ In this section you will create a Log Analytics resource that would collect Ngin
    ```bash
    ##Sample Output##
    {
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Nginx.NginxPlus/nginxDeployments/nginx4a",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Nginx.NginxPlus/nginxDeployments/nginx4a",
        "identity": {
            "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "tenantId": "xxxx-xxxx-xxxx-xxxx-xxxx",
            "type": "SystemAssigned, UserAssigned",
            "userAssignedIdentities": {
-           "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity": {
+           "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.ManagedIdentity/userAssignedIdentities/n4a-useridentity": {
                    "clientId": "xxxx-xxxx-xxxx-xxxx-xxxx",
                    "principalId": "xxxx-xxxx-xxxx-xxxx-xxxx"
                }
@@ -582,7 +611,7 @@ In this section you will create a Log Analytics resource that would collect Ngin
    ```bash
    ##Sample Output##
    {
-       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourcegroups/sh.dutta-n4a-workshop/providers/nginx.nginxplus/nginxdeployments/nginx4a/providers/microsoft.insights/diagnosticSettings/n4a-nginxlogs",
+       "id": "/subscriptions/<SUBSCRIPTION_ID>/resourcegroups/b.gates-n4a-workshop/providers/nginx.nginxplus/nginxdeployments/nginx4a/providers/microsoft.insights/diagnosticSettings/n4a-nginxlogs",
        "logs": [
            {
            "category": "NginxLogs",
@@ -595,9 +624,9 @@ In this section you will create a Log Analytics resource that would collect Ngin
        ],
        "metrics": [],
        "name": "n4a-nginxlogs",
-       "resourceGroup": "sh.dutta-n4a-workshop",
+       "resourceGroup": "b.gates-n4a-workshop",
        "type": "Microsoft.Insights/diagnosticSettings",
-       "workspaceId": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.OperationalInsights/workspaces/n4a-loganalytics"
+       "workspaceId": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.OperationalInsights/workspaces/n4a-loganalytics"
    }
    ```
 
@@ -605,7 +634,7 @@ In this section you will create a Log Analytics resource that would collect Ngin
 
 <br/>
 
-### Explore Nginx for Azure
+### Explore NGINX for Azure
 
 <br/>
 
@@ -619,7 +648,7 @@ In this section you will be looking at NGINX for Azure resource that you created
 
    ![Portal ResourceGroup home](media/lab1_portal_rg_home.png)
 
-2. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. You can see useful information like Status, NGINX for Azure resource's public IP, which Nginx version is running, which vnet/subnet it is using, etc.
+2. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. You can see useful information like Status, NGINX for Azure resource's public IP, which NGINX version is running, which vnet/subnet it is using, etc.
 
    ![Portal N4A home](media/lab1_portal_n4a_home.png)
 
@@ -670,4 +699,3 @@ In this section you will be looking at NGINX for Azure resource that you created
 ---
 
 Navigate to ([Lab2](../lab2/readme.md) | [LabGuide](../readme.md))
-

@@ -22,7 +22,7 @@ NGINXaaS for Azure | AKS | NGINX Loadbalancer Kubernetes
 
 <br/>
 
-## Learning Objectives 
+## Learning Objectives
 
 By the end of the lab you will be able to:
 - Create NGINXaaS API Key 

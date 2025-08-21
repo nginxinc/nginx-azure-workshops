@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In this lab, you will be creating various application backend resources.  You will create and deploy an Ubuntu VM for hosting Docker containers.  You will install Docker, and a demo application will be deployed with Docker-compose.  You will also deploy a Windows VM.  These containers and VMs will be your backend applications running in Azure.  You will configure and test Nginx for Azure to proxy and load balance these resources.
+In this lab, you will be creating various application backend resources.  You will create and deploy an Ubuntu VM for hosting Docker containers.  You will install Docker, and a demo application will be deployed with Docker-compose.  You will also deploy a Windows VM.  These containers and VMs will be your backend applications running in Azure.  You will configure and test NGINX for Azure to proxy and load balance these resources.
 
 Your completed Ubuntu and Windows VM deployment will look like this:
 
@@ -20,10 +20,10 @@ NGINX aaS | Ubuntu | Docker | Windows
 
 By the end of the lab you will be able to:
 
-- Deploy Ubuntu VM with Docker and Docker-Compose preinstalled and Nginx Demo containers running using Azure CLI
-- Configure Nginx for Azure to Load Balance Docker containers
+- Deploy Ubuntu VM with Docker and Docker-Compose preinstalled and NGINX Demo containers running using Azure CLI
+- Configure NGINX for Azure to Load Balance Docker containers
 - Deploy Windows VM with Azure CLI
-- Configure Nginx for Azure to proxy to the Windows VM
+- Configure NGINX for Azure to proxy to the Windows VM
 
 ## Automation script to build this lab
 
@@ -45,11 +45,12 @@ For additional information on the script you can run the same command with `-h` 
 
 ## Pre-Requisites
 
+- You must have an Azure account if you are not a F5 hosted workshop attendee
 - You must have Azure Networking configured for this Workshop
 - You must have proper access to create Azure VMs
-- You must have Azure CLI tool installed on your local system
+- You must have the Azure CLI software installed on your local system (Not needed for F5 hosted workshop attendee)
 - You must have an SSH client software installed on your local system
-- You must have your Nginx for Azure instance deployed and running
+- You must have your NGINX for Azure instance deployed and running
 - Familiarity with basic Linux commands and commandline tools
 - Familiarity with basic Docker concepts and commands
 - Familiarity with basic HTTP protocol
@@ -57,13 +58,13 @@ For additional information on the script you can run the same command with `-h` 
 
 <br/>
 
-## Deploy Ubuntu VM with Docker and Docker-Compose preinstalled and Nginx Demo containers running using Azure CLI
+## Deploy Ubuntu VM with Docker and Docker-Compose preinstalled and NGINX Demo containers running using Azure CLI
 
 1. In your local machine open terminal and make sure you are logged onto your Azure tenant. Set the following Environment variable which points to your Resource Group:
 
     ```bash
     ## Set environment variables
-    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
     export MY_ID=`az group show -n $MY_RESOURCEGROUP --query "id" -otsv`
     ```
 
@@ -98,7 +99,7 @@ For additional information on the script you can run the same command with `-h` 
     ##Sample Output##
     {
       "fqdns": "",
-      "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Compute/virtualMachines/n4a-ubuntuvm",
+      "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Compute/virtualMachines/n4a-ubuntuvm",
       "identity": {
         "systemAssignedIdentity": "xxxx-xxxx-xxxx-xxxx-xxxx",
         "userAssignedIdentities": {}
@@ -108,7 +109,7 @@ For additional information on the script you can run the same command with `-h` 
       "powerState": "VM running",
       "privateIpAddress": "172.16.2.4",
       "publicIpAddress": "<AZURE_ASSIGNED_PUBLICIP>",
-      "resourceGroup": "sh.dutta-n4a-workshop",
+      "resourceGroup": "b.gates-n4a-workshop",
       "zones": ""
     }
     ```
@@ -146,13 +147,13 @@ For additional information on the script you can run the same command with `-h` 
     --source-address-prefix $MY_PUBLICIP
     ```
 
-    >Success!  You have an Ubuntu VM with Docker that is running Nginx Demo containers needed for future Lab exercises. Reminder: Don't forget to shutdown this VM when you are finished with it later, or set an Auto Shutdown policy using Azure Portal.
+    >Success!  You have an Ubuntu VM with Docker that is running NGINX Demo containers needed for future Lab exercises. Reminder: Don't forget to shutdown this VM when you are finished with it later, or set an Auto Shutdown policy using Azure Portal.
 
 <br/>
 
-### (Optional Section) SSH into the Ubuntu VM and test Nginx Demo containers
+### (Optional Section) SSH into the Ubuntu VM and test NGINX Demo containers
 
-In this section, you will ssh into the Ubuntu VM that you created in previous section. You will then inspect the docker containers and look into the three Nginx `ingress-demo` containers.  These containers will be your first group of `backends` that will be used for load balancing with Nginx for Azure.
+In this section, you will ssh into the Ubuntu VM that you created in previous section. You will then inspect the docker containers and look into the three NGINX `ingress-demo` containers.  These containers will be your first group of `backends` that will be used for load balancing with NGINX for Azure.
 
 1. Verify you have SSH access to the Ubuntu VM that you deployed in previous section. Open a Terminal, and use your public IP tied to ubuntu vm, to start a new ssh session.
 
@@ -280,11 +281,11 @@ In this section, you will ssh into the Ubuntu VM that you created in previous se
 
 <br/>
 
-## Configure Nginx for Azure to Load Balance Docker containers
+## Configure NGINX for Azure to Load Balance Docker containers
 
 <br/>
 
-In this exercise, you will create your first Nginx config files, for the Nginx Server, Location, and Upstream blocks, to load balance your three Docker containers running on the Ubuntu VM.
+In this exercise, you will create your first NGINX config files, for the NGINX Server, Location, and Upstream blocks, to load balance your three Docker containers running on the Ubuntu VM.
 
 ![Lab2 Cafe diagram](media/lab2_cafe-diagram.png)
 
@@ -292,18 +293,18 @@ In this exercise, you will create your first Nginx config files, for the Nginx S
 
 NGINX aaS | Docker | Cafe Demo
 :-------------------------:|:-------------------------:|:-------------------------:
-![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)  |![Nginx Cafe](media/cafe-icon.png)
+![NGINX aaS](media/nginx-azure-icon.png)  |![Docker](media/docker-icon.png)  |![NGINX Cafe](media/cafe-icon.png)
 
 1. Open Azure portal within your browser and then open your Resource Group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under Settings.
 
-1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/cafe-docker-upstreams.conf`.
+1. Click on `+ New File`, to create a new NGINX config file. Name the new file `/etc/nginx/conf.d/cafe-docker-upstreams.conf`.
 
-    **Important:** You must use the full Linux /directory/filename path for every Nginx config file, for it to be properly created and placed in the correct directory.  If you forget, you can delete it and must re-create it.  The Azure Portal Text Edit panels do not let you move, or drag-n-drop files or directories.  You can `rename` a file by clicking the Pencil icon, and `delete` a file by clicking the Trashcan icon at the top.
+    **Important:** You must use the full Linux /directory/filename path for every NGINX config file, for it to be properly created and placed in the correct directory.  If you forget, you can delete it and must re-create it.  The Azure Portal Text Edit panels do not let you move, or drag-n-drop files or directories.  You can `rename` a file by clicking the Pencil icon, and `delete` a file by clicking the Trashcan icon at the top.
 
 1. Copy and paste the contents from the matching file present in `lab2` directory from Github, into the Configuration Edit window, shown here:
 
     ```nginx
-    # Nginx 4 Azure, Cafe Nginx Demo Upstreams
+    # NGINX 4 Azure, Cafe NGINX Demo Upstreams
     # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
     #
     # cafe-nginx servers
@@ -323,16 +324,16 @@ NGINX aaS | Docker | Cafe Demo
 
     ![N4A Config Edit](media/lab2_cafe-docker-upstreams.png)
 
-    This creates an Nginx Upstream Block, which defines the backend server group that Nginx will load balance traffic to.
+    This creates an NGINX Upstream Block, which defines the backend server group that NGINX will load balance traffic to.
 
-    Click `Submit` to save your Nginx configuration.
+    Click `Submit` to save your NGINX configuration.
 
-1. Click the `+ New File` again, and create a second Nginx config file, using the same Nginx for Azure Configuration editor tool. Name the second file `/etc/nginx/conf.d/cafe.example.com.conf`.
+1. Click the `+ New File` again, and create a second NGINX config file, using the same NGINX for Azure Configuration editor tool. Name the second file `/etc/nginx/conf.d/cafe.example.com.conf`.
 
 1. Copy and paste the contents of the matching file present in `lab2` directory from Github, into the Configuration Edit window, shown here:
 
     ```nginx
-    # Nginx 4 Azure - Cafe Nginx HTTP
+    # NGINX 4 Azure - Cafe Nginx HTTP
     # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
     #
     server {
@@ -361,12 +362,12 @@ NGINX aaS | Docker | Cafe Demo
 
     ```
 
-    Click `Submit` to save your Nginx configuration.
+    Click `Submit` to save your NGINX configuration.
 
 1. Now you need to include these new files into your main `nginx.conf` file within your `nginx4a` resource. Copy and paste the contents of the `nginx.conf` file present in `lab2` directory from Github, into the `nginx.conf` file using Configuration Edit window, shown here:
 
     ```nginx
-    # Nginx 4 Azure - Default - Updated Nginx.conf
+    # NGINX 4 Azure - Default - Updated Nginx.conf
     # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
     #
     user nginx;
@@ -410,15 +411,15 @@ NGINX aaS | Docker | Cafe Demo
     # }
     ```
 
-    Notice that the Nginx standard / Best Practice of placing the HTTP Context config files in the `/etc/nginx/conf.d` folder is being followed, and the `include` directive is being used to read these files at Nginx configuration load time.
+    Notice that the NGINX standard / Best Practice of placing the HTTP Context config files in the `/etc/nginx/conf.d` folder is being followed, and the `include` directive is being used to read these files at NGINX configuration load time.
 
-1. Click the `Submit` Button above the Editor.  Nginx will validate your configurations, and if successful, will reload Nginx with your new configurations.  If you receive an error, you will need to fix it before you proceed.
+1. Click the `Submit` Button above the Editor.  NGINX will validate your configurations, and if successful, will reload NGINX with your new configurations.  If you receive an error, you will need to fix it before you proceed.
 
 <br/>
 
-### Test your Nginx for Azure configuration
+### Test your NGINX for Azure configuration
 
-1. For easy access your new website, update your local system's DNS `/etc/hosts` file. You will add the hostname `cafe.example.com` and the Nginx for Azure Public IP address, to your local system DNS hosts file for name resolution.  Your Nginx for Azure Public IP address can be found in your Azure Portal, under `n4a-publicIP`.  Use vi tool or any other text editor to add an entry to `/etc/hosts` as shown below:
+1. For easy access your new website, update your local system's DNS `/etc/hosts` file. You will add the hostname `cafe.example.com` and the NGINX for Azure Public IP address, to your local system DNS hosts file for name resolution.  Your NGINX for Azure Public IP address can be found in your Azure Portal, under `n4a-publicIP`.  Use vi tool or any other text editor to add an entry to `/etc/hosts` as shown below:
 
     ```bash
     cat /etc/hosts
@@ -426,7 +427,7 @@ NGINX aaS | Docker | Cafe Demo
     127.0.0.1 localhost
     ...
 
-    # Nginx for Azure testing
+    # NGINX for Azure testing
     11.22.33.44 cafe.example.com
 
     ...
@@ -458,7 +459,7 @@ NGINX aaS | Docker | Cafe Demo
 
     You should see a 200 OK Response.  Did you see the `X-Proxy-Pass` header - set to the Upstream block name?  
 
-1. Now try access to your cafe application with a Browser. Open Chrome, and nagivate to `http://cafe.example.com`. You should see an `Out of Stock` image, with a gray metadata panel, filled with names, IP addresses, URLs, etc. This panel comes from the Docker container, using Nginx $variables to populate the gray panel fields. If you Right+Click, and Inspect to open Chrome Developer Tools, and look at the Response Headers, you should be able to see the `Server and X-Proxy-Pass Headers` set respectively.
+1. Now try access to your cafe application with a Browser. Open Chrome, and nagivate to `http://cafe.example.com`. You should see an `Out of Stock` image, with a gray metadata panel, filled with names, IP addresses, URLs, etc. This panel comes from the Docker container, using NGINX $variables to populate the gray panel fields. If you Right+Click, and Inspect to open Chrome Developer Tools, and look at the Response Headers, you should be able to see the `Server and X-Proxy-Pass Headers` set respectively.
 
 ![Cafe Out of Stock](media/lab2_cafe-out-of-stock.png)
 
@@ -466,9 +467,9 @@ Click Refresh serveral times.  You will notice the `Server Name` and `Server Ip`
 
 ![Cafe Inspect](media/lab2_cafe-inspect.png)
 
-Try http://cafe.example.com/coffee and http://cafe.example.com/tea in Chrome, refreshing several times.  You should find Nginx for Azure is load balancing these Docker web containers as expected.
+Try http://cafe.example.com/coffee and http://cafe.example.com/tea in Chrome, refreshing several times.  You should find NGINX for Azure is load balancing these Docker web containers as expected.
 
->**Congratulations!!**  You have just completed launching a simple web application with Nginx for Azure, running on the Internet, with just a VM, Docker, and 2 config files for Nginx for Azure.  That pretty easy, not so hard now, was it?
+>**Congratulations!!**  You have just completed launching a simple web application with NGINX for Azure, running on the Internet, with just a VM, Docker, and 2 config files for NGINX for Azure.  That pretty easy, not so hard now, was it?
 
 <br/>
 
@@ -479,7 +480,7 @@ Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
 1. In your local machine open terminal and make sure you are logged onto your Azure tenant. Set the following Environment variables:
 
     ```bash
-    export MY_RESOURCEGROUP=${MY_NAME}-n4a-workshop
+    export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
     export MY_VM_IMAGE=cognosys:iis-on-windows-server-2016:iis-on-windows-server-2016:1.2019.1009
     ```
 
@@ -504,13 +505,13 @@ Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
     Consider upgrading security for your workloads using Azure Trusted Launch VMs. To know more about Trusted Launch, please visit https://aka.ms/TrustedLaunch.
     {
     "fqdns": "",
-    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/sh.dutta-n4a-workshop/providers/Microsoft.Compute/virtualMachines/n4a-windowsvm",
+    "id": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/b.gates-n4a-workshop/providers/Microsoft.Compute/virtualMachines/n4a-windowsvm",
     "location": "centralus",
     "macAddress": "00-0D-3A-96-C5-F1",
     "powerState": "VM running",
     "privateIpAddress": "172.16.2.5",
     "publicIpAddress": "<AZURE_ASSIGNED_PUBLICIP>",
-    "resourceGroup": "sh.dutta-n4a-workshop",
+    "resourceGroup": "b.gates-n4a-workshop",
     "zones": ""
     }
     ```
@@ -541,9 +542,9 @@ Similar to how you deployed an Ubuntu VM, you will now deploy a Windows VM.
 
 <br/>
 
-## Configure Nginx for Azure to proxy the Windows VM
+## Configure NGINX for Azure to proxy the Windows VM
 
-In this exercise, you will create another Nginx config file, for the Windows VM Upstream block, to proxy your IIS Server running on the Windows VM.
+In this exercise, you will create another NGINX config file, for the Windows VM Upstream block, to proxy your IIS Server running on the Windows VM.
 
 ![Lab2 diagram](media/lab2_diagram.png)
 
@@ -555,14 +556,14 @@ NGINX aaS | Windows VM / IIS
 
 1. Open Azure portal within your browser and then open your Resource Group. Click on your NGINX for Azure resource (nginx4a) which should open the Overview section of your resource. From the left pane click on `NGINX Configuration` under settings.
 
-1. Click on `+ New File`, to create a new Nginx config file. Name the new file `/etc/nginx/conf.d/windows-upstreams.conf`.
+1. Click on `+ New File`, to create a new NGINX config file. Name the new file `/etc/nginx/conf.d/windows-upstreams.conf`.
 
-    **Important:** You must use the full Linux /folder/filename path for every Nginx config file, for it to be properly created and placed in the correct folder.  If you forget, you can delete it and must re-create it.  The Azure Portal Text Edit panels do not let you move, or drag-n-drop files or folders.  You can `rename` a file by clicking the Pencil icon, and `delete` a file by clicking the Trashcan icon at the top.
+    **Important:** You must use the full Linux /folder/filename path for every NGINX config file, for it to be properly created and placed in the correct folder.  If you forget, you can delete it and must re-create it.  The Azure Portal Text Edit panels do not let you move, or drag-n-drop files or folders.  You can `rename` a file by clicking the Pencil icon, and `delete` a file by clicking the Trashcan icon at the top.
 
 1. Copy and paste the contents from the matching file present in `lab2` directory from Github, into the Configuration Edit window, shown here:
 
     ```nginx
-    # Nginx 4 Azure, Windows IIS Upstreams
+    # NGINX 4 Azure, Windows IIS Upstreams
     # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
     #
     # windows IIS server
@@ -579,14 +580,14 @@ NGINX aaS | Windows VM / IIS
 
     ![Windows Upstreams](media/lab2_windows-upstreams.png)
 
-    Click `Submit` to save your Nginx configuration.
-    
-    This creates a new Nginx Upstream Block, which defines the Windows IIS backend server group that Nginx will load balance traffic to.
+    Click `Submit` to save your NGINX configuration.
+
+    This creates a new NGINX Upstream Block, which defines the Windows IIS backend server group that NGINX will load balance traffic to.
 
 1. Edit the comment characters in `/etc/nginx/conf.d/cafe.example.com.conf`, to enable the `proxy_pass` to the `windowsvm`, and disable it for the `cafe-nginx`, as follows:
 
     ```nginx
-    # Nginx 4 Azure - Cafe Nginx and Windows IIS HTTP
+    # NGINX 4 Azure - Cafe Nginx and Windows IIS HTTP
     # Chris Akker, Shouvik Dutta, Adam Currier - Mar 2024
     #
     server {
@@ -614,21 +615,21 @@ NGINX aaS | Windows VM / IIS
     }
     ```
 
-1. Click the `Submit` Button above the Editor.  Nginx will validate your configuration, and if successfull, will reload Nginx with your new configuration.  If you receive an error, you will need to fix it before you proceed.
+1. Click the `Submit` Button above the Editor.  NGINX will validate your configuration, and if successfull, will reload NGINX with your new configuration.  If you receive an error, you will need to fix it before you proceed.
 
 <br/>
 
-### Test your Nginx for Azure configs
+### Test your NGINX for Azure configs
 
 1. Test access again to http://cafe.example.com.  You will now see the IIS default server page, instead of the Cafe Out of Stock page.  If you check Chrome Dev Tools, the X-Proxy-Pass Header should now show `windowsvm`.
 
     ![Cafe IIS](media/lab2_cafe-windows-iis.png)
 
-    >Notice how easy it was, to create a new backend server, and then tell Nginx to `proxy_pass` to a different Upstream. You used the same Hostname, DNS record, and Nginx Server block, but you just told Nginx to switch backends with a different `proxy_pass` directive.
+    >Notice how easy it was, to create a new backend server, and then tell NGINX to `proxy_pass` to a different Upstream. You used the same Hostname, DNS record, and NGINX Server block, but you just told NGINX to switch backends with a different `proxy_pass` directive.
 
 1. Edit the `cafe.example.com.conf` file again, and change the comments to disable `windowsvm`, and re-enable the `proxy_pass` for `cafe_nginx`, as you will use it again in a future lab exercise.
 
-1. Submit your Nginx changes, and re-test to verify that http://cafe.example.com works again for Cafe Nginx.  Don't forget to change the custom Header as well.
+1. Submit your NGINX changes, and re-test to verify that http://cafe.example.com works again for Cafe Nginx.  Don't forget to change the custom Header as well.
 
 <br>
 

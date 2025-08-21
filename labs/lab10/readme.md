@@ -46,7 +46,7 @@ By the end of the lab you will be able to:
 The resource group should be the same as the one you have been using for the whole workshop. If it is not set, do it here. The MY_GRAFANA variable is what the resource will be called when you are looking for it in Azure.
 
 ```bash
-export MY_RESOURCEGROUP=a.currier-workshop
+export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
 export MY_GRAFANA=grafanaworkshop
 
 az grafana create --name $MY_GRAFANA --resource-group $MY_RESOURCEGROUP
@@ -83,9 +83,9 @@ In Visual Studio Code, navigate to the Lab10 folder. Open the N4A-Dashboard.json
 This template file makes use of Grafana Variables to make it easier to customize to your environment. Let's retrieve the values we will need for the dashboard in the VS terminal by running the following commands:
 
 ```bash
-export MY_RESOURCEGROUP=$(az resource list --resource-group a.currier-workshop --resource-type Nginx.NginxPlus/nginxDeployments --query "[].resourceGroup" -o tsv)
-export MY_RESOURCENAME=$(az resource list --resource-group a.currier-workshop --resource-type Nginx.NginxPlus/nginxDeployments --query "[].name" -o tsv)
-export MY_LOCATION=$(az resource list --resource-group a.currier-workshop --resource-type Nginx.NginxPlus/nginxDeployments --query "[].location" -o tsv)
+export MY_RESOURCEGROUP=$(az group list --query "[?ends_with(name, '-n4a-workshop')].[name]|[0]" --output tsv)
+export MY_RESOURCENAME=$(az resource list --resource-group $MY_RESOURCEGROUP --resource-type Nginx.NginxPlus/nginxDeployments --query "[].name" -o tsv)
+export MY_LOCATION=$(az resource list --resource-group $MY_RESOURCEGROUP --resource-type Nginx.NginxPlus/nginxDeployments --query "[].location" -o tsv)
 export MY_AKSCluster1=n4a-aks1  
 export MY_AKSCluster2=n4a-aks2  
 export MY_WindowsVM=windowsvm  
@@ -93,12 +93,13 @@ export MY_UbuntuVM=ubuntuvm
 ```
 
 Confirm the values were set:
+
 ```bash
 set | grep MY
 MY_AKSCluster1=n4a-aks1
 MY_AKSCluster2=n4a-aks2
 MY_LOCATION=eastus
-MY_RESOURCEGROUP=a.currier-workshop
+MY_RESOURCEGROUP=b.gates-n4a-workshop
 MY_RESOURCENAME=nginx4a
 MY_UbuntuVM=ubuntuvm
 MY_WindowsVM=windowsvm
@@ -119,7 +120,7 @@ To get the Dashboards to load. Replace each variable field at the top (see image
 1. Start the WRK load generation tool. This will provide some traffic to the NGINXaaS for Azure instance, so that the statistics will be increasing.
 
 ```bash
-docker run --rm williamyeh/wrk -t20 -d600s -c1000 https://cafe.example.com/ 
+docker run --rm elswork/wrk -t20 -d600s -c1000 https://cafe.example.com/ 
 ```
 
 <br/>
